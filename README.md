@@ -1,2 +1,2 @@
-# InteractionHeatmap
-R code to create a heat map of variable interaction strength and variable importance
+# Variable Interaction and Variable Importance Displays
+R code to create different plots displaying variable importance and variable interactions
