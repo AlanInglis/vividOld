@@ -72,13 +72,13 @@ intHeatmap <- function(data, task, model, method = "randomForest",
   norm.task <- normalizeFeatures(task, method = "standardize")
   if(method == "randomForest"){
     impMethod = c("randomForest_importance")}
-  else if(method == "Ranger Permutation"){
+  else if(method == "ranger Permutation"){
     impMethod = c("ranger_permutation")}
    else if(method == "rfSRC Importance"){
      impMethod = c("randomForestSRC_importance")
    }
     else if(method >=4)
-      (return("Invalid method chosen. Use ?intHeatmap for allowed methods"))
+      (return("Invalid method chosen. See ?intHeatmap for allowed methods"))
   im_feat <- generateFilterValuesData(norm.task, method = impMethod)
   Y_Imp <- im_feat$data$value
   
@@ -131,7 +131,7 @@ intHeatmap <- function(data, task, model, method = "randomForest",
   if(method == "randomForest"){
     labTitle = "randomForest \n\ Importance"
   } 
-  else if(method == "Ranger Permutation"){
+  else if(method == "ranger Permutation"){
     labTitle = "Ranger Permutation \n\ Importance"
   }
   else if(method == "rfSRC Importance"){
@@ -149,7 +149,7 @@ intHeatmap <- function(data, task, model, method = "randomForest",
     scale_x_discrete(position = "top") + theme_bw()+
     xlab("")+ylab("")
 
-   # Interactive using plotly
+   # Interactive plot using plotly
    ppp <- ggplotly(pp, tooltip = "all")
   
    if(interact == TRUE){
@@ -183,9 +183,3 @@ InteractionPlot(aq, aqRgrTask, aqMod)
 InteractionPlot(ir, irClasTask, irMod)
 InteractionPlot(FRdf, frRgrTask, frMod)
 
-
-
-g <- ggplot(txhousing, aes(x = date, y = sales, group = city)) +
-  geom_line(alpha = 0.4)
-g
-ggplotly(g, tooltip = c("city"))
