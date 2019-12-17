@@ -60,7 +60,7 @@ frMod = train(FR.regr.lrn, frRgrTask)
 
 
 importanceNet <- function(data, task, model, method = "randomForest", 
-                          Threshold = FALSE, Cluster = FALSE,...){
+                          Threshold = FALSE, Cluster = FALSE, edge.label = FALSE,...){
   
   # Get importance:
   
@@ -120,8 +120,39 @@ importanceNet <- function(data, task, model, method = "randomForest",
   V(net.bg)[IMP < 20]$color <- "red"
   V(net.bg)[IMP < 10]$color <- "wheat"
   V(net.bg)$label <- nam
+  V(net.bg)$label.cex <- 1.3
+  V(net.bg)$label.color <- "black"
   E(net.bg)$arrow.mode <- 0
   E(net.bg)$width <- UINT*100
+  E(net.bg)$label <- round(UINT, 3)
+  
+  # Add option to display edge label (i.e., interaction strength)
+  if(edge.label == TRUE){
+    E(net.bg)$label.cex <- 1
+  }else{E(net.bg)$label.cex <- 0.001}
+  
+  ## Ajusting edge label text position
+  # Start with the centers of the edges (on line)
+  ELx = rep(0, ecount(net.bg))
+  ELy = rep(0, ecount(net.bg))
+  for(i in 1:ecount(net.bg)) {
+    ELx[i] = (l[ends(net.bg,i)[1],1] + l[ends(net.bg,i)[2],1])/2
+    ELy[i] = (l[ends(net.bg,i)[1],2] + l[ends(net.bg,i)[2],2])/2 }
+  
+  ## Adjust perpendicular to line
+  d = 0.05
+  for(i in 1:ecount(net.bg)) {
+    if(abs(l[ends(net.bg,i)[1],2] - l[ends(net.bg,i)[2],2]) < 0.1) {
+      ## This avoids problems with horizontal edges
+      ELy[i] = ELy[i] + shift 
+    } else {
+      S = (l[ends(net.bg,i)[2],1] - l[ends(net.bg,i)[1],1]) / 
+        (l[ends(net.bg,i)[1],2] - l[ends(net.bg,i)[2],2])
+      shift = d / sqrt(1 + S^2)
+      ELx[i] = ELx[i] + shift
+      ELy[i] = ELy[i] + S*shift
+    }
+  }
   
   #highlight max interaction strength
   maxWeight = max(UINT*100)
@@ -134,30 +165,32 @@ importanceNet <- function(data, task, model, method = "randomForest",
   
   # Threshold and Cluster option:
   if(Threshold == FALSE && Cluster == FALSE){
-    p <- plot(net.bg, layout=l)
+    p <- plot(net.bg, layout=l, vertex.label.family = "Helvetica", edge.label.family = "Helvetica",
+              rescale=FALSE, xlim=range(l[,1]), ylim=range(l[,2]), 
+              edge.label.x=ELx, edge.label.y=ELy)
     return(p) 
   }else if(Threshold == TRUE && Cluster == FALSE){
     a <- sort(UINT, decreasing  = TRUE)
     cut.off <- a[1:5]
     net.sp  <- delete_edges(net.bg, E(net.bg)[UINT<cut.off])
-    pp <- plot(net.sp, layout=l)
+    pp <- plot(net.sp, layout=l, vertex.label.family = "Helvetica", edge.label.family = "Helvetica")
     return(pp)
   }else if(Threshold == FALSE && Cluster == TRUE){
     clp <- cluster_optimal(net.bg)
-    ppp <- plot(clp, net.bg)
+    ppp <- plot(clp, net.bg, vertex.label.family = "Helvetica", edge.label.family = "Helvetica")
     return(ppp)
   }else if(Threshold == TRUE && Cluster == TRUE){
     a <- sort(UINT, decreasing  = TRUE)
     cut.off <- a[1:5]
     net.sp  <- delete_edges(net.bg, E(net.bg)[UINT<cut.off])
     clp <- cluster_optimal(net.sp)
-    pppp <- plot(clp, net.sp)
+    pppp <- plot(clp, net.sp, vertex.label.family = "Helvetica", edge.label.family = "Helvetica")
     return(pppp)
   }
   
 }
 
-importanceNet(aq, aqRgrTask, aqMod, method = "randomForest", Threshold = FALSE, Cluster = FALSE)
-importanceNet(ir, irClasTask, irMod, method = "rfSRC Importance", Threshold = F, Cluster = F)
-importanceNet(FRdf, frRgrTask, frMod, method = "ranger Permutation", Threshold = FALSE, Cluster = FALSE)
+importanceNet(aq, aqRgrTask, aqMod, method = "randomForest", Threshold = FALSE, Cluster = FALSE, edge.label = TRUE)
+importanceNet(ir, irClasTask, irMod, method = "rfSRC Importance", Threshold = F, Cluster = F, edge.label = F)
+importanceNet(FRdf, frRgrTask, frMod, method = "ranger Permutation", Threshold = F, Cluster = F, edge.label = F)
 
