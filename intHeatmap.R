@@ -6,13 +6,17 @@ library(dplyr)
 library(mlr)
 library(plotly)
 
+library(randomForest)
+library(randomForestSRC)
+library(ranger)
 
+rm(list = ls())
 # Get data ----------------------------------------------------------------
 
 ## Air quality data (regression)
 
-aq    <- data.frame(airquality)
-aq    <- na.omit(aq)
+aq <- data.frame(airquality)
+aq <- na.omit(aq)
 
 ## Iris data for callification
 
@@ -44,21 +48,18 @@ FRdf$y <- y
 
 ## air quality:
 aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
-aq.regr.lrn = makeLearner("regr.randomForest")
-aqMod = train(aq.regr.lrn, aqRgrTask)
+aq.regr.lrn <- makeLearner("regr.randomForest")
+aqMod <- train(aq.regr.lrn, aqRgrTask)
 
 ## iris:
 irClasTask  <- makeClassifTask(data = ir, target = "Species")
-ir.clas.lrn = makeLearner("classif.randomForest", predict.type = 'prob')
-irMod = train(ir.clas.lrn, irClasTask)
+ir.clas.lrn <- makeLearner("classif.randomForest", predict.type = 'prob')
+irMod <- train(ir.clas.lrn, irClasTask)
 
 ## Friedman:
 frRgrTask  <- makeRegrTask(data = FRdf, target = "y")
-FR.regr.lrn = makeLearner("regr.randomForest")
-frMod = train(FR.regr.lrn, frRgrTask)
-
-
-
+FR.regr.lrn <- makeLearner("regr.randomForest")
+frMod <- train(FR.regr.lrn, frRgrTask)
 
 
 ## Heatmap Plotting Function -------------------------------------------------------
@@ -82,26 +83,23 @@ intHeatmap <- function(data, task, model, method = "randomForest",
   im_feat <- generateFilterValuesData(norm.task, method = impMethod)
   Y_Imp <- im_feat$data$value
   
-  impMat <- matrix(0,nrow=length(Y_Imp),ncol=length(Y_Imp))
+  impMat <- matrix(0,nrow=length(Y_Imp), ncol=length(Y_Imp))
   diag(impMat) <- Y_Imp
   importMatrix <- melt(impMat)
-  
-  #nam <- names(data)
-  
 
 # Get Interaction Strength ------------------------------------------------
   
   mod  <- Predictor$new(model, data = data)
-  res <- NULL
+  res  <- NULL
   ovars <- getTaskFeatureNames(task)
   for (i in 1:length(ovars))
     res <- rbind(res, Interaction$new(mod, feature=ovars[i])$results)
   
-  res[[".feature"]]<- reorder(res[[".feature"]], res[[".interaction"]])
+  res[[".feature"]] <- reorder(res[[".feature"]], res[[".interaction"]])
   
   vars2 <- t(simplify2array(strsplit(as.character(res[[".feature"]]),":"))) # split/get feature names 
   dinteraction <- matrix(0, length(ovars), length(ovars))                   # create matrix
-  rownames(dinteraction)<- colnames(dinteraction) <- ovars                  # set names
+  rownames(dinteraction) <- colnames(dinteraction) <- ovars                 # set names
   dinteraction[vars2] <- res[[".interaction"]]                              # set values   
   dinteraction <- (dinteraction+t(dinteraction))/2                          # avg over values to make symmetrical
   
@@ -117,13 +115,11 @@ intHeatmap <- function(data, task, model, method = "randomForest",
   
   # Importance point size:
   if(length(Y_Imp) <= 5)
-  {
-    pointSize = 15
-  } else if(length(Y_Imp) <=10)
-  {
-    pointSize = 10
+  {pointSize = 15
+  } else if(length(Y_Imp) <= 10)
+  {pointSize = 10
   }else if(length(Y_Imp <= 15))
-  { pointSize = 7}
+  {pointSize = 7}
   
   
   # Plotting ----------------------------------------------------------------
@@ -158,12 +154,12 @@ intHeatmap <- function(data, task, model, method = "randomForest",
   
 }
 
-intHeatmap(aq, aqRgrTask, aqMod, method = "randomForest", interact = TRUE)
+intHeatmap(aq, aqRgrTask, aqMod, method = "randomForest", interact = F)
 intHeatmap(ir, irClasTask, irMod, method = "ranger Permutation")
 intHeatmap(FRdf, frRgrTask, frMod, method = "rfSRC Importance")
 
 
-# Plotting all interactions -----------------------------------------------
+# Function to plot all interactions -----------------------------------------------
 
 InteractionPlot <- function(data, task, model,...){
   preMod <- Predictor$new(model, data = data)
