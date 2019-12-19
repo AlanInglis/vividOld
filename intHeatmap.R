@@ -64,10 +64,11 @@ frMod <- train(FR.regr.lrn, frRgrTask)
 
 ## Heatmap Plotting Function -------------------------------------------------------
 
-intHeatmap <- function(data, task, model, method = "randomForest",
+intHeatmap <- function(task, model, method = "randomForest",
                        interact = FALSE,...){
   
-
+# get data:
+  data <- getTaskData(task)
 # Get Importance Measures -------------------------------------------------
   
   norm.task <- normalizeFeatures(task, method = "standardize")
@@ -154,9 +155,9 @@ intHeatmap <- function(data, task, model, method = "randomForest",
   
 }
 
-intHeatmap(aq, aqRgrTask, aqMod, method = "randomForest", interact = F)
-intHeatmap(ir, irClasTask, irMod, method = "ranger Permutation")
-intHeatmap(FRdf, frRgrTask, frMod, method = "rfSRC Importance")
+intHeatmap(aqRgrTask, aqMod, method = "randomForest", interact = F)
+intHeatmap(irClasTask, irMod, method = "ranger Permutation")
+intHeatmap(frRgrTask, frMod, method = "rfSRC Importance")
 
 
 # Function to plot all interactions -----------------------------------------------
