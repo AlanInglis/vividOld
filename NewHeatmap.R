@@ -74,9 +74,9 @@ intHeatmap <- function(task, model, method = "randomForest",
   norm.task <- normalizeFeatures(task, method = "standardize")
   if(method == "randomForest"){
     impMethod = c("randomForest_importance")}
-  else if(method == "ranger Permutation"){
+  else if(method == "ranger"){
     impMethod = c("ranger_permutation")}
-  else if(method == "rfSRC Importance"){
+  else if(method == "rfSRC"){
     impMethod = c("randomForestSRC_importance")
   }
   else if(method >=4)
@@ -140,10 +140,10 @@ intHeatmap <- function(task, model, method = "randomForest",
   if(method == "randomForest"){
     labTitle = "randomForest \n\ Importance"
   } 
-  else if(method == "ranger Permutation"){
+  else if(method == "ranger"){
     labTitle = "Ranger Permutation \n\ Importance"
   }
-  else if(method == "rfSRC Importance"){
+  else if(method == "rfSRC"){
     labTitle = "randomForestSRC \n\ Importance"
   }
 
@@ -192,8 +192,8 @@ intHeatmap <- function(task, model, method = "randomForest",
 }
   
 intHeatmap(aqRgrTask, aqMod, method = "randomForest", interact = F)
-intHeatmap(irClasTask, irMod, method = "ranger Permutation", interact = F)
-intHeatmap(frRgrTask, frMod, method = "rfSRC Importance", interact = T)
+intHeatmap(irClasTask, irMod, method = "ranger", interact = F)
+intHeatmap(frRgrTask, frMod, method = "rfSRC", interact = T)
 
 
   
