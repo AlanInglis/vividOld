@@ -4,6 +4,7 @@
 # The pdp are shown as an image instead of a 3d wireframe as this fits better with the pairs concept.
 
 library(mlr)
+library(iml)
 task <- makeRegrTask(data = iris[,-5], target = "Sepal.Length")
 fit  = train(makeLearner("regr.randomForest", id = 'rf'), task)
 
