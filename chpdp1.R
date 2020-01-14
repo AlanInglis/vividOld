@@ -28,7 +28,7 @@ colorfn <- function(vec, cols= NULL, expand=.07){
     
     fn <- function(x){
       index <- as.numeric(cut(x,breaks=r, include.lowest=TRUE))
-      print(index)
+      
       cols[index]
     }
     structure(fn,breaks=r)
@@ -72,7 +72,7 @@ pairs(iris[,2:4], panel = function(x,y) {
 })
 
 
-
+par(mar=c(2,2,2,2))
 legendn(colfn)
 
 
