@@ -174,8 +174,3 @@ intHeatmap <- function(task, model, method = "randomForest",
 intHeatmap(aqRgrTask, aqMod, method = "randomForest_importance", interact = F)
 intHeatmap(irClasTask, irMod, method = "ranger_permutation", interact = F)
 intHeatmap(frRgrTask, frMod, method = "randomForestSRC_importance", interact = F)
-
-?png
-  
-
-
