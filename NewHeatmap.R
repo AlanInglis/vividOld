@@ -72,17 +72,8 @@ intHeatmap <- function(task, model, method = "randomForest",
   # Get Importance Measures -------------------------------------------------
   
   norm.task <- normalizeFeatures(task, method = "standardize")
-  if(method == "randomForest"){
-    impMethod = c("randomForest_importance")}
-  else if(method == "ranger"){
-    impMethod = c("ranger_permutation")}
-  else if(method == "rfSRC"){
-    impMethod = c("randomForestSRC_importance")
-  }
-  else if(method >=4)
-    (return("Invalid method chosen. See ?intHeatmap for allowed methods"))
   
-  im_feat <- generateFilterValuesData(norm.task, method = impMethod)
+  im_feat <- generateFilterValuesData(norm.task, method = method)
   Y_Imp <- im_feat$data$value
 
 
@@ -136,17 +127,8 @@ intHeatmap <- function(task, model, method = "randomForest",
   }else if(length(Y_Imp <= 15))
   {pointSize = 7}
   
-  ## label titles:
-  if(method == "randomForest"){
-    labTitle = "randomForest \n\ Importance"
-  } 
-  else if(method == "ranger"){
-    labTitle = "Ranger Permutation \n\ Importance"
-  }
-  else if(method == "rfSRC"){
-    labTitle = "randomForestSRC \n\ Importance"
-  }
-
+  labTitle = method
+  
   impMat <- matrix(0,nrow=length(Y_Imp), ncol=length(Y_Imp))
   diag(impMat) <- Y_Imp
   importMatrix <- melt(impMat)
@@ -154,7 +136,7 @@ intHeatmap <- function(task, model, method = "randomForest",
   p <- ggplot(data = var_int2, 
          mapping = aes(x = var_num1, y = var_num2)) + 
     scale_x_continuous(breaks = 1:length(nam), labels = nam, position = "top") + 
-    scale_y_continuous(breaks = 1:length(nam), labels = nam) +
+    scale_y_reverse(breaks = 1:length(nam), labels = nam) +
     geom_raster(aes(fill = `Interaction\nStrength`),
                 alpha = var_int2$alpha_int) + 
     new_scale_fill() +
@@ -168,7 +150,7 @@ intHeatmap <- function(task, model, method = "randomForest",
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank())
   
-  # This plot is only called for plotly
+  # This plot is only called for plotly as newGeom_raster is not supported
   Importance <- Y_Imp
   pp <- ggplot(data=dinteraction1, aes(x=varx,y=vary)) + 
     geom_tile(aes(fill = interaction), dinteraction1 %>% filter(dinteraction1$varx != dinteraction1$vary)) +
@@ -187,16 +169,13 @@ intHeatmap <- function(task, model, method = "randomForest",
   if(interact == TRUE){
     return(ppp)
   }else{return(p)}
-  
-  
 }
   
-intHeatmap(aqRgrTask, aqMod, method = "randomForest", interact = F)
-intHeatmap(irClasTask, irMod, method = "ranger", interact = F)
-intHeatmap(frRgrTask, frMod, method = "rfSRC", interact = T)
+intHeatmap(aqRgrTask, aqMod, method = "randomForest_importance", interact = F)
+intHeatmap(irClasTask, irMod, method = "ranger_permutation", interact = F)
+intHeatmap(frRgrTask, frMod, method = "randomForestSRC_importance", interact = F)
 
+?png
+  
 
-  
-  
-  
 
