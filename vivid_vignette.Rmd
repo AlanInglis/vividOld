@@ -255,7 +255,7 @@ Plots a network style graph, where node size represents variable importance and 
 
 __Usage__
 
-Graph_fn(task, model, method, Threshold, Cluster)
+importanceNet(task, model, method, Threshold, ThresholdValue, Cluster)
 
 __Arguments__
 
@@ -266,6 +266,8 @@ __Arguments__
 * method - A list of variable importance methods to be set by the user. These can include any of the importance methods contained within the ```mlr``` package. The default is method = randomForest.
  
 * Threhold - If Threshold = TRUE then only the strongest interactions are displayed. 
+
+* ThresholdValue - This values detremines the amount of edges to display.
 
 * Cluster - If Cluster = TRUE then the data is clustered according to interactions.  
 
