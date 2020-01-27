@@ -274,7 +274,8 @@ __Examples__
 
 
 ```{r, echo = FALSE}
-importanceNet <- function(task, model, method = "randomForest_importance",Threshold = F, Cluster = F,...){
+importanceNet <- function(task, model, method = "randomForest_importance",Threshold = F, 
+                                      ThresholdValue = 0,Cluster = F,...){
   
   
   # get data:
@@ -405,14 +406,16 @@ The node size represents individual varialbe importance with respect to predicti
 
 As can be seen in the above plot, *Month* and *Day* have the largest interaction and *Temp* is the most important variable for predicting *Ozone*. 
 
-If ```Threshold = TRUE``` then only the strongest interactions are displayed, for example:
+If ```Threshold = TRUE``` then only the strongest interactions are displayed. The amount of edges can be decided by the user using the ```ThresholdValue``` argument. In the following example, ```ThresholdValue = 3``` means that only the top 3 strongest interactions are displayed.:
+
 
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-importanceNet(aqRgrTask, aqMod, method = "randomForest_importance", Threshold = T, Cluster = F)
+importanceNet(aqRgrTask, aqMod, method = "randomForest_importance", Threshold = T, 
+                                ThresholdValue = 3, Cluster = F)
 ```
 <center>
-Fig 2.1: *Network style plot displaying thresholded 2-way interaction strengths between each of the variables and individual variable importance. In this plot the top 5 strongest interactions are displayed*
+Fig 2.1: *Network style plot displaying thresholded 2-way interaction strengths between each of the variables and individual variable importance. In this plot the top 3 strongest interactions are displayed*
 </center>
 
 # PDPpairs():
