@@ -2,7 +2,7 @@
 title: "Variable Importance and Variable Interaction Displays (vivid)"
 author: "Alan Inglis, Catherine Hurley, Andrew Parnell"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 fig_caption: yes
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
