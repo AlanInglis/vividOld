@@ -13,7 +13,9 @@ Alan Inglis, Catherine Hurley, Andrew Parnell
 
 **Description** A package for displaying variable importance and two-way
 variable interaction on the same plot. Can also display partial
-dependence plots laid out in a pairs plot style. **Licence** GPL (\>=2
+dependence plots laid out in a pairs plot style.
+
+**Licence** GPL (\>=2
 
 **Authors** Alan n. Inglis, Catherine Hurley, Andrew Parnell
 
