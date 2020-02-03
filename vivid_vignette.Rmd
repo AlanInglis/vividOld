@@ -2,7 +2,7 @@
 title: "Variable Importance and Variable Interaction Displays (vivid)"
 author: "Alan Inglis, Catherine Hurley, Andrew Parnell"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_document
+output: rmarkdown::github_document
 fig_caption: yes
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
@@ -24,13 +24,8 @@ __Title__ vivid
 
 __Version__ 0.1.0
 
-__Description__ A package for displaying variable importance and two-way variable interaction on the same plot. Partial dependence plots are also available in this package.
-
-__Licence__ GPL (>=2)
-
-__Depends__
-
-__Imports__
+__Description__ A package for displaying variable importance and two-way variable interaction on the same plot. Can also display partial dependence plots laid out in a pairs plot style. 
+__Licence__ GPL (>=2
 
 __Authors__ Alan n. Inglis, Catherine Hurley, Andrew Parnell
 
@@ -99,6 +94,10 @@ __Arguments__
 * method - A list of variable importance methods to be set by the user. These can include any of the importance methods contained within the ```mlr``` package. The default is method = randomForest.
  
 * interact - If interact = TRUE, an interactive plotly object is displayed where the user can hover the mouse icon over any part of the plot and a text box will appear displaying information related to the selected variables. 
+
+* intLow & intHigh - The interaction strength values are displayed using a colour gradient. ```intLow``` is a colour, declared by the user, which is assigned to low interaction strength values. ```intHigh``` is the colour assigned to high interaction strength values.
+
+* impLow & impHigh - Similarly, ```impLow``` and ```impHigh``` represent the low to high values of the colour gradient used to display the individual variable importance. 
  
 
 __Examples__
@@ -113,8 +112,8 @@ aq <- na.omit(aq)
 # mlr set up --------------------------------------------------------------
 
 aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
-aq.regr.lrn <- makeLearner("regr.randomForest")
-aqMod <- train(aq.regr.lrn, aqRgrTask)
+aqRegrLrn <- makeLearner("regr.randomForest")
+aqMod <- train(aqRegrLrn, aqRgrTask)
 
 ```
 
@@ -122,18 +121,22 @@ aqMod <- train(aq.regr.lrn, aqRgrTask)
 ## Heatmap Plotting Function -------------------------------------------------------
 
 intHeatmap <- function(task, model, method = "randomForest",
-                       interact = FALSE,...){
+                       interactive = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
+                       impLow = "white", impHigh = "firebrick1",...){
   # get data:
   data <- getTaskData(task)
+  
   # Get Importance Measures -------------------------------------------------
   
-  norm.task <- normalizeFeatures(task, method = "standardize")
+  normTask <- normalizeFeatures(task, method = "standardize")
   
-  im_feat <- generateFilterValuesData(norm.task, method = method)
-  Y_Imp <- im_feat$data$value
-
-
-
+  impFeat <- generateFilterValuesData(normTask, method = method)
+  yImp <- impFeat$data$value
+  
+  
+  nam <- getTaskFeatureNames(task)
+  
+  
   mod  <- Predictor$new(model, data)
   res  <- NULL
   ovars <- getTaskFeatureNames(task)
@@ -147,11 +150,29 @@ intHeatmap <- function(task, model, method = "randomForest",
   rownames(dinteraction) <- colnames(dinteraction) <- ovars                 # set names
   dinteraction[vars2] <- res[[".interaction"]]                              # set values   
   dinteraction <- (dinteraction+t(dinteraction))/2                          # avg over values to make symmetrical
-  diag(dinteraction) <- Y_Imp
   
-  nam <- getTaskFeatureNames(task)
-# Now create a plot -------------------------------------------------------
-
+  # Sort matrix so max value is top left
+  q <- which(colSums(dinteraction == max(dinteraction))>0,arr.ind = T)
+  o <- c(q, seq(ncol(dinteraction))[-q])
+  dinteraction <- dinteraction[o,o]
+  
+  # Reorder the variable importance on diag to match the new order of plot:
+  labelNames <- colnames(dinteraction) 
+  yImpName <- list(nam)
+  matV <- matrix(yImp, dimnames = yImpName)
+  matV <- t(matV)
+  
+  matV <- matV[, labelNames, drop = FALSE]
+  yImp <- matV[1,]
+  
+  diag(dinteraction) <- yImp
+  
+  labTitle = method
+  
+  
+  
+  # Now create a plot -------------------------------------------------------
+  
   var_int2 = dinteraction %>% as_tibble %>% 
     mutate(var_num1 = 1:length(nam)) %>% 
     pivot_longer(cols = 1:length(nam),
@@ -161,10 +182,30 @@ intHeatmap <- function(task, model, method = "randomForest",
            alpha_int = 1 - alpha_imp,
            `Variable\nImportance` = alpha_imp*`Interaction\nStrength`,
            `Interaction\nStrength` = alpha_int*`Interaction\nStrength`)
-
   
   
-
+  # Create Plot: ------------------------------------------------------------
+  
+  
+  p <- ggplot(data = var_int2, 
+              mapping = aes(x = var_num1, y = var_num2)) + 
+    scale_x_continuous(breaks = 1:length(nam), labels = labelNames, position = "top") + 
+    scale_y_reverse(breaks = 1:length(nam), labels = labelNames) +
+    geom_raster(aes(fill = `Interaction\nStrength`),
+                alpha = var_int2$alpha_int) + 
+    scale_fill_gradient(low = intLow, high = intHigh) +
+    new_scale_fill() +
+    geom_raster(aes(fill = `Variable\nImportance`),
+                alpha = var_int2$alpha_imp) + 
+    scale_fill_gradient(low = impLow ,high = impHigh) +
+    ggtitle(labTitle) +
+    xlab('') + 
+    ylab('') + 
+    theme_light() +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())
+  
+  
   # for plotly  -------------------------------------------------------------
   dinteraction1 <- data.frame(interaction=as.vector(dinteraction))          # Create df
   
@@ -176,42 +217,25 @@ intHeatmap <- function(task, model, method = "randomForest",
   dinteraction1$vary <- factor(dinteraction1$vary, levels=rev(ovars))      
   
   # Importance point size:
-  if(length(Y_Imp) <= 5)
+  if(length(yImp) <= 5)
   {pointSize = 15
-  } else if(length(Y_Imp) <= 10)
+  } else if(length(yImp) <= 10)
   {pointSize = 10
-  }else if(length(Y_Imp <= 15))
+  }else if(length(yImp <= 15))
   {pointSize = 7}
   
-  labTitle = method
-  
-  impMat <- matrix(0,nrow=length(Y_Imp), ncol=length(Y_Imp))
-  diag(impMat) <- Y_Imp
+  impMat <- matrix(0,nrow=length(yImp), ncol=length(yImp))
+  diag(impMat) <- yImp
   importMatrix <- melt(impMat)
   
-  p <- ggplot(data = var_int2, 
-         mapping = aes(x = var_num1, y = var_num2)) + 
-    scale_x_continuous(breaks = 1:length(nam), labels = nam, position = "top") + 
-    scale_y_reverse(breaks = 1:length(nam), labels = nam) +
-    geom_raster(aes(fill = `Interaction\nStrength`),
-                alpha = var_int2$alpha_int) + 
-    new_scale_fill() +
-    geom_raster(aes(fill = `Variable\nImportance`),
-                alpha = var_int2$alpha_imp) + 
-    scale_fill_gradient(low = "red4",high = "red") +
-    ggtitle(labTitle) +
-    xlab('') + 
-    ylab('') + 
-    theme_light() +
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank())
   
+  # Interactive Plot --------------------------------------------------------
   # This plot is only called for plotly as newGeom_raster is not supported
-  Importance <- Y_Imp
+  Importance <- yImp
   pp <- ggplot(data=dinteraction1, aes(x=varx,y=vary)) + 
     geom_tile(aes(fill = interaction), dinteraction1 %>% filter(dinteraction1$varx != dinteraction1$vary)) +
     geom_point(aes(x=Var1,y= rev(Var2),colour = Importance),size = pointSize, importMatrix %>% filter(importMatrix$Var1==importMatrix$Var2)) +
-    scale_colour_gradient(low="red4", high="red") +
+    scale_fill_gradient2(low="white", high="red") +
     labs(colour= labTitle) +
     labs(fill='Interaction \n\ Strength') +
     theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
@@ -221,8 +245,8 @@ intHeatmap <- function(task, model, method = "randomForest",
   
   # Interactive plot using plotly
   ppp <- ggplotly(pp, tooltip = "all")
-
-  if(interact == TRUE){
+  
+  if(interactive == TRUE){
     return(ppp)
   }else{return(p)}
 }
@@ -238,7 +262,7 @@ intHeatmap(aqRgrTask, aqMod, method = "randomForest_importance", interact = F)
 Fig 1.0: *Heatmap style plot displaying 2-way interaction strength in blue and individual variable importance on the diagonal in red.*
 </center>
 
-From the above plot, the user can easily see that *Temp* is the most important variable when preidicting *Ozone*. Also, there is a clear and strong interaction between *Month* and *Day*. 
+From the above plot, the user can easily see that *Temp* is the most important variable when predicting *Ozone*. Also, there is a clear and strong interaction between *Month* and *Day*. 
 
 
 
@@ -251,11 +275,11 @@ ___
 
 __Description__
 
-Plots a network style graph, where node size represents variable importance and edge width and colour represents interaction strength. The edge colour is displayed as a gradient from black to red. Black represents a weak interaction, whereas red displayes stronger interactions.
+Plots a network style graph, where node size represents variable importance and edge width and colour represents interaction strength. The edge colour is displayed as a gradient from black to red. Black represents a weak interaction, whereas red displays stronger interactions.
 
 __Usage__
 
-importanceNet(task, model, method, Threshold, ThresholdValue, Cluster)
+importanceNet(task, model, method, thresholdValue, cluster)
 
 __Arguments__
 
@@ -264,20 +288,18 @@ __Arguments__
 * model - Any machine learning model.
 
 * method - A list of variable importance methods to be set by the user. These can include any of the importance methods contained within the ```mlr``` package. The default is method = randomForest.
- 
-* Threhold - If Threshold = TRUE then only the strongest interactions are displayed. 
 
-* ThresholdValue - This values detremines the amount of edges to display.
+* thresholdValue - A value chosen by the user which will show all the edges with weights (i.e., the interacions) above that value. For example, if ```thresholdValue = 2```, then only the the interacions greater than 2 will be displayed.  
 
-* Cluster - If Cluster = TRUE then the data is clustered according to interactions.  
+* cluster - If cluster = TRUE then the data is clustered according to interactions.  
 
 __Examples__
 
 
 
 ```{r, echo = FALSE}
-importanceNet <- function(task, model, method = "randomForest_importance",Threshold = F, 
-                                      ThresholdValue = 0,Cluster = F,...){
+importanceNet <- function(task, model, method = "randomForest_importance", thresholdValue = 0, 
+                          cluster = F,...){
   
   
   # get data:
@@ -285,10 +307,10 @@ importanceNet <- function(task, model, method = "randomForest_importance",Thresh
   
   # Get importance values:
   
-  norm.task <- normalizeFeatures(task, method = "standardize")
-  im_feat <- generateFilterValuesData(norm.task, method = method)
-  Imp<- im_feat$data$value
-  Imp<- (100)*(Imp-min(Imp))/(max(Imp)-min(Imp))  # Scale the Importance between 10-50 
+  normTask <- normalizeFeatures(task, method = "standardize")
+  impFeat <- generateFilterValuesData(normTask, method = method)
+  Imp <- impFeat$data$value
+  Imp <- (100)*(Imp-min(Imp))/(max(Imp)-min(Imp))  # Scale the Importance between 10-50 
   
   Mod <- Predictor$new(model, data = data) # iml Interaction Strength
   
@@ -306,97 +328,105 @@ importanceNet <- function(task, model, method = "randomForest_importance",Thresh
   dinteraction[vars2] <- res[[".interaction"]]                              # set values   
   dinteraction <- (dinteraction+t(dinteraction))/2                          # avg over values to make symmetrical
   
+  
+  
   dinteraction1 <- data.frame(interaction=as.vector(dinteraction))   
   
-  SortInt = t(dinteraction)[lower.tri(t(dinteraction), diag=FALSE)]  # get upper triangle of the matrix by row order
-  Sorted_Int <- sort(SortInt, index.return=TRUE)   # Sort values whilst preserving the index 
-  InteractionValues <- Sorted_Int$x
-  nam <- getTaskFeatureNames(task) # Get feature names 
+  sortInt = t(dinteraction)[lower.tri(t(dinteraction), diag=FALSE)]  # get upper triangle of the matrix by row order
+  sorted_Int <- sort(sortInt, index.return=TRUE)                     # Sort values whilst preserving the index 
+  Int <- sorted_Int$x
+  nam <- getTaskFeatureNames(task)                                   # Get feature names 
   
-  # setting var names:
-  INT <- InteractionValues
   
   # Set path direction of graph:
   g <- sample_pa(length(nam), m = length(nam))
   df <- igraph::as_data_frame(g)
   gDF <- dplyr::arrange(df, to)
   gDFL <- rbind(gDF$from,gDF$to)
-  matched_gDFL <- gDFL[,Sorted_Int$ix]
+  matched_gDFL <- gDFL[,sorted_Int$ix]
   
   # Create network graph:
   net.bg <- make_graph(matched_gDFL, length(nam)) 
-
+  
   # Scale and round values:
-  UintScaled <- INT*10
-  Rint <- round(UintScaled, 2)
-  Imp <- round(Imp,2)
-  E(net.bg)$weight <- Rint
+  Int <- round(Int*10,2)
+  E(net.bg)$weight <- Int
+  Imp  <- round(Imp,2)
+  
   
   # Set colour palette: 
-  colfunc <- colorRampPalette(c("black", "red"))
+  colFunc <- colorRampPalette(c("black", "red"))
   
- # Plotting function:
-  if(Threshold == FALSE && Cluster == FALSE){
-    p <- ggnet2(net.bg, mode = "circle", 
-              size = Imp,
-              node.color = "grey80",
-              label = nam,
-              edge.size = Rint,
-              edge.label = Rint,
-             edge.color = colfunc(length(Rint)))+
-       theme(legend.text = element_text(size = 0))
-    return(p) 
-     }else if(Threshold == TRUE && Cluster == FALSE){
-       a <- sort(Rint, decreasing  = TRUE)
-       cut.off <- a[1:5]
-       `%notin%` <- Negate(`%in%`)
-       net.sp  <- delete_edges(net.bg, E(net.bg)[E(net.bg)$weight %notin% cut.off])
-       weightDF <- get.data.frame(net.sp) # get df of graph attributes
-       EdgeWidth1 <- weightDF$weight  # select edge weight
-       pp <- ggnet2(net.sp, mode = "circle",
-                   size = Imp,
-                   color = "grey80",
-                   label = nam,
-                   edge.size = EdgeWidth1,
-                   edge.label = EdgeWidth1,
-                   edge.color = colfunc(length(EdgeWidth1)))+
-         theme(legend.text = element_text(size = 0))
-       return(pp)}
-     # }else if(Threshold == FALSE && Cluster == TRUE){
-     #   V(net.bg)$label <- nam
-     #   E(net.bg)$width <- Rint
-     #   E(net.bg)$arrow.mode <- 0
-     #   E(net.bg)$label <- round(UINT, 2)
-     #   E(net.bg)$label.cex <- 1
-     #   clp <- cluster_optimal(net.bg)
-     #   ppp <- plot(clp, net.bg, vertex.label.family = "Helvetica", edge.label.family = "Helvetica")
-       # ppp <- ggnet2(clp, mode = "circle",
-       #              size = Imp,
-       #              color = "grey50",
-       #              node.color = "grey50",
-       #              label = nam)+
-                   # edge.size = Rint)+
-                   # theme(legend.text = element_text(size = 0))
-                   # edge.label = Rint)
-                   # edge.color = colfunc(length(Rint)))
-     #   return(ppp)
-     # }else if(Threshold == TRUE && Cluster == TRUE){
-     #   V(net.bg)$label <- nam
-     #   E(net.bg)$width <- Rint
-     #   E(net.bg)$arrow.mode <- 0
-     #   a <- sort(UINT, decreasing  = TRUE)
-     #   cut.off <- a[1:5]
-     #   net.sp  <- delete_edges(net.bg, E(net.bg)[UINT<cut.off])
-     #   clp <- cluster_optimal(net.sp)
-     #   pppp <- plot(clp, net.sp, vertex.label.family = "Helvetica", edge.label.family = "Helvetica")}
+  # Plotting function:
+  # if(cluster == FALSE){
+  #   p <- ggnet2(net.bg, mode = "circle", 
+  #             size = Imp,
+  #             node.color = "grey80",
+  #             label = nam,
+  #             edge.size = Rint,
+  #             edge.label = Rint,
+  #            edge.color = colfunc(length(Rint)))+
+  #      theme(legend.text = element_text(size = 0))
+  #   return(p) }
+  #}else 
+  if(cluster == FALSE){
+    a <- sort(Int, decreasing  = TRUE)
+    idx <- which(a > thresholdValue)
+    cut.off <- a[1:max(idx)]
+    `%notin%` <- Negate(`%in%`)
+    net.sp  <- delete_edges(net.bg, E(net.bg)[E(net.bg)$weight %notin% cut.off])
+    weightDF <- get.data.frame(net.sp) # get df of graph attributes
+    edgeWidth1 <- weightDF$weight  # select edge weight
+    pp <- ggnet2(net.sp, mode = "circle",
+                 size = Imp,
+                 color = "grey80",
+                 label = nam,
+                 edge.size = edgeWidth1,
+                 edge.label = edgeWidth1,
+                 edge.color = colFunc(length(edgeWidth1)))+
+      theme(legend.text = element_text(size = 0))
+    return(pp)}
+  # }else if(Threshold == FALSE && Cluster == TRUE){
+  # V(net.bg)$label <- nam
+  # E(net.bg)$width <- Rint
+  # E(net.bg)$arrow.mode <- 0
+  # E(net.bg)$label <- Rint
+  # E(net.bg)$label.cex <- 1
+  # clp <- cluster_optimal(net.bg)
+  #ppp <- plot(clp, net.bg, vertex.label.family = "Helvetica", edge.label.family = "Helvetica")
+  # weightDF <- get.data.frame(net.bg) # get df of graph attributes
+  # EdgeWidth2 <- weightDF$weight 
+  # clp <- cluster_optimal(net.bg)
+  # 
+  # ppp <- ggnet2(clp)
+  # , mode = "circle",
+  #            size = Imp,
+  #            color = "grey50",
+  #            node.color = "grey50")
+  #              label = nam,
+  #              edge.size = Rint,
+  #              edge.label = Rint,
+  #    edge.color = colfunc(length(Rint)))+
+  # theme(legend.text = element_text(size = 0))
+  #  return(ppp)}
+  # }else if(Threshold == TRUE && Cluster == TRUE){
+  #   V(net.bg)$label <- nam
+  #   E(net.bg)$width <- Rint
+  #   E(net.bg)$arrow.mode <- 0
+  #   a <- sort(UINT, decreasing  = TRUE)
+  #   cut.off <- a[1:5]
+  #   net.sp  <- delete_edges(net.bg, E(net.bg)[UINT<cut.off])
+  #   clp <- cluster_optimal(net.sp)
+  #   pppp <- plot(clp, net.sp, vertex.label.family = "Helvetica", edge.label.family = "Helvetica")}
 }
+
 ```
 
 To call the plot we use the ```imprtanceNet()``` command as follows:
 
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-importanceNet(aqRgrTask, aqMod, method = "randomForest_importance", Threshold = F, Cluster = F)
+importanceNet(aqRgrTask, aqMod, method = "randomForest_importance", thresholdValue = 0, cluster = F)
 ```
 <center>
 Fig 2.0: *Network style plot displaying 2-way interaction strength between each of the variables and individual variable importance*
@@ -404,20 +434,19 @@ Fig 2.0: *Network style plot displaying 2-way interaction strength between each 
 
 The edge width, in the above plot, indicates the interaction strength, with the actual value displayed in the centre of of the edges. The colour of the edges also visually represents the interaction strength through use a of colour gradient, with low values being in black and high values being in red. 
 
-The node size represents individual varialbe importance with respect to predicting the response. 
+The node size represents individual variable importance with respect to predicting the response. 
 
 As can be seen in the above plot, *Month* and *Day* have the largest interaction and *Temp* is the most important variable for predicting *Ozone*. 
 
-If ```Threshold = TRUE``` then only the strongest interactions are displayed. The amount of edges can be decided by the user using the ```ThresholdValue``` argument. In the following example, ```ThresholdValue = 3``` means that only the top 3 strongest interactions are displayed.:
+The amount of edges can be decided by the user using the ```thresholdValue``` argument. In the following example, ```thresholdValue = 0.99``` means that only the the edges with weights (i.e., the interacions) above 0.99 are displayed.:
 
 
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-importanceNet(aqRgrTask, aqMod, method = "randomForest_importance", Threshold = T, 
-                                ThresholdValue = 3, Cluster = F)
+importanceNet(aqRgrTask, aqMod, method = "randomForest_importance", thresholdValue = 0.99, cluster = F)
 ```
 <center>
-Fig 2.1: *Network style plot displaying thresholded 2-way interaction strengths between each of the variables and individual variable importance. In this plot the top 3 strongest interactions are displayed*
+Fig 2.1: *Network style plot displaying thresholded 2-way interaction strengths between each of the variables and individual variable importance. In this plot only the interactions greater than 0.99 are shown. *
 </center>
 
 # PDPpairs():
@@ -427,88 +456,112 @@ ___
 
 ___
 
+__Description__
 
-```{r, fig.width = 8, fig.height = 7, echo = FALSE}
+Plots a pdp (partial dependence plot) pairs style matrix. The partial dependence plot shows the marginal effect one or two features have on the predicted outcome of a machine learning model^[Friedman, Jerome H. “Greedy function approximation: A gradient boosting machine.” Annals of statistics (2001): 1189-1232.]. A partial dependence plot is used to show whether the relationship between the response variable and a feature is linear or more complex.
+
+__Usage__
+
+pdpPairs(task, model)
+
+__Arguments__
+
+* task - Task created from the ```mlr``` package (either regression or classification).
+
+* model - Any machine learning model.
+
+__Examples__
+
+```{r, echo = FALSE}
 
 aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
 aq.regr.lrn <- makeLearner("regr.randomForest", id = 'rf')
 aqMod <- train(aq.regr.lrn, aqRgrTask)
 
 
+# pdp matrix function -----------------------------------------------------
 
-
-
-pred.aq <- Predictor$new(aqMod, data = aq)
-
-colorfn <- function(vec, cols= NULL, expand=.07){
-  if (is.null(cols))
-    cols <-  brewer.pal(8, "Blues")
+pdpPairs <- function(task, model,...){
   
-  r <- range(vec, na.rm = TRUE)
-  if (diff(r) == 0){
-    r <- c(r[1]-.5, r[1]+.5)
-  }
-  else {
-    fudge <- diff(r)*expand
-    r[1] <- r[1]- fudge
-    r[2] <- r[2]+ fudge
-    r <- seq(r[1], r[2],length.out=length(cols)+1)
-  }
+  # get data:
+  data <- getTaskData(task)
+  nam <- getTaskFeatureNames(task)
   
-  fn <- function(x){
-    index <- as.numeric(cut(x,breaks=r, include.lowest=TRUE))
+  # make iml model
+  pred.data <- Predictor$new(model, data = data)
+  
+  # Colour function
+  colorfn <- function(vec, cols= NULL, expand=.07){
+    if (is.null(cols))
+      cols <-  brewer.pal(8, "Blues")
     
-    cols[index]
+    r <- range(vec, na.rm = TRUE)
+    if (diff(r) == 0){
+      r <- c(r[1]-.5, r[1]+.5)
+    }
+    else {
+      fudge <- diff(r)*expand
+      r[1] <- r[1]- fudge
+      r[2] <- r[2]+ fudge
+      r <- seq(r[1], r[2],length.out=length(cols)+1)
+    }
+    
+    
+    fn <- function(x){
+      index <- as.numeric(cut(x,breaks=r, include.lowest=TRUE))
+      
+      cols[index]
+    }
+    structure(fn,breaks=r)
   }
-  structure(fn,breaks=r)
+  
+  
+  legendn <- function(colorY){
+    r <- attr(colorY, "breaks")
+    z1<- r[-length(r)]
+    z2<- r[-1]
+    rectcols <- colorY(r[-1])
+    
+    plot( c(0,1),c(z1[1], z2[length(z2)]),  ann=FALSE, axes=F, type="n")
+    
+    rect(0,z1,1,z2,col=rectcols, lty=0)
+    par(mgp = c(2, 0.2, 0))
+    axis(2,cex.axis=.7, lwd=0, lwd.ticks=.5 )
+  }
+  
+  colfn <- colorfn(aq$Ozone)
+  
+  
+  pairs(pred.data$data$get.x(), panel = function(x,y) {
+    xvar <- names(which(sapply(data, function(u) identical(u, x))))
+    yvar <- names(which(sapply(data, function(u) identical(u, y))))
+    pdp <-FeatureEffect$new(pred.data, c(xvar,yvar), method = "pdp", grid.size=10)
+    g <- pdp$results
+    dx <- g[2,1] - g[1,1]
+    dy <- g[11,2] - g[1,2]
+    g$left <- g[,1] - dx/2
+    g$right <- g[,1] + dx/2
+    g$bottom <- g[,2] - dy/2
+    g$top <- g[,2] + dy/2
+    
+    g$cols <- colfn(g[,3])
+    rect(g$left, g$bottom, g$right, g$top, col=g$cols, border=NA)
+  })
+  
 }
 
-
-legendn <- function(colorY){
-  
-  
-  r <- attr(colorY, "breaks")
-  z1<- r[-length(r)]
-  z2<- r[-1]
-  rectcols <- colorY(r[-1])
-  
-  
-  plot( c(0,1),c(z1[1], z2[length(z2)]),  ann=FALSE, axes=F, type="n")
-  
-  rect(0,z1,1,z2,col=rectcols, lty=0)
-  par(mgp = c(2, 0.2, 0))
-  axis(2,cex.axis=.7, lwd=0, lwd.ticks=.5 )
-}
-
-colfn <- colorfn(aq$Ozone)
-
-
-
-pdpPairs <- pairs(aq[,2:6], panel = function(x,y) {
-  xvar <- names(which(sapply(aq, function(u) identical(u, x))))
-  yvar <- names(which(sapply(aq, function(u) identical(u, y))))
-  pdp <-FeatureEffect$new(pred.aq, c(xvar,yvar), method = "pdp", grid.size=10)
-  g <- pdp$results
-  dx <- g[2,1] - g[1,1]
-  dy <- g[11,2] - g[1,2]
-  g$left <- g[,1] - dx/2
-  g$right <- g[,1] + dx/2
-  g$bottom <- g[,2] - dy/2
-  g$top <- g[,2] + dy/2
-  
-  g$cols <- colfn(g[,3])
-  rect(g$left, g$bottom, g$right, g$top, col=g$cols, border=NA)
-})
 
 
 # par(mar=c(2,2,2,2))
 # legendn(colfn)
 ```
+
+
+To call the pdp pairs plot we use:
+```{r, fig.width = 8, fig.height = 7}
+pdpPairs(aqRgrTask, aqMod)
+````
 <center>
 Fig 3.0: *A pairs style matrix plot displaying the partial dependence between each of the variables*
 </center>
-
-
-
-
 

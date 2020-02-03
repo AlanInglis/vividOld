@@ -1,7 +1,7 @@
 Variable Importance and Variable Interaction Displays (vivid)
 ================
 Alan Inglis, Catherine Hurley, Andrew Parnell
-2020-01-28
+2020-02-03
 
 ## Details:
 
@@ -12,14 +12,8 @@ Alan Inglis, Catherine Hurley, Andrew Parnell
 **Version** 0.1.0
 
 **Description** A package for displaying variable importance and two-way
-variable interaction on the same plot. Partial dependence plots are also
-available in this package.
-
-**Licence** GPL (\>=2)
-
-**Depends**
-
-**Imports**
+variable interaction on the same plot. Can also display partial
+dependence plots laid out in a pairs plot style. **Licence** GPL (\>=2
 
 **Authors** Alan n. Inglis, Catherine Hurley, Andrew Parnell
 
@@ -95,8 +89,17 @@ intHeatmap(task, model, method, interact)
   - interact - If interact = TRUE, an interactive plotly object is
     displayed where the user can hover the mouse icon over any part of
     the plot and a text box will appear displaying information related
-    to the selected
-variables.
+    to the selected variables.
+
+  - intLow & intHigh - The interaction strength values are displayed
+    using a colour gradient. `intLow` is a colour, declared by the user,
+    which is assigned to low interaction strength values. `intHigh` is
+    the colour assigned to high interaction strength values.
+
+  - impLow & impHigh - Similarly, `impLow` and `impHigh` represent the
+    low to high values of the colour gradient used to display the
+    individual variable
+importance.
 
 **Examples**
 
@@ -110,8 +113,8 @@ aq <- na.omit(aq)
 # mlr set up --------------------------------------------------------------
 
 aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
-aq.regr.lrn <- makeLearner("regr.randomForest")
-aqMod <- train(aq.regr.lrn, aqRgrTask)
+aqRegrLrn <- makeLearner("regr.randomForest")
+aqMod <- train(aqRegrLrn, aqRgrTask)
 ```
 
 To call the plot we use the `intHeatmap()` command as follows:
@@ -131,7 +134,7 @@ blue and individual variable importance on the diagonal in red.*
 </center>
 
 From the above plot, the user can easily see that *Temp* is the most
-important variable when preidicting *Ozone*. Also, there is a clear and
+important variable when predicting *Ozone*. Also, there is a clear and
 strong interaction between *Month* and *Day*.
 
 # importanceNet():
@@ -148,12 +151,12 @@ Interaction*
 Plots a network style graph, where node size represents variable
 importance and edge width and colour represents interaction strength.
 The edge colour is displayed as a gradient from black to red. Black
-represents a weak interaction, whereas red displayes stronger
+represents a weak interaction, whereas red displays stronger
 interactions.
 
 **Usage**
 
-importanceNet(task, model, method, Threshold, ThresholdValue, Cluster)
+importanceNet(task, model, method, thresholdValue, cluster)
 
 **Arguments**
 
@@ -166,13 +169,12 @@ importanceNet(task, model, method, Threshold, ThresholdValue, Cluster)
     user. These can include any of the importance methods contained
     within the `mlr` package. The default is method = randomForest.
 
-  - Threhold - If Threshold = TRUE then only the strongest interactions
-    are displayed.
+  - thresholdValue - A value chosen by the user which will show all the
+    edges with weights (i.e., the interacions) above that value. For
+    example, if `thresholdValue = 2`, then only the the interacions
+    greater than 2 will be displayed.
 
-  - ThresholdValue - This values detremines the amount of edges to
-    display.
-
-  - Cluster - If Cluster = TRUE then the data is clustered according to
+  - cluster - If cluster = TRUE then the data is clustered according to
     interactions.
 
 **Examples**
@@ -181,7 +183,7 @@ To call the plot we use the `imprtanceNet()` command as follows:
 
 ``` r
 set.seed(1701)
-importanceNet(aqRgrTask, aqMod, method = "randomForest_importance", Threshold = F, Cluster = F)
+importanceNet(aqRgrTask, aqMod, method = "randomForest_importance", thresholdValue = 0, cluster = F)
 ```
 
 ![](vivid_vignette_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
@@ -199,22 +201,21 @@ colour of the edges also visually represents the interaction strength
 through use a of colour gradient, with low values being in black and
 high values being in red.
 
-The node size represents individual varialbe importance with respect to
+The node size represents individual variable importance with respect to
 predicting the response.
 
 As can be seen in the above plot, *Month* and *Day* have the largest
 interaction and *Temp* is the most important variable for predicting
 *Ozone*.
 
-If `Threshold = TRUE` then only the strongest interactions are
-displayed. The amount of edges can be decided by the user using the
-`ThresholdValue` argument. In the following example, `ThresholdValue
-= 3` means that only the top 3 strongest interactions are displayed.:
+The amount of edges can be decided by the user using the
+`thresholdValue` argument. In the following example, `thresholdValue
+= 0.99` means that only the the edges with weights (i.e., the
+interacions) above 0.99 are displayed.:
 
 ``` r
 set.seed(1701)
-importanceNet(aqRgrTask, aqMod, method = "randomForest_importance", Threshold = T, 
-                                ThresholdValue = 3, Cluster = F)
+importanceNet(aqRgrTask, aqMod, method = "randomForest_importance", thresholdValue = 0.99, cluster = F)
 ```
 
 ![](vivid_vignette_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
@@ -223,7 +224,8 @@ importanceNet(aqRgrTask, aqMod, method = "randomForest_importance", Threshold = 
 
 Fig 2.1: *Network style plot displaying thresholded 2-way interaction
 strengths between each of the variables and individual variable
-importance. In this plot the top 3 strongest interactions are displayed*
+importance. In this plot only the interactions greater than 0.99 are
+shown. *
 
 </center>
 
@@ -236,7 +238,34 @@ pairs plot style matrix*
 
 -----
 
-![](vivid_vignette_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+**Description**
+
+Plots a pdp (partial dependence plot) pairs style matrix. The partial
+dependence plot shows the marginal effect one or two features have on
+the predicted outcome of a machine learning model\[3\]. A partial
+dependence plot is used to show whether the relationship between the
+response variable and a feature is linear or more complex.
+
+**Usage**
+
+pdpPairs(task, model)
+
+**Arguments**
+
+  - task - Task created from the `mlr` package (either regression or
+    classification).
+
+  - model - Any machine learning model.
+
+**Examples**
+
+To call the pdp pairs plot we use:
+
+``` r
+pdpPairs(aqRgrTask, aqMod)
+```
+
+![](vivid_vignette_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 <center>
 
@@ -250,3 +279,6 @@ between each of the variables*
 
 2.  Chambers, J. M., Cleveland, W. S., Kleiner, B. and Tukey, P. A.
     (1983) Graphical Methods for Data Analysis. Belmont, CA: Wadsworth.
+
+3.  Friedman, Jerome H. “Greedy function approximation: A gradient
+    boosting machine.” Annals of statistics (2001): 1189-1232.
