@@ -1,7 +1,7 @@
 Variable Importance and Variable Interaction Displays (vivid)
 ================
 Alan Inglis, Catherine Hurley, Andrew Parnell
-2020-02-03
+2020-02-06
 
 ## Details:
 
@@ -123,7 +123,7 @@ To call the plot we use the `intHeatmap()` command as follows:
 
 ``` r
 # Plot Heatmap
-intHeatmap(aqRgrTask, aqMod, method = "randomForest_importance", interact = F)
+intHeatmap(task = aqRgrTask, model = aqMod, method = "randomForest_importance", interact = F)
 ```
 
 ![](vivid_vignette_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
@@ -185,7 +185,7 @@ To call the plot we use the `imprtanceNet()` command as follows:
 
 ``` r
 set.seed(1701)
-importanceNet(aqRgrTask, aqMod, method = "randomForest_importance", thresholdValue = 0, cluster = F)
+importanceNet(task = aqRgrTask, model = aqMod, method = "randomForest_importance", thresholdValue = 0, cluster = F)
 ```
 
 ![](vivid_vignette_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
@@ -217,7 +217,7 @@ interacions) above 0.99 are displayed.:
 
 ``` r
 set.seed(1701)
-importanceNet(aqRgrTask, aqMod, method = "randomForest_importance", thresholdValue = 0.99, cluster = F)
+importanceNet(task = aqRgrTask, model = aqMod, method = "randomForest_importance", thresholdValue = 0.99, cluster = F)
 ```
 
 ![](vivid_vignette_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
@@ -264,7 +264,14 @@ pdpPairs(task, model)
 To call the pdp pairs plot we use:
 
 ``` r
-pdpPairs(aqRgrTask, aqMod)
+# ozone example
+aq <- data.frame(airquality)
+aq <- na.omit(aq)
+
+ozonet  <- makeRegrTask(data = aq, target = "Ozone")
+ozonef  <- train(makeLearner("regr.randomForest", id = 'ozonerf'), ozonet)
+
+pdpPairs(task = ozonet, model =  ozonef)
 ```
 
 ![](vivid_vignette_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->

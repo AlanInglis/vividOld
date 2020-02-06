@@ -49,6 +49,7 @@ library(plotly)
 library(ggnewscale)
 library(RColorBrewer)
 library(GGally)
+library(colorspace)
 ```
 
 ## Data used in this vignette:
@@ -258,7 +259,7 @@ To call the plot we use the ```intHeatmap()``` command as follows:
 
 ```{r, fig.width = 8, fig.height = 6}
 # Plot Heatmap
-intHeatmap(aqRgrTask, aqMod, method = "randomForest_importance", interact = F)
+intHeatmap(task = aqRgrTask, model = aqMod, method = "randomForest_importance", interact = F)
 ```
 <center>
 Fig 1.0: *Heatmap style plot displaying 2-way interaction strength in blue and individual variable importance on the diagonal in red.*
@@ -428,7 +429,7 @@ To call the plot we use the ```imprtanceNet()``` command as follows:
 
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-importanceNet(aqRgrTask, aqMod, method = "randomForest_importance", thresholdValue = 0, cluster = F)
+importanceNet(task = aqRgrTask, model = aqMod, method = "randomForest_importance", thresholdValue = 0, cluster = F)
 ```
 <center>
 Fig 2.0: *Network style plot displaying 2-way interaction strength between each of the variables and individual variable importance*
@@ -445,7 +446,7 @@ The amount of edges can be decided by the user using the ```thresholdValue``` ar
 
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-importanceNet(aqRgrTask, aqMod, method = "randomForest_importance", thresholdValue = 0.99, cluster = F)
+importanceNet(task = aqRgrTask, model = aqMod, method = "randomForest_importance", thresholdValue = 0.99, cluster = F)
 ```
 <center>
 Fig 2.1: *Network style plot displaying thresholded 2-way interaction strengths between each of the variables and individual variable importance. In this plot only the interactions greater than 0.99 are shown. *
@@ -476,27 +477,17 @@ __Examples__
 
 ```{r, echo = FALSE}
 
-aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
-aq.regr.lrn <- makeLearner("regr.randomForest", id = 'rf')
-aqMod <- train(aq.regr.lrn, aqRgrTask)
-
-
 # pdp matrix function -----------------------------------------------------
 
-pdpPairs <- function(task, model,...){
-  
-  # get data:
+pdpPairs <- function(task, model,cols= rev(sequential_hcl(10,"Blues3")),...){
+
+
   data <- getTaskData(task)
-  nam <- getTaskFeatureNames(task)
-  
   # make iml model
   pred.data <- Predictor$new(model, data = data)
-  
+
   # Colour function
-  colorfn <- function(vec, cols= NULL, expand=.07){
-    if (is.null(cols))
-      cols <-  brewer.pal(8, "Blues")
-    
+  colorfn <- function(vec,  expand=.03){
     r <- range(vec, na.rm = TRUE)
     if (diff(r) == 0){
       r <- c(r[1]-.5, r[1]+.5)
@@ -507,37 +498,62 @@ pdpPairs <- function(task, model,...){
       r[2] <- r[2]+ fudge
       r <- seq(r[1], r[2],length.out=length(cols)+1)
     }
-    
-    
+
+
     fn <- function(x){
       index <- as.numeric(cut(x,breaks=r, include.lowest=TRUE))
-      
+
       cols[index]
     }
-    structure(fn,breaks=r)
+    structure(fn,breaks=r, vec=vec)
   }
-  
-  
+
+  colfn <- colorfn(getTaskTargets(task ))
+
+
   legendn <- function(colorY){
+    legendlen <- .5
+    boxw <- 1/ncol(xdata)
+    legendw <- boxw/6
+
     r <- attr(colorY, "breaks")
-    z1<- r[-length(r)]
-    z2<- r[-1]
+    rs <- (r-r[1])/(r[length(r)] - r[1])
+    rs <- legendlen/2 + rs*legendlen
+    z1<- rs[-length(rs)]
+    z2<- rs[-1]
     rectcols <- colorY(r[-1])
-    
-    plot( c(0,1),c(z1[1], z2[length(z2)]),  ann=FALSE, axes=F, type="n")
-    
-    rect(0,z1,1,z2,col=rectcols, lty=0)
-    par(mgp = c(2, 0.2, 0))
-    axis(2,cex.axis=.7, lwd=0, lwd.ticks=.5 )
+
+    # rp <- pretty(r)
+    rp <- pretty(attr(colorY, "vec"), min.n=4)
+    rp <- rp[rp >= r[1] & rp <= r[length(r)]]
+    rps <- (rp-r[1])/(r[length(r)] - r[1])
+    rps <- legendlen/2 + rps*legendlen
+
+    xpd <- par("xpd")
+
+    usr <- par("usr")
+    # clip(usr[1], usr[2], usr[3], usr[4])
+    par(xpd=NA)
+    # rect(.9,z1[1],.97,z2[length(z2)], border="grey30")
+    # rect(.9,z1,.97,z2,col=rectcols, lty=0)
+    # text(.975,rps,rp, adj=c(0,.5),cex=.5)
+    lmax <- 1.005
+    rect(lmax-legendw,z1[1],lmax,z2[length(z2)], border="grey30")
+    rect(lmax-legendw,z1,lmax,z2,col=rectcols, lty=0)
+    text(lmax+ .005,rps,rp, adj=c(0,.5),cex=.5)
+    par(xpd=xpd)
   }
-  
-  colfn <- colorfn(aq$Ozone)
-  
-  
-  pairs(pred.data$data$get.x(), panel = function(x,y) {
-    xvar <- names(which(sapply(data, function(u) identical(u, x))))
-    yvar <- names(which(sapply(data, function(u) identical(u, y))))
-    pdp <-FeatureEffect$new(pred.data, c(xvar,yvar), method = "pdp", grid.size=10)
+
+  xdata <- pred.data$data$get.x()
+  xyvar <- expand.grid(names(xdata),names(xdata))[,2:1]
+  xyvar <- as.matrix(xyvar[xyvar[,1]!=xyvar[,2],])
+
+  j <- 1
+
+  panelfn <- function(x,y) {
+
+    pdp <-FeatureEffect$new(pred.data, xyvar[j,], method = "pdp", grid.size=10)
+    j <<- j+1
     g <- pdp$results
     dx <- g[2,1] - g[1,1]
     dy <- g[11,2] - g[1,2]
@@ -545,23 +561,31 @@ pdpPairs <- function(task, model,...){
     g$right <- g[,1] + dx/2
     g$bottom <- g[,2] - dy/2
     g$top <- g[,2] + dy/2
-    
+
     g$cols <- colfn(g[,3])
     rect(g$left, g$bottom, g$right, g$top, col=g$cols, border=NA)
-  })
-  
+  }
+
+
+  pairs(xdata, panel = panelfn, oma=c(4,3,5,6),gap=.75)
+
+  legendn(colfn)
+
 }
 
-
-
-# par(mar=c(2,2,2,2))
-# legendn(colfn)
 ```
 
 
 To call the pdp pairs plot we use:
 ```{r, fig.width = 8, fig.height = 7}
-pdpPairs(aqRgrTask, aqMod)
+# ozone example
+aq <- data.frame(airquality)
+aq <- na.omit(aq)
+
+ozonet  <- makeRegrTask(data = aq, target = "Ozone")
+ozonef  <- train(makeLearner("regr.randomForest", id = 'ozonerf'), ozonet)
+
+pdpPairs(task = ozonet, model =  ozonef)
 ````
 <center>
 Fig 3.0: *A pairs style matrix plot displaying the partial dependence between each of the variables*

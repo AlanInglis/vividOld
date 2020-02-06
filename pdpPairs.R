@@ -1,15 +1,16 @@
-
+library(mlr)
+library(iml)
 library(colorspace)
 
 
 
 pdpPairs <- function(task, model,cols= rev(sequential_hcl(10,"Blues3")),...){
-  
-  
+
+
   data <- getTaskData(task)
   # make iml model
   pred.data <- Predictor$new(model, data = data)
-  
+
   # Colour function
   colorfn <- function(vec,  expand=.03){
     r <- range(vec, na.rm = TRUE)
@@ -22,39 +23,39 @@ pdpPairs <- function(task, model,cols= rev(sequential_hcl(10,"Blues3")),...){
       r[2] <- r[2]+ fudge
       r <- seq(r[1], r[2],length.out=length(cols)+1)
     }
-    
-    
+
+
     fn <- function(x){
       index <- as.numeric(cut(x,breaks=r, include.lowest=TRUE))
-      
+
       cols[index]
     }
     structure(fn,breaks=r, vec=vec)
   }
-  
+
   colfn <- colorfn(getTaskTargets(task ))
-  
-  
+
+
   legendn <- function(colorY){
     legendlen <- .5
     boxw <- 1/ncol(xdata)
     legendw <- boxw/6
-    
+
     r <- attr(colorY, "breaks")
     rs <- (r-r[1])/(r[length(r)] - r[1])
     rs <- legendlen/2 + rs*legendlen
     z1<- rs[-length(rs)]
     z2<- rs[-1]
     rectcols <- colorY(r[-1])
-    
+
     # rp <- pretty(r)
     rp <- pretty(attr(colorY, "vec"), min.n=4)
     rp <- rp[rp >= r[1] & rp <= r[length(r)]]
     rps <- (rp-r[1])/(r[length(r)] - r[1])
     rps <- legendlen/2 + rps*legendlen
-    
+
     xpd <- par("xpd")
-    
+
     usr <- par("usr")
     # clip(usr[1], usr[2], usr[3], usr[4])
     par(xpd=NA)
@@ -67,15 +68,15 @@ pdpPairs <- function(task, model,cols= rev(sequential_hcl(10,"Blues3")),...){
     text(lmax+ .005,rps,rp, adj=c(0,.5),cex=.5)
     par(xpd=xpd)
   }
-  
+
   xdata <- pred.data$data$get.x()
   xyvar <- expand.grid(names(xdata),names(xdata))[,2:1]
   xyvar <- as.matrix(xyvar[xyvar[,1]!=xyvar[,2],])
-  
+
   j <- 1
-  
+
   panelfn <- function(x,y) {
-    
+
     pdp <-FeatureEffect$new(pred.data, xyvar[j,], method = "pdp", grid.size=10)
     j <<- j+1
     g <- pdp$results
@@ -85,35 +86,37 @@ pdpPairs <- function(task, model,cols= rev(sequential_hcl(10,"Blues3")),...){
     g$right <- g[,1] + dx/2
     g$bottom <- g[,2] - dy/2
     g$top <- g[,2] + dy/2
-    
+
     g$cols <- colfn(g[,3])
     rect(g$left, g$bottom, g$right, g$top, col=g$cols, border=NA)
   }
- 
-  
+
+
   pairs(xdata, panel = panelfn, oma=c(4,3,5,6),gap=.75)
-  
+
   legendn(colfn)
-  
+
 }
 
 
 
 # iris example
 
-task <- makeRegrTask(data = iris[,-5], target = "Sepal.Length")
-fit  <- train(makeLearner("regr.randomForest", id = 'irisrf'), task)
+# task <- makeRegrTask(data = iris[,-5], target = "Sepal.Length")
+# fit  <- train(makeLearner("regr.randomForest", id = 'irisrf'), task)
+#
+# pdpPairs(task, fit)
 
-pdpPairs(task, fit)
 
 
+# # ozone example
+# aq <- data.frame(airquality)
+# aq <- na.omit(aq)
+#
+# ozonet  <- makeRegrTask(data = aq, target = "Ozone")
+# ozonef  <- train(makeLearner("regr.randomForest", id = 'ozonerf'), ozonet)
+#
+# pdpPairs(ozonet , ozonef)
 
-# ozone example
-aq <- data.frame(airquality)
-aq <- na.omit(aq)
 
-ozonet  <- makeRegrTask(data = aq, target = "Ozone")
-ozonef  <- train(makeLearner("regr.randomForest", id = 'ozonerf'), ozonet)
-
-pdpPairs(ozonet , ozonef)
 
