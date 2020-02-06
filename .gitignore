@@ -3,3 +3,8 @@
 .RData
 .Ruserdata
 .DS_Store
+
+DESCRIPTION
+NAMESPACE
+Rplots.pdf
+**/man/*
