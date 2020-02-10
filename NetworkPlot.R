@@ -8,21 +8,7 @@ library(GGally)
 #library(sna)
 library(RColorBrewer)
 #library(grDevices)
-
-
-
-#' Function to plot a network style plot
-#'
-#'
-#'
-#' @return Network style plot
-#' @export
-#'
-#' @import igraph, mlr, iml, ggplot2, GGally, RColorBrewer
-#'
-#'
-NULL
-
+#library(ggplot2)
 
 
 # Graph Function ----------------------------------------------------------
@@ -85,7 +71,7 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
 
 
   # Set colour palette:
-  colFunc <- colorRampPalette(c("black", "red"))
+  colFunc <- colorRampPalette(c("floralwhite", "dodgerblue4"))
 
  # Plotting function:
   # if(cluster == FALSE){
@@ -109,12 +95,15 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
        edgeWidth1 <- weightDF$weight  # select edge weight
        pp <- ggnet2(net.sp, mode = "circle",
                    size = Imp,
-                   color = "grey80",
-                   label = nam,
+                   color = "red",
+                   #label = nam,
                    edge.size = edgeWidth1,
                    edge.label = edgeWidth1,
                    edge.color = colFunc(length(edgeWidth1)))+
-         theme(legend.text = element_text(size = 0))
+         theme(legend.text = element_text(size = 0))+
+         geom_label(aes(label = nam),
+                          nudge_y = 0.07,
+                   )
        return(pp)}
      # }else if(Threshold == FALSE && Cluster == TRUE){
        # V(net.bg)$label <- nam
@@ -167,12 +156,5 @@ importanceNet(aqRgrTask, aqMod, method = "randomForest_importance", thresholdVal
 
 # With Thresholding
 importanceNet(aqRgrTask, aqMod, method = "randomForest_importance", thresholdValue = 0.99, cluster = F)
-
-
-
-
-
-
-
 
 
