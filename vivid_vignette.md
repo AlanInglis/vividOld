@@ -1,7 +1,7 @@
 Variable Importance and Variable Interaction Displays (vivid)
 ================
 Alan Inglis, Catherine Hurley, Andrew Parnell
-2020-02-06
+2020-02-10
 
 ## Details:
 
