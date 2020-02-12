@@ -4,7 +4,7 @@ library(colorspace)
 
 
 
-pdpPairs <- function(task, model,cols= rev(sequential_hcl(10,"Blues3")),...){
+pdpPairs <- function(task, model,cols= rev(sequential_hcl(100,"Blues3")),...){
 
 
   data <- getTaskData(task)
@@ -90,10 +90,10 @@ pdpPairs <- function(task, model,cols= rev(sequential_hcl(10,"Blues3")),...){
     g$cols <- colfn(g[,3])
     rect(g$left, g$bottom, g$right, g$top, col=g$cols, border=NA)
   }
-
-
+  plas <- par("las")
+  par(las=1)
   pairs(xdata, panel = panelfn, oma=c(4,3,5,6),gap=.75)
-
+  par(las=plas)
   legendn(colfn)
 
 }
