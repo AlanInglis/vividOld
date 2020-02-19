@@ -4,7 +4,7 @@ library(colorspace)
 
 
 
-pdpPairs <- function(task, model,cols= rev(sequential_hcl(10,"Blues3")),...){
+pdpPairs <- function(task, model,cols= rev(sequential_hcl(20,"Blues3")),...){
 
 
   data <- getTaskData(task)
@@ -90,33 +90,43 @@ pdpPairs <- function(task, model,cols= rev(sequential_hcl(10,"Blues3")),...){
     g$cols <- colfn(g[,3])
     rect(g$left, g$bottom, g$right, g$top, col=g$cols, border=NA)
   }
-
-
+  plas <- par("las")
+  par(las=1)
   pairs(xdata, panel = panelfn, oma=c(4,3,5,6),gap=.75)
-
+  par(las=plas)
   legendn(colfn)
 
 }
 
 
 
-# iris example
-
-# task <- makeRegrTask(data = iris[,-5], target = "Sepal.Length")
-# fit  <- train(makeLearner("regr.randomForest", id = 'irisrf'), task)
+## iris example
+ task <- makeRegrTask(data = iris[,-5], target = "Sepal.Length")
+ fit  <- train(makeLearner("regr.randomForest", id = 'irisrf'), task)
 #
-# pdpPairs(task, fit)
+ pdpPairs(task, fit)
 
 
 
-# # ozone example
-# aq <- data.frame(airquality)
-# aq <- na.omit(aq)
+## ozone example
+ aq <- data.frame(airquality)
+ aq <- na.omit(aq)
 #
-# ozonet  <- makeRegrTask(data = aq, target = "Ozone")
-# ozonef  <- train(makeLearner("regr.randomForest", id = 'ozonerf'), ozonet)
+ ozonet  <- makeRegrTask(data = aq, target = "Ozone")
+ ozonef  <- train(makeLearner("regr.randomForest", id = 'ozonerf'), ozonet)
 #
-# pdpPairs(ozonet , ozonef)
+ pdpPairs(ozonet , ozonef)
 
+## Boston example
+ library(MASS)
+ aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
+ aqRegrLrn <- makeLearner("regr.randomForest")
+ aqMod <- train(aqRegrLrn, aqRgrTask)
+
+ bostonT <- makeRegrTask(data = Boston, target = "medv")
+ bostonL <- makeLearner("regr.randomForest")
+ bostonF <- train(bostonL, bostonT)
+
+ pdpPairs(bostonT, bostonF)
 
 
