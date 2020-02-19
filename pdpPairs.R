@@ -4,7 +4,11 @@ library(colorspace)
 
 
 
+<<<<<<< HEAD
 pdpPairs <- function(task, model,cols= rev(sequential_hcl(20,"Blues3")),...){
+=======
+pdpPairs <- function(task, model,cols= rev(sequential_hcl(100,"Blues3")),...){
+>>>>>>> a753a3179411fdbac513bd08644c17f835c37e2d
 
 
   data <- getTaskData(task)
