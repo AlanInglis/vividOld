@@ -5,11 +5,27 @@ library(iml)
 library(plotly)
 library(reshape2)
 
+#' Title intHeatmap
+#'
+#' @param task Task created from the mlr package, either regression or classification.
+#' @param model Any machine learning model.
+#' @param method A list of variable importance methods to be set by the user. These can include any of the importance methods contained within the mlr package. The default is method = randomForest.
+#' @param plotly If plotly = TRUE then it displays an interactive plotly plot.
+#' @param intLow Colour, set by the user, to display low interaction strengths.
+#' @param intHigh Colour, set by the user, to display high interaction strengths.
+#' @param impLow Colour, set by the user, to display low importance values.
+#' @param impHigh Colour, set by the user, to display high importance values.
+#' @param ...
+#' @return A heatmap style plot dispaying interaction strength on the off-diagonal and variable importance on the diagonal.
+#' @export
+#'
+#' @examples
+
 
 ## Heatmap Plotting Function -------------------------------------------------------
 
 intHeatmap <- function(task, model, method = "randomForest",
-                       interactive = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
+                       plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
                        impLow = "white", impHigh = "firebrick1",...){
 
 #asdf
@@ -23,6 +39,7 @@ intHeatmap <- function(task, model, method = "randomForest",
 
   impFeat <- generateFilterValuesData(normTask, method = method)
   yImp <- impFeat$data$value
+ # yImp <- yImp <- (5-1)*((yImp-min(yImp))/(max(yImp)-min(yImp)))+1
 
 
   nam <- getTaskFeatureNames(task)
@@ -41,6 +58,12 @@ intHeatmap <- function(task, model, method = "randomForest",
   rownames(dinteraction) <- colnames(dinteraction) <- ovars                 # set names
   dinteraction[vars2] <- res[[".interaction"]]                              # set values
   dinteraction <- (dinteraction+t(dinteraction))/2                          # avg over values to make symmetrical
+
+  #scale interaction values:
+  #dinteraction <- (5-1)*((dinteraction-min(dinteraction))/(max(dinteraction)-min(dinteraction)))+1
+  dinteraction <- ((dinteraction-min(dinteraction))/(max(dinteraction)-min(dinteraction)))
+
+    dinteraction <- round(dinteraction,2)
 
   # Sort matrix so max value is top left
   q <- which(colSums(dinteraction == max(dinteraction))>0,arr.ind = T)
@@ -62,7 +85,7 @@ intHeatmap <- function(task, model, method = "randomForest",
 
 
 
-# Now create a plot -------------------------------------------------------
+# Set up plot -------------------------------------------------------
 
   var_int2 = dinteraction %>% as_tibble %>%
     mutate(var_num1 = 1:length(nam)) %>%
@@ -84,11 +107,11 @@ intHeatmap <- function(task, model, method = "randomForest",
     scale_y_reverse(breaks = 1:length(nam), labels = labelNames) +
     geom_raster(aes(fill = `Interaction\nStrength`),
                 alpha = var_int2$alpha_int) +
-    scale_fill_gradient(low = intLow, high = intHigh) +
+    scale_fill_gradient(low = intLow, high = intHigh, limits=c(0, 1), breaks=seq(0, 1, by= 0.25)) +
     new_scale_fill() +
     geom_raster(aes(fill = `Variable\nImportance`),
                 alpha = var_int2$alpha_imp) +
-    scale_fill_gradient(low = impLow ,high = impHigh) +
+    scale_fill_gradient(low = impLow ,high = impHigh, limits=c(0, max(yImp)), breaks=seq(0, max(yImp), by= 100)) +
     ggtitle(labTitle) +
     xlab('') +
     ylab('') +
@@ -137,24 +160,11 @@ intHeatmap <- function(task, model, method = "randomForest",
   # Interactive plot using plotly
   ppp <- ggplotly(pp, tooltip = "all")
 
-  if(interactive == TRUE){
+  if(plotly == TRUE){
     return(ppp)
   }else{return(p)}
 }
 
 
-# Get data ----------------------------------------------------------------
-## Air quality data (used for regression)
-
-aq <- data.frame(airquality)
-aq <- na.omit(aq)
-
-# mlr set up --------------------------------------------------------------
-
-aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
-aqRegrLrn <- makeLearner("regr.randomForest")
-aqMod <- train(aqRegrLrn, aqRgrTask)
 
 
-# Plot Heatmap
-intHeatmap(aqRgrTask, aqMod, method = "randomForest_importance", interact = F)

@@ -1,15 +1,20 @@
-library(mlr)
-library(iml)
-library(colorspace)
+# library(mlr)
+# library(iml)
+# library(colorspace)
 
-
-
-<<<<<<< HEAD
+#' Title pdpPairs
+#'
+#' @param task Task created from the mlr package, either regression or classification.
+#' @param model Any machine learning model.
+#' @param cols Colour of partial dependece plot.
+#' @param ...
+#'
+#' @return A pairs style plot displaying the partial dependence.
+#' @importFrom mlr "getTaskData"
+#' @importFrom iml "FeatureEffect", "Predictor","Interaction"
+#' @importFrom colorspace "sequential_hcl"
+#' @export
 pdpPairs <- function(task, model,cols= rev(sequential_hcl(20,"Blues3")),...){
-=======
-pdpPairs <- function(task, model,cols= rev(sequential_hcl(100,"Blues3")),...){
->>>>>>> a753a3179411fdbac513bd08644c17f835c37e2d
-
 
   data <- getTaskData(task)
   # make iml model
@@ -101,36 +106,5 @@ pdpPairs <- function(task, model,cols= rev(sequential_hcl(100,"Blues3")),...){
   legendn(colfn)
 
 }
-
-
-
-## iris example
- task <- makeRegrTask(data = iris[,-5], target = "Sepal.Length")
- fit  <- train(makeLearner("regr.randomForest", id = 'irisrf'), task)
-#
- pdpPairs(task, fit)
-
-
-
-## ozone example
- aq <- data.frame(airquality)
- aq <- na.omit(aq)
-#
- ozonet  <- makeRegrTask(data = aq, target = "Ozone")
- ozonef  <- train(makeLearner("regr.randomForest", id = 'ozonerf'), ozonet)
-#
- pdpPairs(ozonet , ozonef)
-
-## Boston example
- library(MASS)
- aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
- aqRegrLrn <- makeLearner("regr.randomForest")
- aqMod <- train(aqRegrLrn, aqRgrTask)
-
- bostonT <- makeRegrTask(data = Boston, target = "medv")
- bostonL <- makeLearner("regr.randomForest")
- bostonF <- train(bostonL, bostonT)
-
- pdpPairs(bostonT, bostonF)
 
 

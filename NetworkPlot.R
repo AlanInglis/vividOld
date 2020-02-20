@@ -1,4 +1,3 @@
-
 library(igraph)
 library(iml)
 library(mlr)
@@ -7,15 +6,35 @@ library(GGally)
 #library(network)
 #library(sna)
 library(RColorBrewer)
-#library(grDevices)
-#library(ggplot2)
+library(grDevices)
+
+
+#' Title importanceNet
+#'
+#' @param task Task created from the mlr package, either regression or classification.
+#' @param model Any machine learning model.
+#' @param method A list of variable importance methods to be set by the user. These can include any of the importance methods contained within the mlr package. The default is method = randomForest.
+#' @param thresholdValue A value chosen by the user which will show all the edges with weights (i.e., the interacions) above that value. For example, if thresholdValue = 0.2, then only the the interacions greater than 0.2 will be displayed.
+#' @param label If label = TRUE the numerical value for the interaction strength will be displayed.
+#' @param minInt Minimum interaction strength to be displayed on the legend.
+#' @param maxInt Maximum interaction strength to be displayed on the legend.
+#' @param minImp Minimum importance value to be displayed on the legend.
+#' @param maxImp Maximum importance value to be displayed on the legend.
+#' @param cluster If cluster = TRUE, then the data is clustered in groups.
+#' @param ...
+#'
+#' @return A newtwork style plot displaying interaction strength between variables on the edges and variable importance on the nodes
+#'
+#' @importFrom mlr "getTaskData", "normalizeFeatures", "generateFilterValuesData", "getTaskFeatureNames"
+#' @importFrom iml "Predictor", "Interaction"
+#' @importFrom igraph "sample_pa", "as_data_frame"
+#' @importFrom ggplot2 "ggplot"
+#' @importFrom GGally "ggnet2"
+#' @importFrom RColorBrewer "colorRampPalette"
+#' @export
 
 
 # Graph Function ----------------------------------------------------------
-
-
-# Graph Function ----------------------------------------------------------
-
 
 importanceNet <- function(task, model, method = "randomForest_importance", thresholdValue = 0,
                           label = T, minInt = 0, maxInt = 1, minImp = 0, maxImp = impLegend,
