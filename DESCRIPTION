@@ -1,0 +1,27 @@
+Package: vivid
+Title: Variable Importance and Variable Interaction Displays
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Alan",
+           family = "Inglis",
+           role = c("aut", "cre"),
+           email = "alan.inglis@mu.ie",
+Description: A package for displaying variable importance and two-way variable interaction on the same plot. Can also display partial dependence plots laid out in a pairs plot style.
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.0.2
+Imports: 
+    igraph,
+    mlr,
+    iml,
+    ggplot2,
+    GGally,
+    RColorBrewer,
+    grDevices,
+    tidyverse,
+    ggnewscale,
+    plotly,
+    reshape2,
+    colorspace
+    
