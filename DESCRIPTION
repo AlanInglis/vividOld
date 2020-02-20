@@ -5,7 +5,7 @@ Authors@R:
     person(given = "Alan",
            family = "Inglis",
            role = c("aut", "cre"),
-           email = "alan.inglis@mu.ie",
+           email = "alan.inglis@mu.ie")
 Description: A package for displaying variable importance and two-way variable interaction on the same plot. Can also display partial dependence plots laid out in a pairs plot style.
 License: GPL-2
 Encoding: UTF-8
