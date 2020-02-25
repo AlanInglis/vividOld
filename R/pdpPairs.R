@@ -3,7 +3,7 @@
 # library(colorspace)
 
 #' Title pdpPairs
-#'
+#' name pdpPairs
 #' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
 #' @param cols Colour of partial dependece plot.
@@ -22,7 +22,7 @@
 #' @importFrom graphics "text"
 #' @export
 
-?par
+
 pdpPairs <- function(task, model,cols= rev(sequential_hcl(20,"Blues3")),...){
 
   data <- getTaskData(task)
