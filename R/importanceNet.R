@@ -1,13 +1,3 @@
-# library(igraph)
-# library(iml)
-# library(mlr)
-# library(ggplot2)
-# library(GGally)
-#library(network)
-#library(sna)
-# library(RColorBrewer)
-# library(grDevices)
-
 #' Title importanceNet
 #'
 #' @param task Task created from the mlr package, either regression or classification.
@@ -20,6 +10,7 @@
 #' @param minImp Minimum importance value to be displayed on the legend.
 #' @param maxImp Maximum importance value to be displayed on the legend.
 #' @param cluster If cluster = TRUE, then the data is clustered in groups.
+#' @param ... Not currently implemented
 #'
 #' @return A newtwork style plot displaying interaction strength between variables on the edges and variable importance on the nodes
 #'
@@ -37,7 +28,7 @@
 #' @importFrom GGally "ggnet2"
 #' @importFrom grDevices "colorRampPalette"
 #' @importFrom ggnewscale "new_scale_fill"
-#' @importfrom stats "reorder"
+#' @importFrom stats "reorder"
 #' @export
 
 
@@ -93,6 +84,7 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
 
 
   # Set path direction of graph:
+  to <- NULL
   g <- sample_pa(length(nam), m = length(nam))
   df <- igraph::as_data_frame(g)
   gDF <- dplyr::arrange(df, to)

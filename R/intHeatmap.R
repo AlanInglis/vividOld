@@ -1,10 +1,3 @@
-# library(tidyverse)
-# library(ggnewscale)
-# library(mlr)
-# library(iml)
-# library(plotly)
-# library(reshape2)
-
 #' Title intHeatmap
 #'
 #' @param task Task created from the mlr package, either regression or classification.
@@ -15,6 +8,7 @@
 #' @param intHigh Colour, set by the user, to display high interaction strengths.
 #' @param impLow Colour, set by the user, to display low importance values.
 #' @param impHigh Colour, set by the user, to display high importance values.
+#' @param ... Not currently implemented
 #'
 #' @return A heatmap style plot dispaying interaction strength on the off-diagonal and variable importance on the diagonal.
 #'
@@ -31,7 +25,7 @@
 #' @importFrom dplyr "mutate"
 #' @importFrom tidyr "pivot_longer"
 #' @importFrom reshape "melt"
-#' @importfrom stats "reorder"
+#' @importFrom stats "reorder"
 #'
 #'
 #' @export

@@ -7,6 +7,7 @@
 #' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
 #' @param cols Colour of partial dependece plot.
+#' @param ... Not currently implemented
 #'
 #' @return A pairs style plot displaying the partial dependence.
 #' @importFrom mlr "getTaskData"
