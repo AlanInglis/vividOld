@@ -27,6 +27,10 @@
 #' @importFrom ggplot2 "ggplot"
 #' @importFrom ggnewscale "new_scale_fill"
 #' @importFrom plotly "ggplotly"
+#' @importFrom tibble "as_tibble"
+#' @importFrom dplyr "mutate"
+#' @importFrom tidyr "pivot_longer"
+#' @importFrom reshape "melt"
 #' @importfrom stats "reorder"
 #'
 #'
@@ -51,6 +55,7 @@ intHeatmap <- function(task, model, method = "randomForest",
 
   impFeat <- generateFilterValuesData(normTask, method = method)
   yImp <- impFeat$data$value
+  yimpMax <- max(yImp)
  # yImp <- yImp <- (5-1)*((yImp-min(yImp))/(max(yImp)-min(yImp)))+1
 
 
@@ -123,7 +128,7 @@ intHeatmap <- function(task, model, method = "randomForest",
     new_scale_fill() +
     geom_raster(aes(fill = `Variable\nImportance`),
                 alpha = var_int2$alpha_imp) +
-    scale_fill_gradient(low = impLow ,high = impHigh, limits=c(0, max(yImp)), breaks=seq(0, max(yImp), by= 100)) +
+    scale_fill_gradient(low = impLow ,high = impHigh, limits=c(0, yimpMax), breaks=seq(0, yimpMax, by= 10)) +
     ggtitle(labTitle) +
     xlab('') +
     ylab('') +
@@ -157,24 +162,25 @@ intHeatmap <- function(task, model, method = "randomForest",
 
 # Interactive Plot --------------------------------------------------------
   # This plot is only called for plotly as newGeom_raster is not supported
-  Importance <- yImp
-  pp <- ggplot(data=dinteraction1, aes(x=varx,y=vary)) +
-    geom_tile(aes(fill = interaction), dinteraction1 %>% filter(dinteraction1$varx != dinteraction1$vary)) +
-    geom_point(aes(x=Var1,y= rev(Var2),colour = Importance),size = pointSize, importMatrix %>% filter(importMatrix$Var1==importMatrix$Var2)) +
-    scale_fill_gradient2(low="white", high="red") +
-    labs(colour= labTitle) +
-    labs(fill='Interaction \n\ Strength') +
-    theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
-    scale_x_discrete(position = "top") + theme_bw()+
-    xlab("")+ylab("")
+  # Importance <- yImp
+  # pp <- ggplot(data=dinteraction1, aes(x=varx,y=vary)) +
+  #   geom_tile(aes(fill = interaction), dinteraction1 %>% filter(dinteraction1$varx != dinteraction1$vary)) +
+  #   geom_point(aes(x=Var1,y= rev(Var2),colour = Importance),size = pointSize, importMatrix %>% filter(importMatrix$Var1==importMatrix$Var2)) +
+  #   scale_fill_gradient2(low="white", high="red") +
+  #   labs(colour= labTitle) +
+  #   labs(fill='Interaction \n\ Strength') +
+  #   theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
+  #   scale_x_discrete(position = "top") + theme_bw()+
+  #   xlab("")+ylab("")
 
 
   # Interactive plot using plotly
-  ppp <- ggplotly(pp, tooltip = "all")
+  #ppp <- ggplotly(pp, tooltip = "all")
 
-  if(plotly == TRUE){
-    return(ppp)
-  }else{return(p)}
+  # if(plotly == TRUE){
+  #   return(ppp)
+  # }else{return(p)}
+  return(p)
 }
 
 

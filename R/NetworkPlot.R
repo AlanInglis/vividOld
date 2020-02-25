@@ -29,10 +29,11 @@
 #' @importFrom mlr "getTaskFeatureNames"
 #' @importFrom iml "Predictor"
 #' @importFrom iml "Interaction"
+#' @import igraph
 #' @importFrom igraph "sample_pa"
 #' @importFrom igraph "as_data_frame"
 #' @importFrom igraph "make_graph"
-#' @importFrom ggplot2 "ggplot"
+#' @import ggplot2
 #' @importFrom GGally "ggnet2"
 #' @importFrom grDevices "colorRampPalette"
 #' @importFrom ggnewscale "new_scale_fill"
@@ -179,7 +180,7 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
       theme(legend.text = element_text(size = 10)) +
       geom_label(aes(label = nam),nudge_y = 0.07) +
       new_scale_fill() +
-      geom_point(aes(fill = Imp), size = Imp*2, col = nodeCol, shape = 21) +
+      geom_point(aes(fill = Imp), size = Imp*2, col = "black", shape = 21) +
       scale_fill_continuous(name = "Interaction\nStrength",
                             limits=c(minInt, maxInt), breaks=seq(minInt, maxInt, by= 0.25),
                             low = "floralwhite" ,high = "dodgerblue4") +
