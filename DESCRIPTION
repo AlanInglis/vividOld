@@ -22,10 +22,15 @@ Imports:
     plotly,
     reshape2,
     colorspace,
-    stats
+    stats,
+    tidyr,
+    dplyr,
+    reshape,
+    tibble
 Suggests: 
     knitr,
     rmarkdown,
-    testthat
+    testthat,
+    randomForest
 VignetteBuilder: knitr
 RoxygenNote: 7.0.2

@@ -1,12 +1,11 @@
-# library(mlr)
-# library(iml)
-# library(colorspace)
-
-#' Title pdpPairs
-#' name pdpPairs
+#' pdpPairs
+#'
+#' @description Creates a plot of the partial dependence of each of the variables in pairs plot style matrix
+#'
 #' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
 #' @param cols Colour of partial dependece plot.
+#' @param ... Not currently implemented
 #'
 #' @return A pairs style plot displaying the partial dependence.
 #' @importFrom mlr "getTaskData"
@@ -20,10 +19,26 @@
 #' @importFrom graphics "par"
 #' @importFrom graphics "rect"
 #' @importFrom graphics "text"
+#'
+#' @examples
+#' # Load in the data:
+#' aq <- data.frame(airquality)
+#' aq <- na.omit(aq)
+#'
+#' # Run an mlr random forest model:
+#' library(mlr)
+#' library(randomForest)
+#' aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
+#' aqRegrLrn <- makeLearner("regr.randomForest")
+#' aqMod <- train(aqRegrLrn, aqRgrTask)
+#'
+#' # Create plot:
+#' pdpPairs(aqRgrTask , aqMod)
+#'
 #' @export
 
 
-pdpPairs <- function(task, model,cols= rev(sequential_hcl(20,"Blues3")),...){
+pdpPairs <- function(task, model, cols= rev(sequential_hcl(20,"Blues3")),...){
 
   data <- getTaskData(task)
   # make iml model

@@ -1,14 +1,7 @@
-# library(igraph)
-# library(iml)
-# library(mlr)
-# library(ggplot2)
-# library(GGally)
-#library(network)
-#library(sna)
-# library(RColorBrewer)
-# library(grDevices)
-
-#' Title importanceNet
+#' importanceNet
+#'
+#' @description Create a Network style plot displaying Variable Importance and Variable Interaction
+#'
 #'
 #' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
@@ -20,6 +13,7 @@
 #' @param minImp Minimum importance value to be displayed on the legend.
 #' @param maxImp Maximum importance value to be displayed on the legend.
 #' @param cluster If cluster = TRUE, then the data is clustered in groups.
+#' @param ... Not currently implemented
 #'
 #' @return A newtwork style plot displaying interaction strength between variables on the edges and variable importance on the nodes
 #'
@@ -37,7 +31,26 @@
 #' @importFrom GGally "ggnet2"
 #' @importFrom grDevices "colorRampPalette"
 #' @importFrom ggnewscale "new_scale_fill"
-#' @importfrom stats "reorder"
+#' @importFrom stats "reorder"
+#' @importFrom grDevices "blues9"
+#'
+#' @examples
+#' # Load in the data:
+#' aq <- data.frame(airquality)
+#' aq <- na.omit(aq)
+#'
+#' # Run an mlr random forest model:
+#' library(mlr)
+#' library(randomForest)
+#' aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
+#' aqRegrLrn <- makeLearner("regr.randomForest")
+#' aqMod <- train(aqRegrLrn, aqRgrTask)
+#'
+#' # Create graph:
+#' importanceNet(task = aqRgrTask, model = aqMod,
+#'  method = "randomForest_importance",
+#'  thresholdValue = 0, cluster = F)
+#'
 #' @export
 
 
@@ -93,6 +106,7 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
 
 
   # Set path direction of graph:
+  to <- NULL
   g <- sample_pa(length(nam), m = length(nam))
   df <- igraph::as_data_frame(g)
   gDF <- dplyr::arrange(df, to)
@@ -149,6 +163,12 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
     stop("minInt must not be greater than 1")
   }
 
+  # Set the edge colours
+  edgeColour <- (E(net.bg)$weight)
+  cut_int <- cut(edgeColour, 9)
+  npal <- blues9
+  edgeCols <- npal[cut_int]
+
 
   # Plotting function -------------------------------------------------------
   if(label == TRUE){
@@ -157,39 +177,40 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
                 #color = "red",
                 edge.size = edgeWidth2,
                 edge.label = edgeWidth1,
-                edge.color = colFunc(length(edgeWidth1))) +
+                edge.color = edgeCols) +
       theme(legend.text = element_text(size = 10)) +
       geom_label(aes(label = nam),nudge_y = 0.07) +
       geom_point(aes(fill = Imp1), size = Imp*2, col = "black", shape = 21) +
       scale_fill_continuous(name = "Variable\nImportance",
-                            limits=c(minImp, maxImp), breaks=seq(minImp, maxImp, by= 100),
+                            limits=c(minImp, maxImp+10), breaks=seq(minImp, maxImp+10, by= round(maxImp/10,0)),
                             low = "floralwhite" ,high = "firebrick1") +
       new_scale_fill() +
       geom_point(aes(fill = Imp), size = -1, col = nodeCol) +
       scale_fill_continuous(name = "Interaction\nStrength",
                             limits=c(minInt, maxInt), breaks=seq(minInt, maxInt, by= 0.25),
                             low = "floralwhite" ,high = "dodgerblue4")
-     return(p)
+    myList <- list(impFeat, dinteraction,  p)
+    return(myList)
   }else if(label == FALSE){
     p <- ggnet2(net.sp, mode = l,
                 size = 0,
                 #color = "red",
                 edge.size = edgeWidth2,
                 #edge.label = edgeWidth1,
-                edge.color = colFunc(length(edgeWidth1))) +
+                edge.color = edgeCols) +
       theme(legend.text = element_text(size = 10)) +
       geom_label(aes(label = nam),nudge_y = 0.07) +
+      geom_point(aes(fill = Imp1), size = Imp*2, col = "black", shape = 21) +
+      scale_fill_continuous(name = "Variable\nImportance",
+                            limits=c(minImp, maxImp), breaks=seq(minImp, maxImp, by= round(maxImp/10,0)),
+                            low = "floralwhite" ,high = "firebrick1") +
       new_scale_fill() +
-      geom_point(aes(fill = Imp), size = Imp*2, col = "black", shape = 21) +
+      geom_point(aes(fill = Imp), size = -1, col = nodeCol) +
       scale_fill_continuous(name = "Interaction\nStrength",
                             limits=c(minInt, maxInt), breaks=seq(minInt, maxInt, by= 0.25),
-                            low = "floralwhite" ,high = "dodgerblue4") +
-      new_scale_fill() +
-      geom_point(aes(fill = Imp), size = 0, col = nodeCol) +
-      scale_fill_continuous(name = "Variable\nImportance",
-                            limits=c(minImp, maxImp), breaks=seq(minImp, maxImp, by= 100),
-                            low = "floralwhite" ,high = "firebrick1")
-    return(p)}
+                            low = "floralwhite" ,high = "dodgerblue4")
+    myList <- list(impFeat, p)
+    return(myList)}
   # }else if(Threshold == FALSE && Cluster == TRUE){
   # V(net.bg)$label <- nam
   # E(net.bg)$width <- Rint
@@ -223,4 +244,5 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
   #   clp <- cluster_optimal(net.sp)
   #   pppp <- plot(clp, net.sp, vertex.label.family = "Helvetica", edge.label.family = "Helvetica")}
 }
+
 

@@ -1,11 +1,6 @@
-# library(tidyverse)
-# library(ggnewscale)
-# library(mlr)
-# library(iml)
-# library(plotly)
-# library(reshape2)
-
-#' Title intHeatmap
+#' intHeatmap
+#'
+#' @description Create a Heatmap style plot displaying Variable Importance and Variable Interaction
 #'
 #' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
@@ -15,6 +10,7 @@
 #' @param intHigh Colour, set by the user, to display high interaction strengths.
 #' @param impLow Colour, set by the user, to display low importance values.
 #' @param impHigh Colour, set by the user, to display high importance values.
+#' @param ... Not currently implemented
 #'
 #' @return A heatmap style plot dispaying interaction strength on the off-diagonal and variable importance on the diagonal.
 #'
@@ -31,8 +27,23 @@
 #' @importFrom dplyr "mutate"
 #' @importFrom tidyr "pivot_longer"
 #' @importFrom reshape "melt"
-#' @importfrom stats "reorder"
+#' @importFrom stats "reorder"
+#' @importFrom utils "globalVariables"
 #'
+#'@examples
+#' # Load in the data:
+#' aq <- data.frame(airquality)
+#' aq <- na.omit(aq)
+#'
+#' # Run an mlr random forest model:
+#' library(mlr)
+#' library(randomForest)
+#' aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
+#' aqRegrLrn <- makeLearner("regr.randomForest")
+#' aqMod <- train(aqRegrLrn, aqRgrTask)
+#'
+#' # Create plot:
+#' intHeatmap(aqRgrTask, aqMod, method = "randomForest_importance", interact = F)
 #'
 #' @export
 
@@ -44,7 +55,7 @@ intHeatmap <- function(task, model, method = "randomForest",
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
                        impLow = "white", impHigh = "firebrick1",...){
 
-#asdf
+  #asdf
 
   # get data:
   data <- getTaskData(task)
@@ -56,7 +67,7 @@ intHeatmap <- function(task, model, method = "randomForest",
   impFeat <- generateFilterValuesData(normTask, method = method)
   yImp <- impFeat$data$value
   yimpMax <- max(yImp)
- # yImp <- yImp <- (5-1)*((yImp-min(yImp))/(max(yImp)-min(yImp)))+1
+  # yImp <- yImp <- (5-1)*((yImp-min(yImp))/(max(yImp)-min(yImp)))+1
 
 
   nam <- getTaskFeatureNames(task)
@@ -77,10 +88,8 @@ intHeatmap <- function(task, model, method = "randomForest",
   dinteraction <- (dinteraction+t(dinteraction))/2                          # avg over values to make symmetrical
 
   #scale interaction values:
-  #dinteraction <- (5-1)*((dinteraction-min(dinteraction))/(max(dinteraction)-min(dinteraction)))+1
   dinteraction <- ((dinteraction-min(dinteraction))/(max(dinteraction)-min(dinteraction)))
-
-    dinteraction <- round(dinteraction,2)
+  dinteraction <- round(dinteraction,2)
 
   # Sort matrix so max value is top left
   q <- which(colSums(dinteraction == max(dinteraction))>0,arr.ind = T)
@@ -101,8 +110,7 @@ intHeatmap <- function(task, model, method = "randomForest",
   labTitle = method
 
 
-
-# Set up plot -------------------------------------------------------
+  # Set up plot -------------------------------------------------------
 
   var_int2 = dinteraction %>% as_tibble %>%
     mutate(var_num1 = 1:length(nam)) %>%
@@ -115,11 +123,11 @@ intHeatmap <- function(task, model, method = "randomForest",
            `Interaction\nStrength` = alpha_int*`Interaction\nStrength`)
 
 
-# Create Plot: ------------------------------------------------------------
+  # Create Plot: ------------------------------------------------------------
 
 
   p <- ggplot(data = var_int2,
-         mapping = aes(x = var_num1, y = var_num2)) +
+              mapping = aes(x = var_num1, y = var_num2)) +
     scale_x_continuous(breaks = 1:length(nam), labels = labelNames, position = "top") +
     scale_y_reverse(breaks = 1:length(nam), labels = labelNames) +
     geom_raster(aes(fill = `Interaction\nStrength`),
@@ -160,7 +168,7 @@ intHeatmap <- function(task, model, method = "randomForest",
   importMatrix <- melt(impMat)
 
 
-# Interactive Plot --------------------------------------------------------
+  # Interactive Plot --------------------------------------------------------
   # This plot is only called for plotly as newGeom_raster is not supported
   # Importance <- yImp
   # pp <- ggplot(data=dinteraction1, aes(x=varx,y=vary)) +
@@ -180,9 +188,7 @@ intHeatmap <- function(task, model, method = "randomForest",
   # if(plotly == TRUE){
   #   return(ppp)
   # }else{return(p)}
-  return(p)
+  myList <- list(dinteraction, p)
+  return(myList)
 }
-
-
-
 
