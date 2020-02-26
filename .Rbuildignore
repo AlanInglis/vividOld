@@ -1,0 +1,7 @@
+^README\.md$
+^.*\.Rproj$
+^\.Rproj\.user$
+^cran-comments\.md$
+^CRAN-RELEASE$
+^vignettes
+^vivid_vignette.md

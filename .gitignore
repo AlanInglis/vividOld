@@ -1,5 +1,24 @@
-.Rproj.user
+
+
+# History files
 .Rhistory
-.RData
-.Ruserdata
+.Rapp.history
+
+# Example code in package build process
+*-Ex.R
+
+# RStudio files
+.Rproj.user/
+
+# produced vignettes
+#vignettes/*.html
+#vignettes/*.pdf
+
+# Mac files
+.DS_Store
+.Rproj.user
+
+# Compiled files
+src/*.so
+Src/*.o
 inst/doc
