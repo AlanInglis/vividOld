@@ -2,7 +2,7 @@
 % Please edit documentation in R/NewHeatmap.R
 \name{intHeatmap}
 \alias{intHeatmap}
-\title{Title intHeatmap}
+\title{intHeatmap}
 \usage{
 intHeatmap(
   task,
@@ -32,10 +32,28 @@ intHeatmap(
 \item{impLow}{Colour, set by the user, to display low importance values.}
 
 \item{impHigh}{Colour, set by the user, to display high importance values.}
+
+\item{...}{Not currently implemented}
 }
 \value{
 A heatmap style plot dispaying interaction strength on the off-diagonal and variable importance on the diagonal.
 }
 \description{
-Title intHeatmap
+Create a Heatmap style plot displaying Variable Importance and Variable Interaction
+}
+\examples{
+# Load in the data:
+aq <- data.frame(airquality)
+aq <- na.omit(aq)
+
+# Run an mlr random forest model:
+library(mlr)
+library(randomForest)
+aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
+aqRegrLrn <- makeLearner("regr.randomForest")
+aqMod <- train(aqRegrLrn, aqRgrTask)
+
+# Create plot:
+intHeatmap(aqRgrTask, aqMod, method = "randomForest_importance", interact = F)
+
 }

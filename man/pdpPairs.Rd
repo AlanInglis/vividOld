@@ -2,8 +2,7 @@
 % Please edit documentation in R/pdpPairs.R
 \name{pdpPairs}
 \alias{pdpPairs}
-\title{Title pdpPairs
-name pdpPairs}
+\title{pdpPairs}
 \usage{
 pdpPairs(task, model, cols = rev(sequential_hcl(20, "Blues3")), ...)
 }
@@ -13,11 +12,28 @@ pdpPairs(task, model, cols = rev(sequential_hcl(20, "Blues3")), ...)
 \item{model}{Any machine learning model.}
 
 \item{cols}{Colour of partial dependece plot.}
+
+\item{...}{Not currently implemented}
 }
 \value{
 A pairs style plot displaying the partial dependence.
 }
 \description{
-Title pdpPairs
-name pdpPairs
+Creates a plot of the partial dependence of each of the variables in pairs plot style matrix
+}
+\examples{
+# Load in the data:
+aq <- data.frame(airquality)
+aq <- na.omit(aq)
+
+# Run an mlr random forest model:
+library(mlr)
+library(randomForest)
+aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
+aqRegrLrn <- makeLearner("regr.randomForest")
+aqMod <- train(aqRegrLrn, aqRgrTask)
+
+# Create plot:
+pdpPairs(aqRgrTask , aqMod)
+
 }

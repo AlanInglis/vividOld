@@ -2,7 +2,7 @@
 % Please edit documentation in R/NetworkPlot.R
 \name{importanceNet}
 \alias{importanceNet}
-\title{Title importanceNet}
+\title{importanceNet}
 \usage{
 importanceNet(
   task,
@@ -38,10 +38,28 @@ importanceNet(
 \item{maxImp}{Maximum importance value to be displayed on the legend.}
 
 \item{cluster}{If cluster = TRUE, then the data is clustered in groups.}
+
+\item{...}{Not currently implemented}
 }
 \value{
 A newtwork style plot displaying interaction strength between variables on the edges and variable importance on the nodes
 }
 \description{
-Title importanceNet
+Create a Network style plot displaying Variable Importance and Variable Interaction
+}
+\examples{
+# Load in the data:
+aq <- data.frame(airquality)
+aq <- na.omit(aq)
+
+# Run an mlr random forest model:
+library(mlr)
+library(randomForest)
+aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
+aqRegrLrn <- makeLearner("regr.randomForest")
+aqMod <- train(aqRegrLrn, aqRgrTask)
+
+# Create graph:
+importanceNet(task = aqRgrTask, model = aqMod, method = "randomForest_importance", thresholdValue = 0, cluster = F)
+
 }
