@@ -26,7 +26,8 @@ Imports:
     tidyr,
     dplyr,
     reshape,
-    tibble
+    tibble,
+    DendSer
 Suggests: 
     knitr,
     rmarkdown,

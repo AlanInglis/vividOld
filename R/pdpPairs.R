@@ -13,7 +13,7 @@
 #' @importFrom iml "FeatureEffect"
 #' @importFrom iml "Predictor"
 #' @importFrom iml "Interaction"
-#' @importFrom colorspace "sequential_hcl"
+#' @import colorspace
 #' @importFrom stats "filter"
 #' @importFrom graphics "pairs"
 #' @importFrom graphics "par"
