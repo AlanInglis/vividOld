@@ -76,7 +76,7 @@ the off-diagonal
 
 **Usage**
 
-intHeatmap(task, model, method, interact)
+intHeatmap(task, model, method, plotly, intLow, intHigh, impLow, impHigh, top)
 
 **Arguments**
 
@@ -103,6 +103,8 @@ intHeatmap(task, model, method, interact)
     low to high values of the colour gradient used to display the
     individual variable importance.
 
+  - top - Returns the first part of the interaction matrix and resulting plot. Similar to head() function.
+
 **Examples**
 
 Load in the data:
@@ -112,9 +114,9 @@ aq <- na.omit(aq)
 ```
 
 Run an `mlr` random forest model:
+
 ```{r}
 library(mlr)
-library(randomForest)
 aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
 aqRegrLrn <- makeLearner("regr.randomForest")
 aqMod <- train(aqRegrLrn, aqRgrTask)
@@ -123,7 +125,10 @@ aqMod <- train(aqRegrLrn, aqRgrTask)
 To call the plot we use the `intHeatmap()` command as follows:
 
 ```{r}
-intHeatmap(aqRgrTask, aqMod, method = "randomForest_importance", interact = F)
+intHeatmap(aqRgrTask, aqMod, method = "randomForest_importance", plotly = F, 
+           intLow = "floralwhite", intHigh = "dodgerblue4",
+           impLow = "white", impHigh = "firebrick1", 
+           top = 0)
 ```
 <center>
 Fig 1.0: *Heatmap style plot displaying 2-way interaction strength in blue and individual variable importance on the diagonal in red.*
@@ -158,15 +163,17 @@ importanceNet(task, model, method, thresholdValue, cluster)
 
 * thresholdValue - A value chosen by the user which will show all the edges with weights (i.e., the interacions) above that value. For example, if `thresholdValue = 0.5`, then only the the interacions greater than 0.5 will be displayed.  
 
-* label - if `label = FALSE` then the interaction strength values (i.e., edge values) are not displayed.
+* label - if `label = TRUE` then the interaction strength values (i.e., edge values) are displayed on the plot.
 
 * minInt - Minimum value to display for the interaction strength legend. The default is `minInt = 0`.
 
-* maxInt - Maximum value to display for the interaction strength legend. The default is `maxInt = 1`.
+* maxInt - Maximum value to display for the interaction strength legend. The default is set to the maximum interaction strength value calaculted from the data.
 
 * minImp - Minimum value to display for the variable importance  legend. The default is `minImp = 0`.
 
 * maxInt - Maximum value to display for the variable importance legend. The default is set to the maximum varaible importance value calaculted from the data.
+
+* labelNudge - A value, set by the user, to determine the y_postioning of the variables names. A higher value will postion the label farther above the nodes. the default is set to: `labelNudge = 0.05`.
 
 * cluster - If cluster = TRUE then the data is clustered according to interactions.
 
@@ -183,7 +190,6 @@ aq <- na.omit(aq)
 Run an `mlr` random forest model:
 ```{r}
 library(mlr)
-library(randomForest)
 aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
 aqRegrLrn <- makeLearner("regr.randomForest")
 aqMod <- train(aqRegrLrn, aqRgrTask)
@@ -191,7 +197,12 @@ aqMod <- train(aqRegrLrn, aqRgrTask)
 
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-importanceNet(task = aqRgrTask, model = aqMod, method = "randomForest_importance", thresholdValue = 0, cluster = F)
+importanceNet(task = aqRgrTask, model = aqMod, method = "randomForest_importance", thresholdValue = 0, 
+              label = T, 
+              minInt = 0, maxInt = 1, 
+              minImp = 0, maxImp = 100,
+              labelNudge = 0.05,
+              cluster = F)
 ```
 <center>
 Fig 2.0: *Network style plot displaying 2-way interaction strength between each of the variables and individual variable importance*
@@ -257,7 +268,9 @@ aqMod <- train(aqRegrLrn, aqRgrTask)
 To call the pdp pairs plot we use:
 ```{r, fig.width = 8, fig.height = 7}
 pdpPairs(task = aqRgrTask, model =  aqMod)
-````
+```
 <center>
 Fig 3.0: *A pairs style matrix plot displaying the partial dependence between each of the variables*
 </center>
+
+
