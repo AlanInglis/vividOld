@@ -151,8 +151,8 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
     edgeCols <- npal[cut_int]
   }else{l <- layout
   edgeColour <- (E(net.bg)$weight)
-  cut_int <- cut(edgeColour, length(nam))
-  npal <- colfunction(length(nam))
+  cut_int <- cut(edgeColour, 9)
+  npal <- colfunction(9)
   edgeCols <- npal[cut_int]
   }
 

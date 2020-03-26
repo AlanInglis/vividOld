@@ -29,14 +29,11 @@
 #' @importFrom tidyr "pivot_longer"
 #' @importFrom reshape "melt"
 #' @importFrom stats "reorder"
-<<<<<<< HEAD
 #' @importFrom stats "as.dist"
 #' @importFrom utils "globalVariables"
 #' @import DendSer
-=======
 #' @importFrom utils "globalVariables"
 #' @importFrom DendSer "dser"
->>>>>>> 15cab52c1fdfaaf5150e72da8cbcbf7201a3ba23
 #'
 #'@examples
 #' # Load in the data:
@@ -97,15 +94,13 @@ intHeatmap <- function(task, model, method = "randomForest",
   #dinteraction <- ((dinteraction-min(dinteraction))/(max(dinteraction)-min(dinteraction)))
   maximumInt <- max(dinteraction)+0.01
   maximumInt <- round(maximumInt, 2)
-<<<<<<< HEAD
 
   # Sort matrix so max value is top left
   o <- dser(as.dist(-dinteraction), cost = costLPL)
-=======
+
   # Sort matrix so max value is top left
   o <- dser((-dinteraction))
 
->>>>>>> 15cab52c1fdfaaf5150e72da8cbcbf7201a3ba23
   #q <- which(colSums(dinteraction == max(dinteraction))>0,arr.ind = T)
   #o <- c(q, seq(ncol(dinteraction))[-q])
   dinteraction <- dinteraction[o,o]
@@ -125,20 +120,6 @@ intHeatmap <- function(task, model, method = "randomForest",
 
   #set values below zero to = zero:
   dinteraction[dinteraction<0] <- 0
-<<<<<<< HEAD
-=======
-
-  # Only show the top X variables:
-  if(top > 0){
-    dinteraction <- (dinteraction[1:top,1:top])
-    labelNames <- colnames(dinteraction[,1:top])
-    breakTop <- rep(0, top)
-  }else if(top == 0){
-    dinteraction <- dinteraction
-    labelNames <- colnames(dinteraction)
-    breakTop <- rep(0, length(nam))
-  }
->>>>>>> 15cab52c1fdfaaf5150e72da8cbcbf7201a3ba23
 
   # Only show the top X variables:
   if(top > 0){
@@ -151,10 +132,19 @@ intHeatmap <- function(task, model, method = "randomForest",
     breakTop <- rep(0, length(nam))
   }
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 15cab52c1fdfaaf5150e72da8cbcbf7201a3ba23
+  # Only show the top X variables:
+  if(top > 0){
+    dinteraction <- (dinteraction[1:top,1:top])
+    labelNames <- colnames(dinteraction[,1:top])
+    breakTop <- rep(0, top)
+  }else if(top == 0){
+    dinteraction <- dinteraction
+    labelNames <- colnames(dinteraction)
+    breakTop <- rep(0, length(nam))
+  }
+
+
   # Set up plot -------------------------------------------------------
 
   var_int2 = dinteraction %>% as_tibble %>%
