@@ -42,7 +42,7 @@ pdpPairs <- function(task, model, cols= rev(sequential_hcl(20,"Blues3")),...){
 
   data <- getTaskData(task)
   # make iml model
-  pred.data <- Predictor$new(model, data = data, type = "prob")
+  pred.data <- Predictor$new(model, data = data)
 
   # Colour function
   colorfn <- function(vec,  expand=.03){
@@ -130,5 +130,4 @@ pdpPairs <- function(task, model, cols= rev(sequential_hcl(20,"Blues3")),...){
   legendn(colfn)
 
 }
-
 
