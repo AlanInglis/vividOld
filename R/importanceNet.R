@@ -65,20 +65,14 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
                           labelNudge = 0.05, layout = "circle",
                           cluster = F,...){
 
+  netPrep <- prepNet(task, model)
+  plotNet(task, netPrep, method = method)
+}
 
+
+prepNet <- function(task, model){
   # get data:
   data <- getTaskData(task)
-
-  # Get importance values:
-  normTask <- normalizeFeatures(task, method = "standardize")
-  impFeat <- generateFilterValuesData(normTask, method = method)
-  Imp <- impFeat$data$value
-  Imp1 <- impFeat$data$value
-  impWarn <- impFeat$data$value
-  impWarn <- max(impWarn)
-  impLegend <- impFeat$data$value
-  impLegend <- round(impLegend, 2)
-  impLegend <- max(impLegend)+10
 
 
   Mod <- Predictor$new(model, data = data) # iml Interaction Strength
@@ -97,6 +91,28 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
   dinteraction[vars2] <- res[[".interaction"]]                              # set values
   dinteraction <- (dinteraction+t(dinteraction))/2                          # avg over values to make symmetrical
   dinteraction1 <- data.frame(interaction=as.vector(dinteraction))
+  dinteraction
+}
+
+
+plotNet <- function(task,
+                    dinteraction,
+                    method = "randomForest_importance",
+                    thresholdValue = 0,
+                    label = T, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
+                    labelNudge = 0.05, layout = "circle",
+                    cluster = F){
+
+  # Get importance values:
+  normTask <- normalizeFeatures(task, method = "standardize")
+  impFeat <- generateFilterValuesData(normTask, method = method)
+  Imp <- impFeat$data$value
+  Imp1 <- impFeat$data$value
+  impWarn <- impFeat$data$value
+  impWarn <- max(impWarn)
+  impLegend <- impFeat$data$value
+  impLegend <- round(impLegend, 2)
+  impLegend <- max(impLegend)+10
 
   sortInt = t(dinteraction)[lower.tri(t(dinteraction), diag=FALSE)]  # get upper triangle of the matrix by row order
   sorted_Int <- sort(sortInt, index.return=TRUE)                     # Sort values whilst preserving the index
@@ -188,7 +204,7 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
 
 
   # Plotting function -------------------------------------------------------
-   if(label){
+  if(label){
     p <- ggnet2(net.sp, mode = l,
                 size = 0,
                 edge.size = edgeWidth2,
@@ -208,9 +224,9 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
     return(myList)
   }else {
     p <-ggnet2(net.sp, mode = l,
-                size = 0,
-                edge.size = edgeWidth2,
-                edge.color = edgeCols) +
+               size = 0,
+               edge.size = edgeWidth2,
+               edge.color = edgeCols) +
       theme(legend.text = element_text(size = 10)) +
       geom_label(aes(label = nam),nudge_y = labelNudge) +
       geom_point(aes(fill = Imp1), size = Imp*2, col = "transparent", shape = 21) +
@@ -219,8 +235,8 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
       new_scale_fill() +
       geom_point(aes(fill = 0), size = -1) +
       scale_fill_continuous( name = "Interaction\nStrength",
-                            limits=c(minInt, maximumInt),
-                            low = "floralwhite" ,high = "dodgerblue4")
+                             limits=c(minInt, maximumInt),
+                             low = "floralwhite" ,high = "dodgerblue4")
     myList <- list("Variable Importance:" = impDf, "Interaction Matrix:" = dinteraction, p)
     return(myList)}
   # }else if(Threshold == FALSE && Cluster == TRUE){
@@ -256,5 +272,4 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
   #   clp <- cluster_optimal(net.sp)
   #   pppp <- plot(clp, net.sp, vertex.label.family = "Helvetica", edge.label.family = "Helvetica")}
 }
-
 
