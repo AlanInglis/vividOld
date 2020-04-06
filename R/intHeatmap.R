@@ -96,13 +96,9 @@ intHeatmap <- function(task, model, method = "randomForest",
   maximumInt <- round(maximumInt, 2)
 
   # Sort matrix so max value is top left
-  o <- dser(as.dist(-dinteraction), cost = costLPL)
+  o <- dser((-dinteraction), cost = costPL)
 
   # Sort matrix so max value is top left
-  o <- dser((-dinteraction))
-
-  #q <- which(colSums(dinteraction == max(dinteraction))>0,arr.ind = T)
-  #o <- c(q, seq(ncol(dinteraction))[-q])
   dinteraction <- dinteraction[o,o]
 
   # Reorder the variable importance on diag to match the new order of plot:
