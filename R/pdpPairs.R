@@ -44,6 +44,11 @@ pdpPairs <- function(task, model, cols= rev(sequential_hcl(20,"Blues3")),...){
   # make iml model
   pred.data <- Predictor$new(model, data = data)
 
+  # Normalise the responce
+  # aqP <- pred.data$predict(data)
+  # aqP-min(aqP)/max(aqP)-min(aqP)
+  #  pred.data$predict(aq)[1] <- aqP
+
   # Colour function
   colorfn <- function(vec,  expand=.03){
     r <- range(vec, na.rm = TRUE)
@@ -125,7 +130,7 @@ pdpPairs <- function(task, model, cols= rev(sequential_hcl(20,"Blues3")),...){
   }
   plas <- par("las")
   par(las=1)
-  pairs(xdata, panel = panelfn, oma=c(4,3,5,6),gap=.75)
+  pairs(xdata, panel = panelfn, oma=c(4,3,5,6), gap=.75)
   par(las=plas)
   legendn(colfn)
 
