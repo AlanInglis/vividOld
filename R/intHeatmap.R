@@ -65,7 +65,7 @@ intHeatmap <- function(task, model, method = "randomForest_importance",
     #dint <- prepPlotly(task, model, method = method)
   dint <- prepHeatmap(task, model, method = method)
 
-  top <- max(top, nrow(dint))
+  top <- max(top)
 
 
   if (reorder){
