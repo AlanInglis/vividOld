@@ -59,6 +59,7 @@
 
 
 # Graph Function ----------------------------------------------------------
+# -------------------------------------------------------------------------
 
 importanceNet <- function(task, model, method = "randomForest_importance", thresholdValue = 0,
                           label = T, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
@@ -68,6 +69,12 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
   netPrep <- prepNet(task, model)
   plotNet(task, netPrep, method = method)
 }
+
+
+
+
+# Prep Function -----------------------------------------------------------
+# -------------------------------------------------------------------------
 
 
 prepNet <- function(task, model){
@@ -95,6 +102,11 @@ prepNet <- function(task, model){
 }
 
 
+
+
+
+# Plotting Function -------------------------------------------------------
+# -------------------------------------------------------------------------
 plotNet <- function(task,
                     dinteraction,
                     method = "randomForest_importance",
@@ -102,6 +114,7 @@ plotNet <- function(task,
                     label = T, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
                     labelNudge = 0.05, layout = "circle",
                     cluster = F){
+
 
   # Get importance values:
   normTask <- normalizeFeatures(task, method = "standardize")
@@ -180,30 +193,8 @@ plotNet <- function(task,
   if(is.null(maxImp)){
     maxImp <- impLegend
   }
-  # Warning for max/min Int/Imp:
-  # if(maxInt > 1){
-  #   warning("Legend value selected for Interaction Strength (i.e., maxInt) is larger than maximum interaction value")
-  # }
-  # if(maxImp > (impWarn+1)){
-  #   warning("Legend value selected for Variable Importance (i.e., maxImp) is larger than maximum importance value")
-  # }
-  # if(minImp < 0){
-  #   stop("minImp must not be less than zero")
-  # }
-  # if(minInt < 0){
-  #   stop("minInt must not be less than zero")
-  # }
-  # if(minImp > (impWarn+1)){
-  #   stop("minImp is lager than the maximum importance value")
-  # }
-  # if(minInt > 1){
-  #   stop("minInt must not be greater than 1")
-  # }
 
-
-
-
-  # Plotting function -------------------------------------------------------
+  # create plot -------------------------------------------------------
   if(label){
     p <- ggnet2(net.sp, mode = l,
                 size = 0,
