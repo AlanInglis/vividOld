@@ -56,13 +56,15 @@
 
 ## Heatmap Plotting Function -------------------------------------------------------
 
-
-
-intHeatmap <- function(task, model, method = "randomForest",
+intHeatmap <- function(task, model, method = "randomForest_importance",
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
                        impLow = "white", impHigh = "firebrick1", top = 0, reorder=TRUE,...){
 
+
+
+    #dint <- prepPlotly(task, model, method = method)
   dint <- prepHeatmap(task, model, method = method)
+
   top <- max(top, nrow(dint))
 
 
@@ -78,25 +80,24 @@ intHeatmap <- function(task, model, method = "randomForest",
     dint <- dint[o,o]
   }
   dint <- dint[1:top,1:top]
-  plotHeatmap(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh,...)
+
+  if(plotly){
+    plotlyPlot(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh,...)
+
+  }else{plotHeatmap(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh,...)
+  }
 }
 
 
 
 
+# PLOT FUNCTION -----------------------------------------------------------
+# -------------------------------------------------------------------------
 
-
-
-
-  # Sort matrix so max value is top left
-  #o <- dser((-dinteraction), cost = costPL)
-
-  # Sort matrix so max value is top left
-  #dinteraction <- dinteraction[o,o]
 
 plotHeatmap <- function(dinteraction,
-                       plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
-                       impLow = "white", impHigh = "firebrick1", top = 0,title="",...){
+                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
+                        impLow = "white", impHigh = "firebrick1", top = 0,title="",...){
 
 
   maximumInt <- max(as.dist(dinteraction))+0.01
@@ -146,6 +147,60 @@ plotHeatmap <- function(dinteraction,
 }
 
 
+# PLOT PLOTLY FUNCTION ---------------------------------------------------------
+# ------------------------------------------------------------------------------
+
+plotlyPlot <- function(dinteraction,
+                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
+                        impLow = "white", impHigh = "firebrick1", top = 0,title="",...){
+
+  maximumInt <- max(as.dist(dinteraction))+0.01
+  maximumInt <- ceiling(maximumInt*100)/100
+
+
+  yimpMax <- max(diag(dinteraction))+1
+  labelNames <- colnames(dinteraction)
+  #set values below zero to = zero:
+  dinteraction[dinteraction<0] <- 0
+  nvar <- nrow(dinteraction)
+  index <- 1:nvar
+
+  # Set up plot -------------------------------------------------------
+
+  var_int = dinteraction %>% as_tibble %>%
+    mutate(var_num1 = index) %>%
+    pivot_longer(cols = index,
+                 values_to = 'Interaction\nStrength') %>%
+    mutate(var_num2 = rep(index, nvar),
+           alpha_imp = as.integer(var_num1 == var_num2),
+           alpha_int = 1 - alpha_imp,
+           `Variable\nImportance` = alpha_imp*`Interaction\nStrength`,
+           `Interaction\nStrength` = alpha_int*`Interaction\nStrength`)
+
+  # Interactive Plot --------------------------------------------------------
+  # This plot is only called for plotly
+  pp <- ggplot(data = var_int,
+               mapping = aes(x = var_num1, y = var_num2)) +
+    scale_x_continuous(breaks = index, labels = labelNames, position = "top") +
+    scale_y_reverse(breaks = index, labels = labelNames) +
+    geom_tile(aes(fill = `Interaction\nStrength`),alpha = var_int$alpha_int) +
+    scale_fill_gradient(low = intLow, high = intHigh, limits=c(0, maximumInt)) +
+    geom_point(aes(colour = `Variable\nImportance`), size = 10,
+               alpha = var_int$alpha_imp) +
+    scale_colour_gradient(low = impLow ,high = impHigh, limits=c(0, yimpMax)) +
+    xlab('') +
+    ylab('') +
+    theme_light() +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())
+
+  #Interactive plot using plotly
+  ppp <- ggplotly(pp)
+  ppp
+
+}
+
+# PREP FUNCTION -----------------------------------------------------------
 
 prepHeatmap <- function(task, model, method = "randomForest"){
   data <- getTaskData(task)
@@ -174,4 +229,3 @@ prepHeatmap <- function(task, model, method = "randomForest"){
   diag(dinteraction)<- yImp
   dinteraction
 }
-
