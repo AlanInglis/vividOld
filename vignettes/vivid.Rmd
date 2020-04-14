@@ -60,7 +60,7 @@ In all the following examples, *Ozone* is used as the response variable.
 
 ## Commands:
 
-# intHeatmap()
+# `intHeatmap()`
 
 -----
 
@@ -78,34 +78,8 @@ the off-diagonal
 
 intHeatmap(task, model, method, plotly, intLow, intHigh, impLow, impHigh, top)
 
-**Arguments**
 
-  - task - Task created from the `mlr` package (either regression or
-    classification).
-
-  - model - Any machine learning model.
-
-  - method - A list of variable importance methods to be set by the
-    user. These can include any of the importance methods contained
-    within the `mlr` package. The default is method = randomForest.
-
-  - plotly - If plotly = TRUE, an interactive plotly object is
-    displayed where the user can hover the mouse icon over any part of
-    the plot and a text box will appear displaying information related
-    to the selected variables.
-
-  - intLow & intHigh - The interaction strength values are displayed
-    using a colour gradient. `intLow` is a colour, declared by the user,
-    which is assigned to low interaction strength values. `intHigh` is
-    the colour assigned to high interaction strength values.
-
-  - impLow & impHigh - Similarly, `impLow` and `impHigh` represent the
-    low to high values of the colour gradient used to display the
-    individual variable importance.
-
-  - top - Returns the first part of the interaction matrix and resulting plot. Similar to head() function.
-
-**Examples**
+**Example**
 
 Load in the data:
 ```{r, messages = FALSE}
@@ -125,10 +99,10 @@ aqMod <- train(aqRegrLrn, aqRgrTask)
 To call the plot we use the `intHeatmap()` command as follows:
 
 ```{r}
-intHeatmap(aqRgrTask, aqMod, method = "randomForest_importance", plotly = F, 
-           intLow = "floralwhite", intHigh = "dodgerblue4",
-           impLow = "white", impHigh = "firebrick1", 
-           top = 0)
+#intHeatmap(aqRgrTask, aqMod, method = "randomForest_importance", plotly = F, 
+#           intLow = "floralwhite", intHigh = "dodgerblue4",
+#           impLow = "white", impHigh = "firebrick1", 
+#           top = 0)
 ```
 <center>
 Fig 1.0: *Heatmap style plot displaying 2-way interaction strength in blue and individual variable importance on the diagonal in red.*
@@ -136,7 +110,7 @@ Fig 1.0: *Heatmap style plot displaying 2-way interaction strength in blue and i
 
 From the above plot, the user can easily see that *Temp* is the most important variable when predicting *Ozone*. Also, there is a clear and strong interaction between *Month* and *Day*. 
 
-# importanceNet():
+# `importanceNet()`
 
 -----
 
@@ -153,33 +127,7 @@ Plots a network style graph, where node size represents variable importance and 
 
 importanceNet(task, model, method, thresholdValue, cluster)
 
-**Arguments**
-
-* task - Task created from the `mlr` package (either regression or classification).
-
-* model - Any machine learning model.
-
-* method - A list of variable importance methods to be set by the user. These can include any of the importance methods contained within the `mlr` package. The default is `method = randomForest`.
-
-* thresholdValue - A value chosen by the user which will show all the edges with weights (i.e., the interacions) above that value. For example, if `thresholdValue = 0.5`, then only the the interacions greater than 0.5 will be displayed.  
-
-* label - if `label = TRUE` then the interaction strength values (i.e., edge values) are displayed on the plot.
-
-* minInt - Minimum value to display for the interaction strength legend. The default is `minInt = 0`.
-
-* maxInt - Maximum value to display for the interaction strength legend. The default is set to the maximum interaction strength value calaculted from the data.
-
-* minImp - Minimum value to display for the variable importance  legend. The default is `minImp = 0`.
-
-* maxInt - Maximum value to display for the variable importance legend. The default is set to the maximum varaible importance value calaculted from the data.
-
-* labelNudge - A value, set by the user, to determine the y_postioning of the variables names. A higher value will postion the label farther above the nodes. the default is set to: `labelNudge = 0.05`.
-
-* cluster - If cluster = TRUE then the data is clustered according to interactions.
-
-To call the plot we use the `imprtanceNet()` command as follows:
-
-**Examples**
+**Example**
 
 Load in the data:
 ```{r, messages = FALSE}
@@ -194,6 +142,8 @@ aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
 aqRegrLrn <- makeLearner("regr.randomForest")
 aqMod <- train(aqRegrLrn, aqRgrTask)
 ```
+
+To call the plot we use the `importanceNet()` command as follows:
 
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
@@ -218,13 +168,15 @@ The user can control which interaction values to display by using the `threshold
 
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-#importanceNet(task = aqRgrTask, model = aqMod, method = "randomForest_importance", thresholdValue = 0.09, cluster = F)
+importanceNet(task = aqRgrTask, model = aqMod, method = "randomForest_importance", thresholdValue = 0.09, cluster = F)
 ```
 <center>
-Fig 2.1: *Network style plot displaying thresholded 2-way interaction strengths between each of the variables and individual variable importance. In this plot only the interactions greater than 0.99 are shown.*
+Fig 2.1: *Network style plot displaying thresholded 2-way interaction strengths between each of the variables and individual variable importance. In this plot only the interactions greater than 0.09 are shown.*
 </center>
 
-# PDPpairs():
+
+
+# `PDPpairs()`
 
 -----
 
@@ -232,7 +184,7 @@ Fig 2.1: *Network style plot displaying thresholded 2-way interaction strengths 
 
 -----
 
-**Description*
+*Description*
 
 Plots a pdp (partial dependence plot) pairs style matrix. The partial dependence plot shows the marginal effect one or two features have on the predicted outcome of a machine learning model^[Friedman, Jerome H. “Greedy function approximation: A gradient boosting machine.” Annals of statistics (2001): 1189-1232.]. A partial dependence plot is used to show whether the relationship between the response variable and a feature is linear or more complex.
 
@@ -240,15 +192,7 @@ Plots a pdp (partial dependence plot) pairs style matrix. The partial dependence
 
 pdpPairs(task, model)
 
-**Arguments**
-
-* task - Task created from the `mlr` package (either regression or classification).
-
-* model - Any machine learning model.
-
-* col - This argument controls the colours to be displayed in the plot. By default, this argument is set to  `cols= rev(sequential_hcl(20,"Blues3"))`.
-
-**Examples**
+**Example**
 
 Load in the data:
 ```{r, messages = FALSE}
@@ -271,6 +215,134 @@ pdpPairs(task = aqRgrTask, model =  aqMod)
 ```
 <center>
 Fig 3.0: *A pairs style matrix plot displaying the partial dependence between each of the variables*
+</center>
+
+
+In addition to displaying both the variable importance and interactions together, the following functions display only the variable importance _or_ the interaction strength. 
+
+# `allInt()`
+
+-----
+
+*Creates a plot, displaying the interaction strength for all the 2-way interactions in a model*
+
+-----
+
+*Description*
+Plots a "lollipop" style plot displating the 2-way interactions on the y-axis and the interaction strength on the x-axis. This function also allows the user to switch between a lollipop style plot (which is default) and a barplot, by use of the `type` argument. 
+
+**Usage**
+
+allInt(task, model, type)
+
+**Example**
+
+Load in the data:
+```{r, messages = FALSE}
+aq <- data.frame(airquality)
+aq <- na.omit(aq)
+```
+
+Run an `mlr` random forest model:
+```{r}
+library(mlr)
+library(randomForest)
+aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
+aqRegrLrn <- makeLearner("regr.randomForest")
+aqMod <- train(aqRegrLrn, aqRgrTask)
+```
+
+To call the pdp pairs plot we use:
+```{r, fig.width = 8, fig.height = 7}
+set.seed(1701)
+allInt(task = aqRgrTask, model =  aqMod)
+```
+<center>
+Fig 4.0: *A plot displaying all 2-way interaction in a model.*
+</center>
+
+From the above plot, we can see that the two variables with the greatest interaction strength are `Month:Day`.
+
+# `interactionPlot()`
+
+-----
+
+*Creates a plot, displaying the overall interaction strength for each variable in a model*
+
+-----
+
+*Description*
+Plots a "lollipop" style plot displating the varaibles on the y-axis and the overall interaction strength on the x-axis. This function also allows the user to switch between a lollipop style plot (which is default) and a barplot, by use of the `type` argument. 
+
+**Usage**
+
+interactionPlot(task, model, type)
+
+**Example**
+
+Load in the data:
+```{r, messages = FALSE}
+aq <- data.frame(airquality)
+aq <- na.omit(aq)
+```
+
+Run an `mlr` random forest model:
+```{r}
+library(mlr)
+library(randomForest)
+aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
+aqRegrLrn <- makeLearner("regr.randomForest")
+aqMod <- train(aqRegrLrn, aqRgrTask)
+```
+
+To call the pdp pairs plot we use:
+```{r, fig.width = 8, fig.height = 7}
+set.seed(1701)
+interactionPlot(task = aqRgrTask, model =  aqMod)
+```
+<center>
+Fig 5.0: *A plot displaying the overall interaction strength for each variable in a model.*
+</center>
+
+# `importancePlot()`
+
+-----
+
+*Creates a plot, displaying the variable importance for each variable in a model*
+
+-----
+
+*Description*
+Plots a "lollipop" style plot displating the varaibles on the y-axis and the variable importance on the x-axis. This function also allows the user to switch between a lollipop style plot (which is default) and a barplot, by use of the `type` argument. 
+
+**Usage**
+
+importancePlot(task, model, type)
+
+**Example**
+
+Load in the data:
+```{r, messages = FALSE}
+aq <- data.frame(airquality)
+aq <- na.omit(aq)
+```
+
+Run an `mlr` random forest model:
+```{r}
+library(mlr)
+library(randomForest)
+aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
+aqRegrLrn <- makeLearner("regr.randomForest")
+aqMod <- train(aqRegrLrn, aqRgrTask)
+```
+
+To call the pdp pairs plot we use:
+```{r, fig.width = 8, fig.height = 7}
+set.seed(1701)
+importancePlot(task = aqRgrTask, model =  aqMod)
+```
+<center>
+Fig 6.0: *A plot displaying the variable importance for each variable in a model.*
 </center>
 
 
