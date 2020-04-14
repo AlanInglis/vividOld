@@ -67,7 +67,7 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
                           cluster = F,...){
 
   netPrep <- prepNet(task, model)
-  plotNet(task, netPrep, method = method)
+  plotNet(task, netPrep, method = method, thresholdValue)
 }
 
 
