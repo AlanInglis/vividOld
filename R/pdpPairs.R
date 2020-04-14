@@ -38,15 +38,20 @@
 #' @export
 
 
-pdpPairs <- function(task, model, cols= rev(sequential_hcl(20,"Blues3")),...){
-
+pdpPairs <- function(task, model, cols= rev(sequential_hcl(20,"Blues3")),class=1,...){
+  prob <- model$learner$type == "classif"
   data <- getTaskData(task)
   # make iml model
+  if (prob)
+    pred.data <- Predictor$new(model, data = data, class=class)
+  else
   pred.data <- Predictor$new(model, data = data)
 
   # Colour function
   colorfn <- function(vec,  expand=.03){
+
     r <- range(vec, na.rm = TRUE)
+
     if (diff(r) == 0){
       r <- c(r[1]-.5, r[1]+.5)
     }
@@ -66,6 +71,9 @@ pdpPairs <- function(task, model, cols= rev(sequential_hcl(20,"Blues3")),...){
     structure(fn,breaks=r, vec=vec)
   }
 
+  if (prob)
+    colfn <- colorfn(c(0,1), expand=0)
+  else
   colfn <- colorfn(getTaskTargets(task))
 
 
