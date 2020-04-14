@@ -5,6 +5,7 @@
 #' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
 #' @param cols Colour of partial dependece plot.
+#' @param class For a classification model, show the probability of this class. Defaults to 1.
 #' @param ... Not currently implemented
 #'
 #' @return A pairs style plot displaying the partial dependence.
