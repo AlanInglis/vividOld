@@ -4,10 +4,12 @@
 #'
 #' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
+#' @param method "pdp" (default) or "ale"
 #' @param vars Variables to plot. Defaults to all predictors
 #' @param colLow Color to be used for low values
 #' @param colHigh Color to be used for low values
 #' @param fitlims If supplied, should be a numeric vector of length 2, specifying the fit range.
+#' @param gridsize for the pdp/ale plots, defaults to 10
 #' @param class For a classification model, show the probability of this class. Defaults to 1.
 #' @param ... Not currently implemented
 #'
@@ -22,15 +24,26 @@
 #' # Run an mlr random forest model:
 #' library(mlr)
 #' library(randomForest)
-#' task  <- makeRegrTask(data = na.omit(airquality), target = "Ozone")
+#' library(MASS)
+#' Boston1 <- Boston[,c(4:6,8,13:14)]
+#' Boston1$chas <- factor(Boston1$chas)
+#' task  <- makeRegrTask(data = Boston1, target = "medv")
 #' learner <- makeLearner("regr.randomForest")
 #' fit <- train(learner, task)
-#'
 #' ggpdpPairs(task , fit)
+#'
+#' Boston2 <- Boston1
+#' Boston2$medv <- ggplot2::cut_interval(Boston2$medv, 3)
+#' levels(Boston2$medv) <- c("lo","mid", "hi")
+#' task  <- makeClassifTask(data = Boston2, target = "medv")
+#' learner <- makeLearner("classif.randomForest",predict.type = "prob")
+#' fit <- train(learner, task)
+#' ggpdpPairs(task , fit, class="hi")
 #'
 #' @export
 
-ggpdpPairs <- function(task, model, vars=NULL, colLow = "#132B43", colHigh = "#56B1F7",fitlims = NULL,class=1,...){
+ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", colHigh = "#56B1F7",
+                       fitlims = NULL,gridsize = 10,class=1,...){
   prob <- model$learner$type == "classif"
   data <- getTaskData(task)
   # make iml model
@@ -50,7 +63,7 @@ ggpdpPairs <- function(task, model, vars=NULL, colLow = "#132B43", colHigh = "#5
 
   pdplist <- vector("list", length=nrow(xyvarn))
   for (i in 1:nrow(xyvarn))
-    pdplist[[i]] <-FeatureEffect$new(pred.data, xyvarn[i,], method = "pdp", grid.size=10)
+    pdplist[[i]] <-FeatureEffect$new(pred.data, xyvarn[i,], method = method, grid.size=gridsize)
   names(pdplist)  <- paste(xyvarn[,1], xyvarn[,2], sep="pp")
 
   if (is.null(fitlims)){
@@ -63,14 +76,14 @@ ggpdpPairs <- function(task, model, vars=NULL, colLow = "#132B43", colHigh = "#5
   ggpdp <- function(data, mapping, ...) {
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
     pdp <- pdplist[[paste(vars[2], vars[1], sep="pp")]]
-    # pdp <-FeatureEffect$new(pred.data, vars, method = "pdp", grid.size=10)
+    # pdp <-FeatureEffect$new(pred.data, vars, method = method, grid.size=gridsize)
     plot(pdp, rug=FALSE) + scale_fill_gradient(name="yhat",low=colLow, high=colHigh,limits=limits)
   }
 
   ggpdpc <- function(data, mapping, ...) {
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
     pdp <- pdplist[[paste(vars[2], vars[1], sep="pp")]]
-    # pdp <-FeatureEffect$new(pred.data, vars, method = "pdp", grid.size=10)
+    # pdp <-FeatureEffect$new(pred.data, vars, method = method, grid.size=gridsize)
     plot(pdp, rug=FALSE) + ylim(limits)
   }
 
