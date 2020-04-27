@@ -62,7 +62,7 @@
 # -------------------------------------------------------------------------
 
 importanceNet <- function(task, model, method = "randomForest_importance", thresholdValue = 0,
-                          label = T, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
+                          label = F, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
                           labelNudge = 0.05, layout = "circle",
                           cluster = F,...){
 
@@ -111,7 +111,7 @@ plotNet <- function(task,
                     dinteraction,
                     method = "randomForest_importance",
                     thresholdValue = 0,
-                    label = T, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
+                    label = F, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
                     labelNudge = 0.05, layout = "circle",
                     cluster = F){
 
