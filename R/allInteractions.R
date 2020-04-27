@@ -59,15 +59,18 @@ allInt <- function(task, model, type = "lollipop", top = 0, ...){
   # lollipop plot
   p <- ggplot(data=res,aes(x=.feature, y=.interaction)) +
            geom_linerange(ymin=0, aes(ymax=.interaction)) + geom_point()+
-           coord_flip()
+    xlab('Features') +
+    ylab("Interaction Strength") +
+           coord_flip() +
+           theme_bw()
   # barplot
   pp <-  ggplot(res, aes(x = .feature, y = .interaction)) +
     geom_col(aes(fill = .interaction)) +
     scale_fill_gradient2(low = "floralwhite",
                          high = "dodgerblue4") +
     theme_minimal() +
-    xlab('Variable') +
-    ylab("Interaction\nStrength") +
+    xlab('Features') +
+    ylab("Interaction Strength") +
     theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) +
     coord_flip()
 

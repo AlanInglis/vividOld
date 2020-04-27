@@ -62,7 +62,7 @@ interactionPlot <- function(task, model, type = "lollipop"){
     ggtitle(label = "Overall Interaction Strength") +
     geom_text(aes(label = intRound), vjust = 1.6, color = "black", size = 3.5) +
     theme_minimal() +
-    xlab('Variable') +
+    xlab('Feature') +
     ylab("Interaction\nStrength") +
     theme(axis.title.y = element_text(angle = 0, vjust = 0.5))+
     coord_flip()

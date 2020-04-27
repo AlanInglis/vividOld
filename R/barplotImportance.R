@@ -66,8 +66,8 @@ p <- ggplot(yDF, aes(x = yDF, y = yImp)) +
   ggtitle(label = "Variable Importance") +
   geom_text(aes(label = yImpRound), vjust = 1.6, color = "black", size = 3.5)+
   theme_minimal() +
-  xlab('Variable') +
-  ylab("Importance\nValue") +
+  xlab('Features') +
+  ylab("Importance Value") +
   theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) +
   coord_flip()
 p <- p + labs(fill = "Variable\nImportance")
@@ -95,8 +95,8 @@ p <- p + labs(fill = "Variable\nImportance")
   # lollipop plot
   ppp <- ggplot( yDF, aes(x=yDF, y=yImp)) +
     geom_linerange(ymin=0, aes(ymax=yImp)) + geom_point()+
-    xlab('Variable') +
-    ylab("Importance\nValue") +
+    xlab('Features') +
+    ylab("Importance Value") +
     theme_bw() +
     coord_flip()
 

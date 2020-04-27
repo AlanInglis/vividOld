@@ -18,6 +18,8 @@
 #' @importFrom mlr "getTaskTargets"
 #' @importFrom iml "FeatureEffect"
 #' @importFrom iml "Predictor"
+#' @importFrom GGally "ggpairs"
+#' @importFrom GGally "wrap"
 #'
 #' @examples
 #'

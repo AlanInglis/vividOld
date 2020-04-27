@@ -9,7 +9,7 @@ importanceNet(
   model,
   method = "randomForest_importance",
   thresholdValue = 0,
-  label = T,
+  label = F,
   minInt = 0,
   maxInt = NULL,
   minImp = 0,

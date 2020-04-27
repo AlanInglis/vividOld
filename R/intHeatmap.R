@@ -103,9 +103,9 @@ plotHeatmap <- function(dinteraction,
   maximumInt <- max(as.dist(dinteraction))+0.01
   maximumInt <- ceiling(maximumInt*100)/100
 
-
   yimpMax <- max(diag(dinteraction))+1
   labelNames <- colnames(dinteraction)
+
   #set values below zero to = zero:
   dinteraction[dinteraction<0] <- 0
   nvar <- nrow(dinteraction)

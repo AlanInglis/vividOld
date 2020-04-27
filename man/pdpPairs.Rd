@@ -4,7 +4,7 @@
 \alias{pdpPairs}
 \title{pdpPairs}
 \usage{
-pdpPairs(task, model, cols = rev(sequential_hcl(20, "Blues3")), ...)
+pdpPairs(task, model, cols = rev(sequential_hcl(20, "Blues3")), class = 1, ...)
 }
 \arguments{
 \item{task}{Task created from the mlr package, either regression or classification.}
@@ -12,6 +12,8 @@ pdpPairs(task, model, cols = rev(sequential_hcl(20, "Blues3")), ...)
 \item{model}{Any machine learning model.}
 
 \item{cols}{Colour of partial dependece plot.}
+
+\item{class}{For a classification model, show the probability of this class. Defaults to 1.}
 
 \item{...}{Not currently implemented}
 }
