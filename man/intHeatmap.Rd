@@ -13,7 +13,7 @@ intHeatmap(
   intHigh = "dodgerblue4",
   impLow = "white",
   impHigh = "firebrick1",
-  top = 0,
+  top = NULL,
   reorder = TRUE,
   ...
 )

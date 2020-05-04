@@ -56,13 +56,7 @@ allInt <- function(task, model, type = "lollipop", top = 0, ...){
     res <- head(res,top)
   }
 
-  # lollipop plot
-  p <- ggplot(data=res,aes(x=.feature, y=.interaction)) +
-           geom_linerange(ymin=0, aes(ymax=.interaction)) + geom_point()+
-    xlab('Features') +
-    ylab("Interaction Strength") +
-           coord_flip() +
-           theme_bw()
+  if(type == "barplot"){
   # barplot
   pp <-  ggplot(res, aes(x = .feature, y = .interaction)) +
     geom_col(aes(fill = .interaction)) +
@@ -73,7 +67,8 @@ allInt <- function(task, model, type = "lollipop", top = 0, ...){
     ylab("Interaction Strength") +
     theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) +
     coord_flip()
-
+  return(pp)
+  }else if(type == "circleBar"){
   # Circle barplot
   ppp <- ggplot(res, aes(x = .feature, y = .interaction)) +
     geom_col(aes(fill = .interaction)) +
@@ -92,12 +87,15 @@ allInt <- function(task, model, type = "lollipop", top = 0, ...){
     coord_polar(start = 0) + # This makes the coordinate polar instead of cartesian.
     geom_text(aes(label = .feature), vjust = 2, color = "black", size = 3.5)
     #geom_text(aes(label = intRound),vjust = 0, color = "black", size = 3)
-
-  if(type == "barplot"){
-  return(pp)
+  return(ppp)
   }else if(type == "lollipop"){
+    # lollipop plot
+    p <- ggplot(data=res,aes(x=.feature, y=.interaction)) +
+      geom_linerange(ymin=0, aes(ymax=.interaction)) + geom_point()+
+      xlab('Features') +
+      ylab("Interaction Strength") +
+      coord_flip() +
+      theme_bw()
     return(p)
-  }else if(type == "circleBar"){
-      return(ppp)
-  }
+    }
 }

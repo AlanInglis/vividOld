@@ -58,15 +58,21 @@
 
 intHeatmap <- function(task, model, method = "randomForest_importance",
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
-                       impLow = "white", impHigh = "firebrick1", top = 0, reorder=TRUE,...){
+                       impLow = "white", impHigh = "firebrick1", top = NULL, reorder=TRUE,...){
 
 
 
     #dint <- prepPlotly(task, model, method = method)
   dint <- prepHeatmap(task, model, method = method)
 
-  top <- max(top)
+  #top <- max(top)
 
+  if (is.null(top)) {
+    top <- length(getTaskFeatureNames(task))
+  }
+  else {
+    top <- max(top)
+  }
 
   if (reorder){
     vimp <- diag(dint)
@@ -97,7 +103,7 @@ intHeatmap <- function(task, model, method = "randomForest_importance",
 
 plotHeatmap <- function(dinteraction,
                         plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
-                        impLow = "white", impHigh = "firebrick1", top = 0,title="",...){
+                        impLow = "white", impHigh = "firebrick1", top = NULL ,title="",...){
 
 
   maximumInt <- max(as.dist(dinteraction))+0.01
@@ -152,7 +158,7 @@ plotHeatmap <- function(dinteraction,
 
 plotlyPlot <- function(dinteraction,
                         plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
-                        impLow = "white", impHigh = "firebrick1", top = 0,title="",...){
+                        impLow = "white", impHigh = "firebrick1", top = NULL,title="",...){
 
   maximumInt <- max(as.dist(dinteraction))+0.01
   maximumInt <- ceiling(maximumInt*100)/100

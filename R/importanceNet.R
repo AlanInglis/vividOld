@@ -62,12 +62,12 @@
 # -------------------------------------------------------------------------
 
 importanceNet <- function(task, model, method = "randomForest_importance", thresholdValue = 0,
-                          label = F, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
+                          label = NULL, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
                           labelNudge = 0.05, layout = "circle",
                           cluster = F,...){
 
   netPrep <- prepNet(task, model)
-  plotNet(task, netPrep, method = method, thresholdValue)
+  plotNet(task, netPrep, method = method, thresholdValue, label)
 }
 
 
@@ -111,7 +111,7 @@ plotNet <- function(task,
                     dinteraction,
                     method = "randomForest_importance",
                     thresholdValue = 0,
-                    label = F, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
+                    label = NULL, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
                     labelNudge = 0.05, layout = "circle",
                     cluster = F){
 
@@ -179,7 +179,7 @@ plotNet <- function(task,
     npal <- colfunction(9)
     edgeCols <- npal[cut_int]
   }else{l <- layout
-  edgeColour <- (E(net.bg)$weight)
+  edgeColour <- (E(net.sp)$weight)
   cut_int <- cut(edgeColour, 9)
   npal <- colfunction(9)
   edgeCols <- npal[cut_int]
@@ -195,7 +195,24 @@ plotNet <- function(task,
   }
 
   # create plot -------------------------------------------------------
-  if(label){
+  if(is.null(label)){
+    p <-ggnet2(net.sp, mode = l,
+               size = 0,
+               edge.size = edgeWidth2,
+               edge.color = edgeCols) +
+      theme(legend.text = element_text(size = 10)) +
+      geom_label(aes(label = nam),nudge_y = labelNudge) +
+      geom_point(aes(fill = Imp1), size = Imp*2, col = "transparent", shape = 21) +
+      scale_fill_continuous(name = "Variable\nImportance",
+                            low = "floralwhite" ,high = "firebrick1") +
+      new_scale_fill() +
+      geom_point(aes(fill = 0), size = -1) +
+      scale_fill_continuous( name = "Interaction\nStrength",
+                             limits=c(minInt, maximumInt),
+                             low = "floralwhite" ,high = "dodgerblue4")
+    myList <- list("Variable Importance:" = impDf, "Interaction Matrix:" = dinteraction, p)
+    return(myList)
+  }else{
     p <- ggnet2(net.sp, mode = l,
                 size = 0,
                 edge.size = edgeWidth2,
@@ -213,23 +230,7 @@ plotNet <- function(task,
                             low = "floralwhite" ,high = "dodgerblue4")
     myList <- list("Variable Importance:" = impDf, "Interaction Matrix:" = dinteraction, p)
     return(myList)
-  }else {
-    p <-ggnet2(net.sp, mode = l,
-               size = 0,
-               edge.size = edgeWidth2,
-               edge.color = edgeCols) +
-      theme(legend.text = element_text(size = 10)) +
-      geom_label(aes(label = nam),nudge_y = labelNudge) +
-      geom_point(aes(fill = Imp1), size = Imp*2, col = "transparent", shape = 21) +
-      scale_fill_continuous(name = "Variable\nImportance",
-                            low = "floralwhite" ,high = "firebrick1") +
-      new_scale_fill() +
-      geom_point(aes(fill = 0), size = -1) +
-      scale_fill_continuous( name = "Interaction\nStrength",
-                             limits=c(minInt, maximumInt),
-                             low = "floralwhite" ,high = "dodgerblue4")
-    myList <- list("Variable Importance:" = impDf, "Interaction Matrix:" = dinteraction, p)
-    return(myList)}
+   }
   # }else if(Threshold == FALSE && Cluster == TRUE){
   # V(net.bg)$label <- nam
   # E(net.bg)$width <- Rint
