@@ -100,7 +100,8 @@ ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", 
   p <- ggpairs(xdata,
                upper=list(
                  continuous = ggpdp, combo=ggpdpc, discrete=ggpdp),
-                lower=list(continuous=wrap("points", size=.2)), legend=w)
+                lower=list(continuous=wrap("points", size=.2)), legend=w,
+               cardinality_threshold = 20)
   suppressMessages(print(p))
   invisible(p)
 
