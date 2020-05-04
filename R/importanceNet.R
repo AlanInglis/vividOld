@@ -160,6 +160,12 @@ plotNet <- function(task,
 
   # Set up thresholding:
   a <- sort(Int, decreasing  = TRUE)
+  # Warning message if threshold value is set too high or too low
+  if(thresholdValue > max(a)){
+    stop("Selected threshold value is larger than maximum interaction strength")
+  }else if(thresholdValue < min(a)){
+    stop("Selected threshold value is less than minimum interaction strength")
+  }
   idx <- which(a > thresholdValue)
   cut.off <- a[1:max(idx)]
   `%notin%` <- Negate(`%in%`)
@@ -168,12 +174,14 @@ plotNet <- function(task,
   edgeWidth1 <- weightDF$weight  # select edge weight
   edgeWidth2 <- (5-1)*((edgeWidth1-min(edgeWidth1))/(max(edgeWidth1)-min(edgeWidth1)))+1 # scale between 1-5
 
+
   # Set the edge colours
   colfunction <- colorRampPalette(c("floralwhite", "dodgerblue4"))
 
   # Set shape of plot:
   if(thresholdValue > 0){
-    l <- layout.fruchterman.reingold(net.bg)
+   # l <- layout.fruchterman.reingold(net.bg)
+    l <- layout.reingold.tilford(net.bg, circular=T)
     edgeColour <- (E(net.sp)$weight)
     cut_int <- cut(edgeColour, 9)
     npal <- colfunction(9)
