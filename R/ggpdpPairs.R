@@ -45,7 +45,7 @@
 #' @export
 
 ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", colHigh = "#56B1F7",
-                       fitlims = NULL,gridsize = 10,class=1,...){
+                       fitlims = NULL,gridsize = 10,class=1,cardinality = 20, ...){
   prob <- model$learner$type == "classif"
   data <- getTaskData(task)
   # make iml model
@@ -101,7 +101,7 @@ ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", 
                upper=list(
                  continuous = ggpdp, combo=ggpdpc, discrete=ggpdp),
                 lower=list(continuous=wrap("points", size=.2)), legend=w,
-               cardinality_threshold = 20)
+               cardinality_threshold = cardinality)
   suppressMessages(print(p))
   invisible(p)
 

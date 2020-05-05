@@ -53,7 +53,7 @@ allInt <- function(task, model, type = "lollipop", top = 0, ...){
   res[[".feature"]]<- reorder(res[[".feature"]], res[[".interaction"]])
 
   if(top > 0){
-    res <- head(res,top)
+    res <- tail(res,top)
   }
 
   if(type == "barplot"){

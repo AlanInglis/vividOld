@@ -163,7 +163,7 @@ plotNet <- function(task,
   # Warning message if threshold value is set too high or too low
   if(thresholdValue > max(a)){
     stop("Selected threshold value is larger than maximum interaction strength")
-  }else if(thresholdValue < min(a)){
+  }else if(thresholdValue < 0){
     stop("Selected threshold value is less than minimum interaction strength")
   }
   idx <- which(a > thresholdValue)
