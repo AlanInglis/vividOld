@@ -47,8 +47,16 @@ allInt <- function(task, model, type = "lollipop", top = 0, ...){
   mod <- Predictor$new(model, data = data)
   res <- NULL
   ovars <- nam
-  for (i in 1:length(nam))
+  pb = utils::txtProgressBar(min = 1,
+                             max = length(ovars),
+                             style = 3,
+                             width = 0.8*options()$width,
+                             title = "Calculating variable interactions...")
+  res  <- NULL
+  for (i in 1:length(ovars)){
     res <- rbind(res, Interaction$new(mod, feature=ovars[i])$results)
+    utils::setTxtProgressBar(pb, i+1)
+  }
 
   res[[".feature"]]<- reorder(res[[".feature"]], res[[".interaction"]])
 

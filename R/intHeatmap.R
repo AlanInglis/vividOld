@@ -228,13 +228,16 @@ prepHeatmap <- function(task, model, method = "randomForest_importance", wrapper
   mod  <- Predictor$new(model, data)
   ovars <- getTaskFeatureNames(task)
 
-  stepi<-0
-  pb = txtProgressBar(min = 0, max = length(ovars), initial = 0)
+
+  pb = utils::txtProgressBar(min = 1,
+                             max = length(ovars),
+                             style = 3,
+                             width = 0.8*options()$width,
+                             title = "Calculating variable interactions...")
   res  <- NULL
   for (i in 1:length(ovars)){
     res <- rbind(res, Interaction$new(mod, feature=ovars[i])$results)
-  stepi = stepi + 1
-  setTxtProgressBar(pb,stepi)
+  utils::setTxtProgressBar(pb, i+1)
 }
   res[[".feature"]] <- reorder(res[[".feature"]], res[[".interaction"]])
 
