@@ -15,6 +15,7 @@ intHeatmap(
   impHigh = "firebrick1",
   top = NULL,
   reorder = TRUE,
+  wrapper = NULL,
   ...
 )
 }
@@ -23,7 +24,7 @@ intHeatmap(
 
 \item{model}{Any machine learning model.}
 
-\item{method}{A list of variable importance methods to be set by the user. These can include any of the importance methods contained within the mlr package. The default is method = randomForest.}
+\item{method}{A list of variable importance methods to be set by the user. These can include any of the filtere methods contained within the mlr package. The default is method = randomForest_importance.}
 
 \item{intLow}{Colour, set by the user, to display low interaction strengths.}
 
@@ -36,6 +37,8 @@ intHeatmap(
 \item{top}{Returns the first part of the interaction matrix and resulting plot. Similar to head() function.}
 
 \item{reorder}{If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances}
+
+\item{wrapper}{If TRUE (default) the variable importance calculation is an embedded method that relies on some algorithms internally computing their own feature importance during training. If TRUE this overrides the method argument.}
 
 \item{...}{Not currently implemented}
 }

@@ -35,6 +35,7 @@
 #' @importFrom ggnewscale "new_scale_fill"
 #' @importFrom stats "reorder"
 #' @importFrom grDevices "blues9"
+#' @importFrom reshape "melt"
 #'
 #' @examples
 #' # Load in the data:
@@ -64,7 +65,7 @@
 importanceNet <- function(task, model, method = "randomForest_importance", thresholdValue = 0,
                           label = NULL, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
                           labelNudge = 0.05, layout = "circle",
-                          cluster = F,...){
+                          cluster = F, wrapper = NULL,...){
 
   netPrep <- prepNet(task, model)
   plotNet(task, netPrep, method = method, thresholdValue, label)
@@ -80,15 +81,19 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
 prepNet <- function(task, model){
   # get data:
   data <- getTaskData(task)
+  ovars <- getTaskFeatureNames(task)
 
-
-  Mod <- Predictor$new(model, data = data) # iml Interaction Strength
+  mod <- Predictor$new(model, data = data) # iml Interaction Strength
 
   # Get names and interaction strength:
-  res <- NULL
-  ovars <- getTaskFeatureNames(task)
-  for (i in 1:length(ovars))
-    res <- rbind(res, Interaction$new(Mod, feature=ovars[i])$results)
+  stepi<-0
+  pb = txtProgressBar(min = 0, max = length(ovars), initial = 0)
+  res  <- NULL
+  for (i in 1:length(ovars)){
+    res <- rbind(res, Interaction$new(mod, feature=ovars[i])$results)
+    stepi = stepi + 1
+    setTxtProgressBar(pb,stepi)
+  }
 
   res[[".feature"]]<- reorder(res[[".feature"]], res[[".interaction"]])
 
@@ -113,7 +118,7 @@ plotNet <- function(task,
                     thresholdValue = 0,
                     label = NULL, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
                     labelNudge = 0.05, layout = "circle",
-                    cluster = F){
+                    cluster = F, wrapper = NULL){
 
 
   # Get importance values:
@@ -126,6 +131,28 @@ plotNet <- function(task,
   impLegend <- impFeat$data$value
   impLegend <- round(impLegend, 2)
   impLegend <- max(impLegend)+10
+
+  if(!(is.null(wrapper))){
+    Imp <- getFeatureImportance(model)
+    Imp <- imp$res
+    Imp <- melt(imp)
+    Imp <-  imp$value
+    Imp1 <-  imp$value
+    impWarn <- imp$value
+    impWarn <- max(impWarn)
+    impLegend <- imp$value
+    impLegend <- round(impLegend, 2)
+    impLegend <- max(impLegend)+10
+  }else{normTask <- normalizeFeatures(task, method = "standardize")
+  impFeat <- generateFilterValuesData(normTask, method = method)
+  Imp <- impFeat$data$value
+  Imp1 <- impFeat$data$value
+  impWarn <- impFeat$data$value
+  impWarn <- max(impWarn)
+  impLegend <- impFeat$data$value
+  impLegend <- round(impLegend, 2)
+  impLegend <- max(impLegend)+10
+  }
 
   sortInt = t(dinteraction)[lower.tri(t(dinteraction), diag=FALSE)]  # get upper triangle of the matrix by row order
   sorted_Int <- sort(sortInt, index.return=TRUE)                     # Sort values whilst preserving the index

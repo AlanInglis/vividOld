@@ -4,14 +4,14 @@
 #'
 #' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
-#' @param method A list of variable importance methods to be set by the user. These can include any of the importance methods contained within the mlr package. The default is method = randomForest.
+#' @param method A list of variable importance methods to be set by the user. These can include any of the filtere methods contained within the mlr package. The default is method = randomForest_importance.
 #' @param intLow Colour, set by the user, to display low interaction strengths.
 #' @param intHigh Colour, set by the user, to display high interaction strengths.
 #' @param impLow Colour, set by the user, to display low importance values.
 #' @param impHigh Colour, set by the user, to display high importance values.
 #' @param top Returns the first part of the interaction matrix and resulting plot. Similar to head() function.
 #' @param reorder If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances
-
+#' @param wrapper If TRUE (default) the variable importance calculation is an embedded method that relies on some algorithms internally computing their own feature importance during training. If TRUE this overrides the method argument.
 #' @param ... Not currently implemented
 #'
 #'
@@ -58,7 +58,8 @@
 
 intHeatmap <- function(task, model, method = "randomForest_importance",
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
-                       impLow = "white", impHigh = "firebrick1", top = NULL, reorder=TRUE,...){
+                       impLow = "white", impHigh = "firebrick1", top = NULL, reorder=TRUE,
+                       wrapper = NULL,...){
 
 
 
@@ -208,22 +209,33 @@ plotlyPlot <- function(dinteraction,
 
 # PREP FUNCTION -----------------------------------------------------------
 
-prepHeatmap <- function(task, model, method = "randomForest"){
+prepHeatmap <- function(task, model, method = "randomForest_importance", wrapper = NULL){
   data <- getTaskData(task)
 
   # Get Importance Measures -------------------------------------------------
 
-  normTask <- normalizeFeatures(task, method = "standardize")
 
-  impFeat <- generateFilterValuesData(normTask, method = method)
-  yImp <- impFeat$data$value
+  if(!(is.null(wrapper))){
+  imp <- getFeatureImportance(model)
+  imp <- imp$res
+  imp <- melt(imp)
+  yImp<-  imp$value
+  }else{normTask <- normalizeFeatures(task, method = "standardize")
+    impFeat <- generateFilterValuesData(normTask, method = method)
+    yImp <- impFeat$data$value
+  }
 
   mod  <- Predictor$new(model, data)
   ovars <- getTaskFeatureNames(task)
-  res  <- NULL
-  for (i in 1:length(ovars))
-    res <- rbind(res, Interaction$new(mod, feature=ovars[i])$results)
 
+  stepi<-0
+  pb = txtProgressBar(min = 0, max = length(ovars), initial = 0)
+  res  <- NULL
+  for (i in 1:length(ovars)){
+    res <- rbind(res, Interaction$new(mod, feature=ovars[i])$results)
+  stepi = stepi + 1
+  setTxtProgressBar(pb,stepi)
+}
   res[[".feature"]] <- reorder(res[[".feature"]], res[[".interaction"]])
 
   vars2 <- t(simplify2array(strsplit(as.character(res[[".feature"]]),":"))) # split/get feature names

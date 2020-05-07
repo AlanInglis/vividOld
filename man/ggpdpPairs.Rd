@@ -14,6 +14,7 @@ ggpdpPairs(
   fitlims = NULL,
   gridsize = 10,
   class = 1,
+  cardinality = 20,
   ...
 )
 }
