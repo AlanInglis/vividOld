@@ -36,6 +36,7 @@
 #' @importFrom stats "reorder"
 #' @importFrom grDevices "blues9"
 #' @importFrom reshape "melt"
+#' @import progress
 #'
 #' @examples
 #' # Load in the data:

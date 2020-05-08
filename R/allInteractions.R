@@ -18,6 +18,7 @@
 #' @importFrom iml "Predictor"
 #' @importFrom iml "Interaction"
 #' @importFrom ggplot2 "ggplot"
+#' @import progress
 #'
 #'@examples
 #' # Load in the data:
