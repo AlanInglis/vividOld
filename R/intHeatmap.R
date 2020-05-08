@@ -34,6 +34,7 @@
 #' @import DendSer
 #' @importFrom utils "globalVariables"
 #' @importFrom DendSer "dser"
+#' @import progress
 #'
 #'@examples
 #' # Load in the data:
@@ -229,15 +230,17 @@ prepHeatmap <- function(task, model, method = "randomForest_importance", wrapper
   ovars <- getTaskFeatureNames(task)
 
 
-  pb = utils::txtProgressBar(min = 1,
-                             max = length(ovars),
-                             style = 3,
-                             width = 0.8*options()$width,
-                             title = "Calculating variable interactions...")
+  # Create progress bar
+  pb <- progress_bar$new(
+    format = "  Calculating variable interactions...[:bar]:percent. Estimated completion time::eta ",
+    total = length(ovars),
+    clear = FALSE,
+    width= 100)
+
   res  <- NULL
   for (i in 1:length(ovars)){
     res <- rbind(res, Interaction$new(mod, feature=ovars[i])$results)
-  utils::setTxtProgressBar(pb, i+1)
+    pb$tick()
 }
   res[[".feature"]] <- reorder(res[[".feature"]], res[[".interaction"]])
 
