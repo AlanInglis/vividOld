@@ -210,7 +210,8 @@ plotlyPlot <- function(dinteraction,
 
 # PREP FUNCTION -----------------------------------------------------------
 
-prepHeatmap <- function(task, model, method = "ranger_impurity", embedded = NULL){
+prepHeatmap <- function(task, model, method = "randomForest_importance
+                        ", embedded = NULL){
   data <- getTaskData(task)
 
   # Get Importance Measures -------------------------------------------------
