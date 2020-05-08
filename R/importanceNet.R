@@ -14,6 +14,7 @@
 #' @param maxImp Maximum importance value to be displayed on the legend.
 #' @param labelNudge A value, set by the user, to determine the y_postioning of the variables names. A higher value will postion the label farther above the nodes.
 #' @param layout Determines the shape, or layout, of the plotted graph.
+#' @param embedded If TRUE (default) the variable importance calculation is an embedded method that relies on some algorithms internally computing their own feature importance during training.
 #' @param cluster If cluster = TRUE, then the data is clustered in groups.
 #' @param ... Not currently implemented.
 #'
@@ -66,7 +67,7 @@
 importanceNet <- function(task, model, method = "randomForest_importance", thresholdValue = 0,
                           label = NULL, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
                           labelNudge = 0.05, layout = "circle",
-                          cluster = F, wrapper = NULL,...){
+                          cluster = F, embedded = NULL,...){
 
   netPrep <- prepNet(task, model)
   plotNet(task, netPrep, method = method, thresholdValue, label)
@@ -124,7 +125,7 @@ plotNet <- function(task,
                     thresholdValue = 0,
                     label = NULL, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
                     labelNudge = 0.05, layout = "circle",
-                    cluster = F, wrapper = NULL){
+                    cluster = F, embedded = NULL){
 
 
   # Get importance values:
@@ -138,7 +139,7 @@ plotNet <- function(task,
   impLegend <- round(impLegend, 2)
   impLegend <- max(impLegend)+10
 
-  if(!(is.null(wrapper))){
+  if(!(is.null(embedded))){
     Imp <- getFeatureImportance(model)
     Imp <- imp$res
     Imp <- melt(imp)

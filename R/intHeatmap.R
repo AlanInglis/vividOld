@@ -11,7 +11,7 @@
 #' @param impHigh Colour, set by the user, to display high importance values.
 #' @param top Returns the first part of the interaction matrix and resulting plot. Similar to head() function.
 #' @param reorder If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances
-#' @param wrapper If TRUE (default) the variable importance calculation is an embedded method that relies on some algorithms internally computing their own feature importance during training. If TRUE this overrides the method argument.
+#' @param embedded If TRUE (default) the variable importance calculation is an embedded method that relies on some algorithms internally computing their own feature importance during training.
 #' @param ... Not currently implemented
 #'
 #'
@@ -60,7 +60,7 @@
 intHeatmap <- function(task, model, method = "randomForest_importance",
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
                        impLow = "white", impHigh = "firebrick1", top = NULL, reorder=TRUE,
-                       wrapper = NULL,...){
+                       embedded = NULL,...){
 
 
 
@@ -210,13 +210,13 @@ plotlyPlot <- function(dinteraction,
 
 # PREP FUNCTION -----------------------------------------------------------
 
-prepHeatmap <- function(task, model, method = "randomForest_importance", wrapper = NULL){
+prepHeatmap <- function(task, model, method = "ranger_impurity", embedded = NULL){
   data <- getTaskData(task)
 
   # Get Importance Measures -------------------------------------------------
 
 
-  if(!(is.null(wrapper))){
+  if(!(is.null(embedded))){
   imp <- getFeatureImportance(model)
   imp <- imp$res
   imp <- melt(imp)
