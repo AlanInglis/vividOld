@@ -27,7 +27,8 @@ Imports:
     dplyr,
     reshape,
     tibble,
-    DendSer
+    DendSer,
+    package
 Suggests: 
     knitr,
     rmarkdown,

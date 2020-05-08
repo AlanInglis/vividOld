@@ -17,6 +17,7 @@ importanceNet(
   labelNudge = 0.05,
   layout = "circle",
   cluster = F,
+  wrapper = NULL,
   ...
 )
 }
