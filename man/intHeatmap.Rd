@@ -15,7 +15,7 @@ intHeatmap(
   impHigh = "firebrick1",
   top = NULL,
   reorder = TRUE,
-  wrapper = NULL,
+  embedded = NULL,
   ...
 )
 }
@@ -38,7 +38,7 @@ intHeatmap(
 
 \item{reorder}{If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances}
 
-\item{wrapper}{If TRUE (default) the variable importance calculation is an embedded method that relies on some algorithms internally computing their own feature importance during training. If TRUE this overrides the method argument.}
+\item{embedded}{If TRUE (default) the variable importance calculation is an embedded method that relies on some algorithms internally computing their own feature importance during training.}
 
 \item{...}{Not currently implemented}
 }

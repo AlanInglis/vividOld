@@ -17,7 +17,7 @@ importanceNet(
   labelNudge = 0.05,
   layout = "circle",
   cluster = F,
-  wrapper = NULL,
+  embedded = NULL,
   ...
 )
 }
@@ -45,6 +45,8 @@ importanceNet(
 \item{layout}{Determines the shape, or layout, of the plotted graph.}
 
 \item{cluster}{If cluster = TRUE, then the data is clustered in groups.}
+
+\item{embedded}{If TRUE (default) the variable importance calculation is an embedded method that relies on some algorithms internally computing their own feature importance during training.}
 
 \item{...}{Not currently implemented.}
 }
