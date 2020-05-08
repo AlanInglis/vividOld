@@ -28,7 +28,7 @@ Imports:
     reshape,
     tibble,
     DendSer,
-    package
+    progress
 Suggests: 
     knitr,
     rmarkdown,
