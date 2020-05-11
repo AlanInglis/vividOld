@@ -42,6 +42,10 @@
 
 allInt <- function(task, model, type = "lollipop", top = 0, ...){
 
+  # if(type != "lollipop" || type != "barplot" || type != "circleBar"){
+  #   stop("Invalid plotting type. See ?allInt for available plotting types")
+  # }
+  message(" Initilizing...")
   data <- getTaskData(task)
   nam <- getTaskFeatureNames(task)
 
@@ -53,8 +57,7 @@ allInt <- function(task, model, type = "lollipop", top = 0, ...){
   pb <- progress_bar$new(
     format = "  Calculating variable interactions...[:bar]:percent. Estimated completion time::eta ",
     total = length(ovars),
-    clear = FALSE,
-    width= 0.8*options()$width)
+    clear = FALSE)
 
   res  <- NULL
   for (i in 1:length(ovars)){

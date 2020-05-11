@@ -68,7 +68,7 @@ importanceNet <- function(task, model, method = "randomForest_importance", thres
                           label = NULL, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
                           labelNudge = 0.05, layout = "circle",
                           cluster = F, embedded = NULL,...){
-
+  message(" Calculating variable importance...")
   netPrep <- prepNet(task, model)
   plotNet(task, netPrep, method = method, thresholdValue, label)
 }
@@ -93,12 +93,11 @@ prepNet <- function(task, model){
   pb <- progress_bar$new(
     format = "  Calculating variable interactions...[:bar]:percent. Estimated completion time::eta ",
     total = length(ovars),
-    clear = FALSE,
-    width= 100)
+    clear = FALSE)
 
   res  <- NULL
   for (i in 1:length(ovars)){
-    res <- rbind(res, Interaction$new(mod, feature=ovars[i])$results)
+    res <- rbind(res, Interaction$new(mod, grid.size = 10, feature=ovars[i])$results)
     pb$tick()
   }
 

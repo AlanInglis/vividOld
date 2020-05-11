@@ -11,7 +11,6 @@
 #' @param impHigh Colour, set by the user, to display high importance values.
 #' @param top Returns the first part of the interaction matrix and resulting plot. Similar to head() function.
 #' @param reorder If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances
-#' @param embedded If TRUE (default) the variable importance calculation is an embedded method that relies on some algorithms internally computing their own feature importance during training.
 #' @param ... Not currently implemented
 #'
 #'
@@ -57,15 +56,15 @@
 
 ## Heatmap Plotting Function -------------------------------------------------------
 
-intHeatmap <- function(task, model, method = "randomForest_importance",
+intHeatmap <- function(task, model,
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
                        impLow = "white", impHigh = "firebrick1", top = NULL, reorder=TRUE,
                        embedded = NULL,...){
 
 
-
+  message(" Calculating variable importance...")
     #dint <- prepPlotly(task, model, method = method)
-  dint <- prepHeatmap(task, model, method = method)
+  dint <- prepHeatmap(task, model)
 
   #top <- max(top)
 
@@ -210,22 +209,18 @@ plotlyPlot <- function(dinteraction,
 
 # PREP FUNCTION -----------------------------------------------------------
 
-prepHeatmap <- function(task, model, method = "randomForest_importance
-                        ", embedded = NULL){
+prepHeatmap <- function(task, model, embedded = NULL){
   data <- getTaskData(task)
 
   # Get Importance Measures -------------------------------------------------
 
-
-  if(!(is.null(embedded))){
   imp <- getFeatureImportance(model)
   imp <- imp$res
+  suppressMessages({
   imp <- melt(imp)
+  })
   yImp<-  imp$value
-  }else{normTask <- normalizeFeatures(task, method = "standardize")
-    impFeat <- generateFilterValuesData(normTask, method = method)
-    yImp <- impFeat$data$value
-  }
+
 
   mod  <- Predictor$new(model, data)
   ovars <- getTaskFeatureNames(task)
@@ -235,12 +230,11 @@ prepHeatmap <- function(task, model, method = "randomForest_importance
   pb <- progress_bar$new(
     format = "  Calculating variable interactions...[:bar]:percent. Estimated completion time::eta ",
     total = length(ovars),
-    clear = FALSE,
-    width= 100)
+    clear = FALSE)
 
   res  <- NULL
   for (i in 1:length(ovars)){
-    res <- rbind(res, Interaction$new(mod, feature=ovars[i])$results)
+    res <- rbind(res, Interaction$new(mod,  grid.size = 10, feature=ovars[i])$results)
     pb$tick()
 }
   res[[".feature"]] <- reorder(res[[".feature"]], res[[".interaction"]])
