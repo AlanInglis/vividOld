@@ -7,7 +7,6 @@
 intHeatmap(
   task,
   model,
-  method = "randomForest_importance",
   plotly = FALSE,
   intLow = "floralwhite",
   intHigh = "dodgerblue4",
@@ -24,8 +23,6 @@ intHeatmap(
 
 \item{model}{Any machine learning model.}
 
-\item{method}{A list of variable importance methods to be set by the user. These can include any of the filtere methods contained within the mlr package. The default is method = randomForest_importance.}
-
 \item{intLow}{Colour, set by the user, to display low interaction strengths.}
 
 \item{intHigh}{Colour, set by the user, to display high interaction strengths.}
@@ -38,9 +35,9 @@ intHeatmap(
 
 \item{reorder}{If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances}
 
-\item{embedded}{If TRUE (default) the variable importance calculation is an embedded method that relies on some algorithms internally computing their own feature importance during training.}
-
 \item{...}{Not currently implemented}
+
+\item{method}{A list of variable importance methods to be set by the user. These can include any of the filtere methods contained within the mlr package. The default is method = randomForest_importance.}
 }
 \description{
 Plots a Heatmap-tyle display showingVariable Importance and Variable Interaction
