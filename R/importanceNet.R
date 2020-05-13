@@ -5,7 +5,6 @@
 #'
 #' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
-#' @param method A list of variable importance methods to be set by the user. These can include any of the importance methods contained within the mlr package. The default is method = randomForest.
 #' @param thresholdValue A value chosen by the user which will show all the edges with weights (i.e., the interacions) above that value. For example, if thresholdValue = 0.2, then only the the interacions greater than 0.2 will be displayed.
 #' @param label If label = TRUE the numerical value for the interaction strength will be displayed.
 #' @param minInt Minimum interaction strength to be displayed on the legend.
@@ -14,7 +13,6 @@
 #' @param maxImp Maximum importance value to be displayed on the legend.
 #' @param labelNudge A value, set by the user, to determine the y_postioning of the variables names. A higher value will postion the label farther above the nodes.
 #' @param layout Determines the shape, or layout, of the plotted graph.
-#' @param embedded If TRUE (default) the variable importance calculation is an embedded method that relies on some algorithms internally computing their own feature importance during training.
 #' @param cluster If cluster = TRUE, then the data is clustered in groups.
 #' @param ... Not currently implemented.
 #'
@@ -53,7 +51,6 @@
 #'
 #' # Create graph:
 #' importanceNet(task = aqRgrTask, model = aqMod,
-#' method = "randomForest_importance",
 #' thresholdValue = 0, cluster = F)
 #'
 #' @export
@@ -64,13 +61,13 @@
 # Graph Function ----------------------------------------------------------
 # -------------------------------------------------------------------------
 
-importanceNet <- function(task, model, method = "randomForest_importance", thresholdValue = 0,
+importanceNet <- function(task, model, thresholdValue = 0,
                           label = NULL, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
                           labelNudge = 0.05, layout = "circle",
                           cluster = F, embedded = NULL,...){
   message(" Calculating variable importance...")
   netPrep <- prepNet(task, model)
-  plotNet(task, netPrep, method = method, thresholdValue, label)
+  plotNet(task, netPrep, model, thresholdValue, label)
 }
 
 
@@ -120,45 +117,27 @@ prepNet <- function(task, model){
 # -------------------------------------------------------------------------
 plotNet <- function(task,
                     dinteraction,
-                    method = "randomForest_importance",
+                    model,
                     thresholdValue = 0,
                     label = NULL, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
                     labelNudge = 0.05, layout = "circle",
-                    cluster = F, embedded = NULL){
+                    cluster = F){
 
 
-  # Get importance values:
-  normTask <- normalizeFeatures(task, method = "standardize")
-  impFeat <- generateFilterValuesData(normTask, method = method)
-  Imp <- impFeat$data$value
-  Imp1 <- impFeat$data$value
-  impWarn <- impFeat$data$value
-  impWarn <- max(impWarn)
-  impLegend <- impFeat$data$value
-  impLegend <- round(impLegend, 2)
-  impLegend <- max(impLegend)+10
+  # Get importance values
 
-  if(!(is.null(embedded))){
-    Imp <- getFeatureImportance(model)
-    Imp <- imp$res
-    Imp <- melt(imp)
-    Imp <-  imp$value
-    Imp1 <-  imp$value
-    impWarn <- imp$value
+    Importance <- getFeatureImportance(model)
+    Importance <- Importance$res
+    Importance <- melt(Importance)
+    Imp <-  Importance$value
+    Imp1 <-  Importance$value
+    impWarn <- Importance$value
     impWarn <- max(impWarn)
-    impLegend <- imp$value
+    impLegend <- Importance$value
     impLegend <- round(impLegend, 2)
     impLegend <- max(impLegend)+10
-  }else{normTask <- normalizeFeatures(task, method = "standardize")
-  impFeat <- generateFilterValuesData(normTask, method = method)
-  Imp <- impFeat$data$value
-  Imp1 <- impFeat$data$value
-  impWarn <- impFeat$data$value
-  impWarn <- max(impWarn)
-  impLegend <- impFeat$data$value
-  impLegend <- round(impLegend, 2)
-  impLegend <- max(impLegend)+10
-  }
+
+
 
   sortInt = t(dinteraction)[lower.tri(t(dinteraction), diag=FALSE)]  # get upper triangle of the matrix by row order
   sorted_Int <- sort(sortInt, index.return=TRUE)                     # Sort values whilst preserving the index
@@ -185,10 +164,8 @@ plotNet <- function(task,
   Imp  <- round(Imp,2)
 
   # Create dataframe to disply to user:
-  variableImportance <- impFeat$data$value
-  Method <- impFeat$data$filter
-  Name <- impFeat$data$name
-  impDf <- data.frame(Name, Method, variableImportance)
+  impDf <- Importance
+
 
 
   # Set up thresholding:

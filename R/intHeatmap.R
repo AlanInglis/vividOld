@@ -159,7 +159,7 @@ plotHeatmap <- function(dinteraction,
 
 plotlyPlot <- function(dinteraction,
                         plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
-                        impLow = "white", impHigh = "firebrick1", top = NULL,title="",...){
+                        impLow = "white", impHigh = "firebrick1", top = NULL, title="",...){
 
   maximumInt <- max(as.dist(dinteraction))+0.01
   maximumInt <- ceiling(maximumInt*100)/100
@@ -209,7 +209,7 @@ plotlyPlot <- function(dinteraction,
 
 # PREP FUNCTION -----------------------------------------------------------
 
-prepHeatmap <- function(task, model, embedded = NULL){
+prepHeatmap <- function(task, model){
   data <- getTaskData(task)
 
   # Get Importance Measures -------------------------------------------------
