@@ -128,7 +128,12 @@ ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", 
     if (length(w) >= 2) w <- w[1:2]
     else w <- NULL
   }
+
+  # get y-data
+  yData <- pred.data$data$y
+  yData <- as.numeric(unlist(yData))
   p <- ggpairs(xdata,
+               mapping=ggplot2::aes(colour = yData),
                upper=list(continuous = ggpdp, combo=ggpdpc, discrete=ggpdp),
                diag = list(continuous = ggpdpDiag),
                lower=list(continuous=wrap("points", size=.2)), legend=w,
