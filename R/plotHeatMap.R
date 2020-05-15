@@ -225,9 +225,10 @@ prepHeatmap <- function(task, model, iml){
       imp <- melt(imp)
     })
     yImp<-  imp$value
+    ovars <- getTaskFeatureNames(task)
   }
 
-  ovars <- getTaskFeatureNames(task)
+
 
 
   # Create progress bar
