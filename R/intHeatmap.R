@@ -4,7 +4,8 @@
 #'
 #' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
-#' @param method A list of variable importance methods to be set by the user. These can include any of the filtere methods contained within the mlr package. The default is method = randomForest_importance.
+#' @param iml If TRUE then agnostic variable importance measures are generated.
+#' @param plotly If TRUE then an interactive plot is displayed.
 #' @param intLow Colour, set by the user, to display low interaction strengths.
 #' @param intHigh Colour, set by the user, to display high interaction strengths.
 #' @param impLow Colour, set by the user, to display low importance values.
@@ -54,17 +55,15 @@
 
 
 
-## Heatmap Plotting Function -------------------------------------------------------
+# Heatmap Plotting Function -------------------------------------------------------
 
-intHeatmap <- function(task, model,
+intHeatmap <- function(task, model, iml = FALSE,
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
-                       impLow = "white", impHigh = "firebrick1", top = NULL, reorder=TRUE,
-                       embedded = NULL,...){
-
-
+                       impLow = "white", impHigh = "firebrick1", top = NULL, reorder=TRUE,...)
+  {
   message(" Calculating variable importance...")
-    #dint <- prepPlotly(task, model, method = method)
-  dint <- prepHeatmap(task, model)
+  #dint <- prepPlotly(task, model, method = method)
+  dint <- prepHeatmap(task, model, iml)
 
   #top <- max(top)
 
@@ -158,8 +157,8 @@ plotHeatmap <- function(dinteraction,
 # ------------------------------------------------------------------------------
 
 plotlyPlot <- function(dinteraction,
-                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
-                        impLow = "white", impHigh = "firebrick1", top = NULL, title="",...){
+                       plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
+                       impLow = "white", impHigh = "firebrick1", top = NULL, title="",...){
 
   maximumInt <- max(as.dist(dinteraction))+0.01
   maximumInt <- ceiling(maximumInt*100)/100
@@ -209,18 +208,24 @@ plotlyPlot <- function(dinteraction,
 
 # PREP FUNCTION -----------------------------------------------------------
 
-prepHeatmap <- function(task, model){
+prepHeatmap <- function(task, model, iml){
   data <- getTaskData(task)
 
   # Get Importance Measures -------------------------------------------------
 
-  imp <- getFeatureImportance(model)
-  imp <- imp$res
-  suppressMessages({
-  imp <- melt(imp)
-  })
-  yImp<-  imp$value
-
+  if(iml){
+    mod  <- Predictor$new(model, data)
+    imp <- FeatureImp$new(mod, loss = "mse")
+    yImp <- imp$results$importance
+    ovars <- imp$results$feature
+  }else{
+    imp <- getFeatureImportance(model)
+    imp <- imp$res
+    suppressMessages({
+      imp <- melt(imp)
+    })
+    yImp<-  imp$value
+  }
 
   mod  <- Predictor$new(model, data)
   ovars <- getTaskFeatureNames(task)
@@ -236,7 +241,7 @@ prepHeatmap <- function(task, model){
   for (i in 1:length(ovars)){
     res <- rbind(res, Interaction$new(mod,  grid.size = 10, feature=ovars[i])$results)
     pb$tick()
-}
+  }
   res[[".feature"]] <- reorder(res[[".feature"]], res[[".interaction"]])
 
   vars2 <- t(simplify2array(strsplit(as.character(res[[".feature"]]),":"))) # split/get feature names
@@ -248,3 +253,4 @@ prepHeatmap <- function(task, model){
   diag(dinteraction)<- yImp
   dinteraction
 }
+

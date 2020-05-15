@@ -7,6 +7,7 @@
 intHeatmap(
   task,
   model,
+  iml = FALSE,
   plotly = FALSE,
   intLow = "floralwhite",
   intHigh = "dodgerblue4",
@@ -14,7 +15,6 @@ intHeatmap(
   impHigh = "firebrick1",
   top = NULL,
   reorder = TRUE,
-  embedded = NULL,
   ...
 )
 }
@@ -22,6 +22,10 @@ intHeatmap(
 \item{task}{Task created from the mlr package, either regression or classification.}
 
 \item{model}{Any machine learning model.}
+
+\item{iml}{If TRUE then agnostic variable importance measures are generated.}
+
+\item{plotly}{If TRUE then an interactive plot is displayed.}
 
 \item{intLow}{Colour, set by the user, to display low interaction strengths.}
 
@@ -36,8 +40,6 @@ intHeatmap(
 \item{reorder}{If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances}
 
 \item{...}{Not currently implemented}
-
-\item{method}{A list of variable importance methods to be set by the user. These can include any of the filtere methods contained within the mlr package. The default is method = randomForest_importance.}
 }
 \description{
 Plots a Heatmap-tyle display showingVariable Importance and Variable Interaction
