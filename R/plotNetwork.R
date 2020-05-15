@@ -6,6 +6,7 @@
 #'
 #' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
+#' @param iml If TRUE then agnostic variable importance measures are generated.
 #' @param thresholdValue A value chosen by the user which will show all the edges with weights (i.e., the interacions) above that value. For example, if thresholdValue = 0.2, then only the the interacions greater than 0.2 will be displayed.
 #' @param label If label = TRUE the numerical value for the interaction strength will be displayed.
 #' @param minInt Minimum interaction strength to be displayed on the legend.
@@ -326,4 +327,3 @@ plotNet <- function(task,
   #   clp <- cluster_optimal(net.sp)
   #   pppp <- plot(clp, net.sp, vertex.label.family = "Helvetica", edge.label.family = "Helvetica")}
 }
-
