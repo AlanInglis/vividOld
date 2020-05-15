@@ -25,6 +25,7 @@
 #' @importFrom mlr "getTaskFeatureNames"
 #' @importFrom iml "Predictor"
 #' @importFrom iml "Interaction"
+#' @importFrom iml "FeatureImp"
 #' @import igraph
 #' @importFrom igraph "sample_pa"
 #' @importFrom igraph "as_data_frame"
