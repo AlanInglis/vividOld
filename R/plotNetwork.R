@@ -82,7 +82,7 @@ plotNetwork <- function(task, model, iml = FALSE, thresholdValue = 0,
 prepNet <- function(task, model, iml){
   # get data:
   data <- getTaskData(task)
-  ovars <- getTaskFeatureNames(task)
+
 
   mod <- Predictor$new(model, data = data) # iml Interaction Strength
 
@@ -97,6 +97,7 @@ prepNet <- function(task, model, iml){
       Importance <- melt(Importance)
     })
     Imp <-  Importance$value
+    ovars <- getTaskFeatureNames(task)
   }
 
 
@@ -184,7 +185,7 @@ plotNet <- function(task,
   sorted_Int <- sort(sortInt, index.return=TRUE)                     # Sort values whilst preserving the index
   Int <- sorted_Int$x
   maximumInt <- max(Int)+0.01
-  nam <- getTaskFeatureNames(task)                                   # Get feature names
+  nam <- colnames(dinteraction)                     # Get feature names
 
 
   # Set path direction of graph:
