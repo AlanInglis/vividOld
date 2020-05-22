@@ -69,11 +69,13 @@ ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", 
   xvarn <- xvarn[1:length(unique(xvarn))]
   xvarn <- as.matrix(xvarn)
 
+
   # loop through vars and create a list of pdps
   pdplist1 <- vector("list", length=nrow(xvarn))
-  for (i in 1:nrow(xvarn))
+  for (i in 1:nrow(xvarn)){
     pdplist1[[i]] <-FeatureEffect$new(pred.data, xvarn[i,], method = "pdp+ice", grid.size=10)
   names(pdplist1)  <- paste(xvarn[,1])
+  }
 
   # Get data for pairs of variables
   xdata <- pred.data$data$get.x()
