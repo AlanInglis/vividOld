@@ -7,7 +7,6 @@
 plotHeatMap(
   task,
   model,
-  iml = FALSE,
   plotly = FALSE,
   intLow = "floralwhite",
   intHigh = "dodgerblue4",
@@ -22,8 +21,6 @@ plotHeatMap(
 \item{task}{Task created from the mlr package, either regression or classification.}
 
 \item{model}{Any machine learning model.}
-
-\item{iml}{If TRUE then agnostic variable importance measures are generated.}
 
 \item{plotly}{If TRUE then an interactive plot is displayed.}
 

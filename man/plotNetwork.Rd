@@ -7,7 +7,6 @@
 plotNetwork(
   task,
   model,
-  iml = FALSE,
   thresholdValue = 0,
   label = FALSE,
   minInt = 0,
@@ -17,7 +16,6 @@ plotNetwork(
   labelNudge = 0.05,
   layout = "circle",
   cluster = F,
-  embedded = NULL,
   ...
 )
 }
@@ -25,8 +23,6 @@ plotNetwork(
 \item{task}{Task created from the mlr package, either regression or classification.}
 
 \item{model}{Any machine learning model.}
-
-\item{iml}{If TRUE then agnostic variable importance measures are generated.}
 
 \item{thresholdValue}{A value chosen by the user which will show all the edges with weights (i.e., the interacions) above that value. For example, if thresholdValue = 0.2, then only the the interacions greater than 0.2 will be displayed.}
 
