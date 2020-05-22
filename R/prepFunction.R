@@ -19,7 +19,13 @@ prepFunc <- function(task, model){
   # If (embedded learner) - else(agnostic varimp calc)
   if(lrnID == "regr.randomForest" | lrnID == "regr.ranger" | lrnID == "regr.cforest" |
      lrnID == "regr.gbm" | lrnID == "regr.randomForestSRC" | lrnID == "regr.rpart" |
-     lrnID == "regr.RRF" | lrnID == "regr.xgboost"){
+     lrnID == "regr.RRF" | lrnID == "regr.xgboost" |
+     lrnID ==  "classif.randomForest" | lrnID == "classif.boosting" |
+     lrnID == "classif.cforest" | lrnID == "classif.gbm" |
+     lrnID ==  "classif.h2o.deeplearning" | lrnID == "classif.h2o.gbm" |
+     lrnID == "classif.h2o.glm" | lrnID == "classif.h2o.randomForest" |
+     lrnID == "classif.randomForestSRC" | lrnID == "classif.ranger" |
+     lrnID == "classif.rpart" | lrnID == "classif.RRF" | lrnID == "classif.xgboost"){
     Importance <- getFeatureImportance(model)
     Importance <- Importance$res
     suppressMessages({
