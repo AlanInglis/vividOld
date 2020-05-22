@@ -4,7 +4,6 @@
 #'
 #' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
-#' @param iml If TRUE then agnostic variable importance measures are generated.
 #' @param plotly If TRUE then an interactive plot is displayed.
 #' @param intLow Colour, set by the user, to display low interaction strengths.
 #' @param intHigh Colour, set by the user, to display high interaction strengths.
@@ -57,13 +56,18 @@
 
 # Heatmap Plotting Function -------------------------------------------------------
 
-plotHeatMap <- function(task, model, iml = FALSE,
+plotHeatMap <- function(task, model,
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
                        impLow = "white", impHigh = "firebrick1", top = NULL, reorder=TRUE,...)
   {
   message(" Calculating variable importance...")
   #dint <- prepPlotly(task, model, method = method)
-  dint <- prepHeatmap(task, model, iml)
+
+  if(!exists("dinteraction")){
+  dint <- prepFunc(task, model)
+  }else{dint <- dinteraction}
+
+
 
   #top <- max(top)
 
@@ -109,7 +113,7 @@ plotHeat <- function(dinteraction,
   maximumInt <- max(as.dist(dinteraction))+0.01
   maximumInt <- ceiling(maximumInt*100)/100
 
-  yimpMax <- max(diag(dinteraction))+1
+  ImpMax <- max(diag(dinteraction))+1
   labelNames <- colnames(dinteraction)
 
   #set values below zero to = zero:
@@ -142,7 +146,7 @@ plotHeat <- function(dinteraction,
     new_scale_fill() +
     geom_raster(aes(fill = `Variable\nImportance`),
                 alpha = var_int$alpha_imp) +
-    scale_fill_gradient(low = impLow ,high = impHigh, limits=c(0, yimpMax)) +
+    scale_fill_gradient(low = impLow ,high = impHigh, limits=c(0, ImpMax)) +
     ggtitle(title) +
     xlab('') +
     ylab('') +
@@ -164,7 +168,7 @@ plotlyPlot <- function(dinteraction,
   maximumInt <- ceiling(maximumInt*100)/100
 
 
-  yimpMax <- max(diag(dinteraction))+1
+  ImpMax <- max(diag(dinteraction))+1
   labelNames <- colnames(dinteraction)
   #set values below zero to = zero:
   dinteraction[dinteraction<0] <- 0
@@ -193,7 +197,7 @@ plotlyPlot <- function(dinteraction,
     scale_fill_gradient(low = intLow, high = intHigh, limits=c(0, maximumInt)) +
     geom_point(aes(colour = `Variable\nImportance`), size = 10,
                alpha = var_int$alpha_imp) +
-    scale_colour_gradient(low = impLow ,high = impHigh, limits=c(0, yimpMax)) +
+    scale_colour_gradient(low = impLow ,high = impHigh, limits=c(0, ImpMax)) +
     xlab('') +
     ylab('') +
     theme_light() +
@@ -205,52 +209,3 @@ plotlyPlot <- function(dinteraction,
   ppp
 
 }
-
-# PREP FUNCTION -----------------------------------------------------------
-
-prepHeatmap <- function(task, model, iml){
-  data <- getTaskData(task)
-
-  # Get Importance Measures -------------------------------------------------
-  mod  <- Predictor$new(model, data)
-
-  if(iml){
-    imp <- FeatureImp$new(mod, loss = "mse")
-    yImp <- imp$results$importance
-    ovars <- imp$results$feature
-  }else{
-    imp <- getFeatureImportance(model)
-    imp <- imp$res
-    suppressMessages({
-      imp <- melt(imp)
-    })
-    yImp<-  imp$value
-    ovars <- getTaskFeatureNames(task)
-  }
-
-
-
-
-  # Create progress bar
-  pb <- progress_bar$new(
-    format = "  Calculating variable interactions...[:bar]:percent. Estimated completion time::eta ",
-    total = length(ovars),
-    clear = FALSE)
-
-  res  <- NULL
-  for (i in 1:length(ovars)){
-    res <- rbind(res, Interaction$new(mod,  grid.size = 10, feature=ovars[i])$results)
-    pb$tick()
-  }
-  res[[".feature"]] <- reorder(res[[".feature"]], res[[".interaction"]])
-
-  vars2 <- t(simplify2array(strsplit(as.character(res[[".feature"]]),":"))) # split/get feature names
-  dinteraction <- matrix(0, length(ovars), length(ovars))                   # create matrix
-  rownames(dinteraction) <- colnames(dinteraction) <- ovars                 # set names
-  dinteraction[vars2] <- res[[".interaction"]]                              # set values
-  dinteraction <- (dinteraction+t(dinteraction))/2   # avg over values to make symmetrical
-
-  diag(dinteraction)<- yImp
-  dinteraction
-}
-

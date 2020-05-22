@@ -6,7 +6,6 @@
 #'
 #' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
-#' @param iml If TRUE then agnostic variable importance measures are generated.
 #' @param thresholdValue A value chosen by the user which will show all the edges with weights (i.e., the interacions) above that value. For example, if thresholdValue = 0.2, then only the the interacions greater than 0.2 will be displayed.
 #' @param label If label = TRUE the numerical value for the interaction strength will be displayed.
 #' @param minInt Minimum interaction strength to be displayed on the legend.
@@ -63,70 +62,18 @@
 # Graph Function ----------------------------------------------------------
 # -------------------------------------------------------------------------
 
-plotNetwork <- function(task, model, iml = FALSE, thresholdValue = 0,
+plotNetwork <- function(task, model, thresholdValue = 0,
                           label = FALSE, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
                           labelNudge = 0.05, layout = "circle",
-                          cluster = F, embedded = NULL,...){
+                          cluster = F,...){
   message(" Calculating variable importance...")
-  netPrep <- prepNet(task, model, iml)
+
+  if(!exists("dinteraction")){
+    netPrep <- prepFunc(task, model)
+  }else{netPrep <- dinteraction}
+
   plotNet(task, netPrep, model, thresholdValue, label)
 }
-
-
-
-
-# Prep Function -----------------------------------------------------------
-# -------------------------------------------------------------------------
-
-
-prepNet <- function(task, model, iml){
-  # get data:
-  data <- getTaskData(task)
-
-
-  mod <- Predictor$new(model, data = data) # iml Interaction Strength
-
-  if(iml){
-    imp <- FeatureImp$new(mod, loss = "mse")
-    Imp <- imp$results$importance
-    ovars <- imp$results$feature
-  }else{
-    Importance <- getFeatureImportance(model)
-    Importance <- Importance$res
-    suppressMessages({
-      Importance <- melt(Importance)
-    })
-    Imp <-  Importance$value
-    ovars <- getTaskFeatureNames(task)
-  }
-
-
-  # Create progress bar
-  pb <- progress_bar$new(
-    format = "  Calculating variable interactions...[:bar]:percent. Estimated completion time::eta ",
-    total = length(ovars),
-    clear = FALSE)
-
-  res  <- NULL
-  for (i in 1:length(ovars)){
-    res <- rbind(res, Interaction$new(mod, grid.size = 10, feature=ovars[i])$results)
-    pb$tick()
-  }
-
-  res[[".feature"]]<- reorder(res[[".feature"]], res[[".interaction"]])
-
-  vars2 <- t(simplify2array(strsplit(as.character(res[[".feature"]]),":"))) # split/get feature names
-  dinteraction <- matrix(0, length(ovars), length(ovars))                   # create matrix
-  rownames(dinteraction) <- colnames(dinteraction) <- ovars                 # set names
-  dinteraction[vars2] <- res[[".interaction"]]                              # set values
-  dinteraction <- (dinteraction+t(dinteraction))/2                          # avg over values to make symmetrical
-  dinteraction1 <- data.frame(interaction=as.vector(dinteraction))
-  diag(dinteraction)<- Imp
-  dinteraction
-}
-
-
-
 
 
 # Plotting Function -------------------------------------------------------
@@ -138,39 +85,6 @@ plotNet <- function(task,
                     label, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
                     labelNudge = 0.05, layout = "circle",
                     cluster = F){
-
-  # Get importance values
-  # if(iml){
-  #   imp <- FeatureImp$new(mod, loss = "mse")
-  #   yImp <- imp$results$importance
-  #   ovars <- imp$results$feature
-  # }else{
-  #   Importance <- getFeatureImportance(model)
-  #   Importance <- Importance$res
-  #   suppressMessages({
-  #   Importance <- melt(Importance)
-  #   })
-  #   Imp <-  Importance$value
-  #   Imp1 <-  Importance$value
-  #   impWarn <- Importance$value
-  #   impWarn <- max(impWarn)
-  #   impLegend <- Importance$value
-  #   impLegend <- round(impLegend, 2)
-  #   impLegend <- max(impLegend)+10
-  # }
-
-
-    # Importance <- getFeatureImportance(model)
-    # Importance <- Importance$res
-    # Importance <- melt(Importance)
-    # Imp <-  Importance$value
-    # Imp1 <-  Importance$value
-    # impWarn <- Importance$value
-    # impWarn <- max(impWarn)
-    # impLegend <- Importance$value
-    # impLegend <- round(impLegend, 2)
-    # impLegend <- max(impLegend)+10
-
 
   Imp <- diag(dinteraction)
   Imp1 <-  Imp
