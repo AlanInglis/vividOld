@@ -25,92 +25,94 @@ library(vivid)
 This package was designed to help a user to easily distinguish which
 variables in a model are important and which variables interact with
 each other. It does this by giving the user different plotting options.
-These include a heatmap style plot that displays 2-way interactions and
+These include a heat-map style plot that displays 2-way interactions and
 individual variable importance. Also, a network style plot where the
 size of a node represents variable importance (the bigger the node, the
 more important the variable) and the edge weight represents the 2-way
 interaction strength. Also included is an option to display partial
 dependence plots that utilize an Eularian tour to help the user to
 easily identify which variables interact the most. The interaction is
-calculated using *Friedman’s H-Statistic*\[1\].
+calculated using *Friedman’s H-Statistic*^[Friedman, H. and Popescu, B.E. Predictive learning via rule ensemble. The Annals of Applied Statistics. 2008. 916-954]
 
 ## Data used in this vignette:
 
-The data used in the following examples is the *air quality* data which
-is the daily air quality measurements in New York, May to September
-1973\[2\]. The data contains 6 variables which are described as follows:
+The data used in the following examples is the *abalone* data from the `AppliedPredictiveModeling` package^[AppliedPredictiveModeling: Functions and Data Sets for 'Applied Predictive Modeling'. M. Kuhn and K. Johnson. 2018. https://CRAN.R-project.org/package=AppliedPredictiveModeling] which contains measurements obtained from 4177 abalones. The data contains measurements of the type (male, female and infant), the longest shell measurement, the diameter, height and whole, shucked, viscera and shell weights. The response variable is rings. The age of the abalone can be determined by counting the rings plus 1.5.
+The variables are described as follows:
 
-  - Ozone: Mean ozone in parts per billion from 1300 to 1500 hours at
-    Roosevelt Island.
+  - Rings: +1.5 gives the age in years.
 
-  - Solar.R: Solar radiation in Langleys in the frequency band 4000–7700
-    Angstroms from 0800 to 1200 hours at Central Park.
+  - Longest shell: Longest shell measurement (mm).
 
-  - Wind: Average wind speed in miles per hour at 0700 and 1000 hours at
-    LaGuardia Airport.
+  - Diameter: Perpendicular to length (mm).
 
-  - Temp: Maximum daily temperature in degrees Fahrenheit at La Guardia
-    Airport.
+  - Height: With meat in shell (mm).
 
-  - Month: The month the data was recorded (takes a value between 1-12).
+  - Whole weight: Whole abalone (gm).
 
-  - Day: The day the the data was recorded (takes a value between 1-7).
+  - Shucked weight: Weight of meat (gm).
+  
+  - Viscera weight: Gut weight (after bleeding) (gm).
+  
+  - Shell weight: After being dried (gm).
 
-In all the following examples, *Ozone* is used as the response variable.
+In all the following examples, a subset of the data is used and *Rings* is used as the response variable.
 
 ## Commands:
 
-# `intHeatmap()`
+# `plotHeatMap()`
 
 -----
 
-*Create a Heatmap style plot displaying Variable Importance and Variable
+*Create a Heat-map style plot displaying Variable Importance and Variable
 Interaction*
 
 -----
 
 **Description**
 
-Plots a heatmap of the interaction strength with variable importance on
+Plots a heat-map of the interaction strength with variable importance on
 the off-diagonal
 
 **Usage**
 
-intHeatmap(task, model, method, plotly, intLow, intHigh, impLow, impHigh, top)
+plotHeatMap(task, model, plotly, intLow, intHigh, impLow, impHigh, top, reorder)
 
 
 **Example**
 
 Load in the data:
 ```{r, messages = FALSE}
-aq <- data.frame(airquality)
-aq <- na.omit(aq)
+library(AppliedPredictiveModeling)
+data(abalone)
+ab <- data.frame(abalone)
+ab <- na.omit(ab)
+ab <- ab[1:1500,]
 ```
 
 Run an `mlr` random forest model:
 
 ```{r}
 library(mlr)
-aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
-aqRegrLrn <- makeLearner("regr.randomForest")
-aqMod <- train(aqRegrLrn, aqRgrTask)
+ab_task  <- makeRegrTask(data = ab, target = "Rings")
+ab_lrn <- makeLearner("regr.randomForest")
+ab_mod <- train(ab_lrn, ab_task)
 ```
 
-To call the plot we use the `intHeatmap()` command as follows:
+To call the plot we use the `plotHeatMap()` command as follows:
 
-```{r}
-#intHeatmap(aqRgrTask, aqMod, method = "randomForest_importance", plotly = F, 
-#           intLow = "floralwhite", intHigh = "dodgerblue4",
-#           impLow = "white", impHigh = "firebrick1", 
-#           top = 0)
+```{r, fig.width = 9, fig.height = 7}
+set.seed(1701)
+plotHeatMap(ab_task, ab_mod,  plotly = F,
+          intLow = "floralwhite", intHigh = "dodgerblue4",
+          impLow = "white", impHigh = "firebrick1")
 ```
 <center>
-Fig 1.0: *Heatmap style plot displaying 2-way interaction strength in blue and individual variable importance on the diagonal in red.*
+Fig 1.0: *Heat-map style plot displaying 2-way interaction strength in blue and individual variable importance on the diagonal in red.*
 </center>
 
-From the above plot, the user can easily see that *Temp* is the most important variable when predicting *Ozone*. Also, there is a clear and strong interaction between *Month* and *Day*. 
+From the above plot we can see that `LongestShell:VisceraWeight` weight has the strongest interaction and `ShellWeight` is the most important variable for predicting `rings`.
 
-# `importanceNet()`
+# `plotNetwork()`
 
 -----
 
@@ -125,34 +127,37 @@ Plots a network style graph, where node size represents variable importance and 
 
 **Usage**
 
-importanceNet(task, model, method, thresholdValue, cluster)
-
+plotNetwork(task, model, thresholdValue = 0,
+                          label = FALSE, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
+                          labelNudge = 0.05, layout = "circle",
+                          cluster = F,...)
 **Example**
 
 Load in the data:
 ```{r, messages = FALSE}
-aq <- data.frame(airquality)
-aq <- na.omit(aq)
+library(AppliedPredictiveModeling)
+data(abalone)
+ab <- data.frame(abalone)
+ab <- na.omit(ab)
+ab <- ab[1:1500,]
 ```
 
 Run an `mlr` random forest model:
 ```{r}
 library(mlr)
-aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
-aqRegrLrn <- makeLearner("regr.randomForest")
-aqMod <- train(aqRegrLrn, aqRgrTask)
+ab_task  <- makeRegrTask(data = ab, target = "Rings")
+ab_lrn <- makeLearner("regr.randomForest")
+ab_mod <- train(ab_lrn, ab_task)
 ```
 
-To call the plot we use the `importanceNet()` command as follows:
+To call the plot we use the `plotNetwork()` command as follows:
 
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-importanceNet(task = aqRgrTask, model = aqMod, method = "randomForest_importance", thresholdValue = 0, 
-              label = T, 
+plotNetwork(task = ab_task, model = ab_mod, thresholdValue = 0, 
               minInt = 0, maxInt = 1, 
               minImp = 0, maxImp = 100,
-              labelNudge = 0.05,
-              cluster = F)
+              labelNudge = 0.05)
 ```
 <center>
 Fig 2.0: *Network style plot displaying 2-way interaction strength between each of the variables and individual variable importance*
@@ -162,25 +167,25 @@ The edge width, in the above plot, indicates the interaction strength, with the 
 
 The node size represents individual variable importance with respect to predicting the response. 
 
-As can be seen in the above plot, *Month* and *Day* have the largest interaction and *Temp* is the most important variable for predicting *Ozone*. 
+From the above plot we can see that `LongestShell:VisceraWeight` weight has the strongest interaction and `ShellWeight` is the most important variable for predicting `rings`.
 
-The user can control which interaction values to display by using the `thresholdValue` argument. In the following example, `thresholdValue = 0.09` means that only the the edges with weights (i.e., the interacions) above 0.09 are displayed:
+The user can control which interaction values to display by using the `thresholdValue` argument. In the following example, `thresholdValue = 0.11` means that only the the edges with weights (i.e., the interactions) above 0.09 are displayed:
 
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-importanceNet(task = aqRgrTask, model = aqMod, method = "randomForest_importance", thresholdValue = 0.09, cluster = F)
+plotNetwork(task = ab_task, model = ab_mod, method = "randomForest_importance", thresholdValue = 0.11, cluster = F)
 ```
 <center>
-Fig 2.1: *Network style plot displaying thresholded 2-way interaction strengths between each of the variables and individual variable importance. In this plot only the interactions greater than 0.09 are shown.*
+Fig 2.1: *Network style plot displaying thresholded 2-way interaction strengths between each of the variables and individual variable importance. In this plot only the interactions greater than 0.11 are shown.*
 </center>
 
 
 
-# `PDPpairs()`
+# `ggpdpPairs()`
 
 -----
 
-*Creates a plot of the partial dependence of each of the variables in pairs plot style matrix*
+*Creates a  pairs plot style matrix plot of the 2D partial dependence of each of the variables in the upper diagonal, the individual pdp and ice curves on the diagonal and a scatter-plot of the data on the lower diagonal*
 
 -----
 
@@ -190,32 +195,39 @@ Plots a pdp (partial dependence plot) pairs style matrix. The partial dependence
 
 **Usage**
 
-pdpPairs(task, model)
+ggpdpPairs(task, model, method="pdp",vars=NULL, colLow = "#132B43", colHigh = "#56B1F7",
+                       fitlims = NULL, gridsize = 10, class=1, cardinality = 20)
 
 **Example**
 
 Load in the data:
 ```{r, messages = FALSE}
-aq <- data.frame(airquality)
-aq <- na.omit(aq)
+library(AppliedPredictiveModeling)
+data(abalone)
+ab <- data.frame(abalone)
+ab <- na.omit(ab)
+ab <- ab[1:1500,]
 ```
 
 Run an `mlr` random forest model:
 ```{r}
 library(mlr)
-library(randomForest)
-aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
-aqRegrLrn <- makeLearner("regr.randomForest")
-aqMod <- train(aqRegrLrn, aqRgrTask)
+ab_task  <- makeRegrTask(data = ab, target = "Rings")
+ab_lrn <- makeLearner("regr.randomForest")
+ab_mod <- train(ab_lrn, ab_task)
 ```
 
 To call the pdp pairs plot we use:
 ```{r, fig.width = 8, fig.height = 7}
-pdpPairs(task = aqRgrTask, model =  aqMod)
+set.seed(1701)
+ggpdpPairs(task = ab_task, model =  ab_mod)
 ```
 <center>
-Fig 3.0: *A pairs style matrix plot displaying the partial dependence between each of the variables*
+Fig 3.0: *A pairs style matrix plot displaying the partial dependence between each of the variables in the upper diagonal, the individual pdp and ice curves on the diagonal and a scatter-plot on the lower diagonal*
 </center>
+
+From the above plot, we see the 2D pdp plots on the upper diagonal. The individual pdp and ice cures on the diagonal and scatter-plots on the lower diagonal. As `type` is a factor variable with 3 levels, a barplot displaying the frequency is displayed on the diagonal and the individual pdp curves are shown on the upper diagonal for this variable. 
+
 
 
 In addition to displaying both the variable importance and interactions together, the following functions display only the variable importance _or_ the interaction strength. 
@@ -229,7 +241,7 @@ In addition to displaying both the variable importance and interactions together
 -----
 
 *Description*
-Plots a "lollipop" style plot displating the 2-way interactions on the y-axis and the interaction strength on the x-axis. This function also allows the user to switch between a lollipop style plot (which is default) and a barplot, by use of the `type` argument. 
+Plot displaying the 2-way interactions on the y-axis and the interaction strength on the x-axis. This function also allows the user to switch between a lollipop style plot (which is default) and a barplot, by use of the `type` argument. 
 
 **Usage**
 
@@ -239,29 +251,31 @@ allInt(task, model, type)
 
 Load in the data:
 ```{r, messages = FALSE}
-aq <- data.frame(airquality)
-aq <- na.omit(aq)
+library(AppliedPredictiveModeling)
+data(abalone)
+ab <- data.frame(abalone)
+ab <- na.omit(ab)
+ab <- ab[1:1500,]
 ```
 
 Run an `mlr` random forest model:
 ```{r}
 library(mlr)
-library(randomForest)
-aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
-aqRegrLrn <- makeLearner("regr.randomForest")
-aqMod <- train(aqRegrLrn, aqRgrTask)
+ab_task  <- makeRegrTask(data = ab, target = "Rings")
+ab_lrn <- makeLearner("regr.randomForest")
+ab_mod <- train(ab_lrn, ab_task)
 ```
 
 To call the pdp pairs plot we use:
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-allInt(task = aqRgrTask, model =  aqMod)
+allInt(task = ab_task, model =  ab_mod, type = "barplot")
 ```
 <center>
 Fig 4.0: *A plot displaying all 2-way interaction in a model.*
 </center>
 
-From the above plot, we can see that the two variables with the greatest interaction strength are `Month:Day`.
+From the above plot we can see that `LongestShell:VisceraWeight` has the strongest interaction.
 
 # `interactionPlot()`
 
@@ -272,7 +286,7 @@ From the above plot, we can see that the two variables with the greatest interac
 -----
 
 *Description*
-Plots a "lollipop" style plot displating the varaibles on the y-axis and the overall interaction strength on the x-axis. This function also allows the user to switch between a lollipop style plot (which is default) and a barplot, by use of the `type` argument. 
+Plot displaying the variables on the y-axis and the overall interaction strength on the x-axis. This function also allows the user to switch between a lollipop style plot (which is default) and a barplot, by use of the `type` argument. 
 
 **Usage**
 
@@ -282,27 +296,31 @@ interactionPlot(task, model, type)
 
 Load in the data:
 ```{r, messages = FALSE}
-aq <- data.frame(airquality)
-aq <- na.omit(aq)
+library(AppliedPredictiveModeling)
+data(abalone)
+ab <- data.frame(abalone)
+ab <- na.omit(ab)
+ab <- ab[1:1500,]
 ```
 
 Run an `mlr` random forest model:
 ```{r}
 library(mlr)
-library(randomForest)
-aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
-aqRegrLrn <- makeLearner("regr.randomForest")
-aqMod <- train(aqRegrLrn, aqRgrTask)
+ab_task  <- makeRegrTask(data = ab, target = "Rings")
+ab_lrn <- makeLearner("regr.randomForest")
+ab_mod <- train(ab_lrn, ab_task)
 ```
 
 To call the pdp pairs plot we use:
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-interactionPlot(task = aqRgrTask, model =  aqMod)
+interactionPlot(task = ab_task, model =  ab_mod, type = "barplot")
 ```
 <center>
 Fig 5.0: *A plot displaying the overall interaction strength for each variable in a model.*
 </center>
+
+From the above plot we can see that the variable with the strongest overall interaction strength is `ShellWeight`
 
 # `importancePlot()`
 
@@ -313,7 +331,7 @@ Fig 5.0: *A plot displaying the overall interaction strength for each variable i
 -----
 
 *Description*
-Plots a "lollipop" style plot displating the varaibles on the y-axis and the variable importance on the x-axis. This function also allows the user to switch between a lollipop style plot (which is default) and a barplot, by use of the `type` argument. 
+Plots variables on the y-axis and the variable importance on the x-axis. This function also allows the user to switch between a lollipop style plot (which is default) and a barplot, by use of the `type` argument. 
 
 **Usage**
 
@@ -323,26 +341,28 @@ importancePlot(task, model, type)
 
 Load in the data:
 ```{r, messages = FALSE}
-aq <- data.frame(airquality)
-aq <- na.omit(aq)
+library(AppliedPredictiveModeling)
+data(abalone)
+ab <- data.frame(abalone)
+ab <- na.omit(ab)
+ab <- ab[1:1500,]
 ```
 
 Run an `mlr` random forest model:
 ```{r}
 library(mlr)
-library(randomForest)
-aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
-aqRegrLrn <- makeLearner("regr.randomForest")
-aqMod <- train(aqRegrLrn, aqRgrTask)
+ab_task  <- makeRegrTask(data = ab, target = "Rings")
+ab_lrn <- makeLearner("regr.randomForest")
+ab_mod <- train(ab_lrn, ab_task)
 ```
 
 To call the pdp pairs plot we use:
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-importancePlot(task = aqRgrTask, model =  aqMod)
+importancePlot(task = ab_task, model =  ab_mod)
 ```
 <center>
 Fig 6.0: *A plot displaying the variable importance for each variable in a model.*
 </center>
 
-
+From the above plot, we can see that the most important variable, when prediciting `rings` is `ShuckedWeight`
