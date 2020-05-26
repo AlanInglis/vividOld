@@ -120,7 +120,7 @@ ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", 
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
     pdp <- pdplist[[paste(vars[2], vars[1], sep="pp")]]
     # pdp <-FeatureEffect$new(pred.data, vars, method = method, grid.size=gridsize)
-    plot(pdp, rug=FALSE) + scale_fill_gradient(name="yhat",low=colLow, high=colHigh,limits=limits)
+    plot(pdp, rug=FALSE) + scale_fill_gradient(name="\u0177",low=colLow, high=colHigh,limits=limits)
   }
 
   # Plot prep for diag pdps
@@ -158,7 +158,10 @@ ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", 
                upper=list(continuous = ggpdp, combo=ggpdpc, discrete=ggpdp),
                diag = list(continuous = ggpdpDiag),
                lower=list(continuous=wrap("points", size=.2)), legend=w,
-               cardinality_threshold = 12)
+               cardinality_threshold = 12) +
+    theme_bw() + theme(panel.border=element_blank(), axis.line=element_line(),
+                       strip.text = element_text(face="bold", colour="red", size = 5))
+
   suppressMessages(print(p))
   invisible(p)
 
