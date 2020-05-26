@@ -158,7 +158,7 @@ ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", 
                upper=list(continuous = ggpdp, combo=ggpdpc, discrete=ggpdp),
                diag = list(continuous = ggpdpDiag),
                lower=list(continuous=wrap("points", size=.2)), legend=w,
-               cardinality_threshold = 12) +
+               cardinality_threshold = cardinality) +
     theme_bw() + theme(panel.border=element_blank(), axis.line=element_line(),
                        strip.text = element_text(face="bold", colour="red", size = 5))
 
