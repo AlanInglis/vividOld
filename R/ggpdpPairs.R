@@ -20,6 +20,7 @@
 #' @importFrom iml "Predictor"
 #' @importFrom GGally "ggpairs"
 #' @importFrom GGally "wrap"
+#' @import progress
 #'
 #' @examples
 #'
@@ -69,11 +70,17 @@ ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", 
   xvarn <- xvarn[1:length(unique(xvarn))]
   xvarn <- as.matrix(xvarn)
 
+  # Create progress bar
+  pb <- progress_bar$new(
+    format = "  Calculating pdp + ice...[:bar]:percent. Estimated completion time::eta ",
+    total = nrow(xvarn),
+    clear = FALSE)
 
   # loop through vars and create a list of pdps
   pdplist1 <- vector("list", length=nrow(xvarn))
   for (i in 1:nrow(xvarn)){
     pdplist1[[i]] <-FeatureEffect$new(pred.data, xvarn[i,], method = "pdp+ice", grid.size=10)
+    pb$tick()
   names(pdplist1)  <- paste(xvarn[,1])
   }
 
@@ -86,11 +93,19 @@ ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", 
   xyvarn <- cbind(names(xdata)[xyvar[,1]], names(xdata)[xyvar[,2]])
 
 
+  # Create progress bar
+  pb1 <- progress_bar$new(
+    format = "  Calculating partial dependence...[:bar]:percent. Estimated completion time::eta ",
+    total = nrow(xyvarn),
+    clear = FALSE)
+
   # loop through vars and create a list of pdps for each pair
   pdplist <- vector("list", length=nrow(xyvarn))
-  for (i in 1:nrow(xyvarn))
+  for (i in 1:nrow(xyvarn)){
     pdplist[[i]] <-FeatureEffect$new(pred.data, xyvarn[i,], method = method, grid.size=gridsize)
+    pb1$tick()
   names(pdplist)  <- paste(xyvarn[,1], xyvarn[,2], sep="pp")
+ }
 
    # Set limits for pairs
   if (is.null(fitlims)){
@@ -112,7 +127,7 @@ ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", 
   ggpdpDiag <- function(data, mapping, ...) {
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
     pdp <- pdplist1[[paste(vars[1])]]
-    plot(pdp, rug=FALSE)}
+    plot(pdp, rug=FALSE) }
 
   # plot prep for class.
   ggpdpc <- function(data, mapping, ...) {
@@ -134,12 +149,16 @@ ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", 
   # get y-data
   yData <- pred.data$data$y
   yData <- as.numeric(unlist(yData))
+  # get predictions
+  Pred <- pred.data$predict(data)
+  Pred <- Pred$.prediction
+
   p <- ggpairs(xdata,
                mapping=ggplot2::aes(colour = yData),
                upper=list(continuous = ggpdp, combo=ggpdpc, discrete=ggpdp),
                diag = list(continuous = ggpdpDiag),
                lower=list(continuous=wrap("points", size=.2)), legend=w,
-               cardinality_threshold = cardinality)
+               cardinality_threshold = 12)
   suppressMessages(print(p))
   invisible(p)
 
