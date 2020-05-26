@@ -10,11 +10,12 @@
 #' @param top A value set by the user to only display the top x amount variables
 #' @param ... Not currently implemented
 #'
-#'
 #' @importFrom mlr "getTaskData"
 #' @importFrom mlr "normalizeFeatures"
 #' @importFrom mlr "generateFilterValuesData"
 #' @importFrom mlr "getTaskFeatureNames"
+#' @importFrom mlr "makeLearner"
+#' @importFrom mlr "train"
 #' @importFrom iml "Predictor"
 #' @importFrom iml "Interaction"
 #' @importFrom ggplot2 "ggplot"
@@ -46,12 +47,50 @@ allInt <- function(task, model, type = "lollipop", top = 0, ...){
   #   stop("Invalid plotting type. See ?allInt for available plotting types")
   # }
   message(" Initilizing...")
-  data <- getTaskData(task)
-  nam <- getTaskFeatureNames(task)
 
-  mod <- Predictor$new(model, data = data)
-  res <- NULL
-  ovars <- nam
+  data <- getTaskData(task)
+
+  mod <- Predictor$new(model, data = data) # create iml model
+
+
+# -------------------------------------------------------------------------
+#                         FEATURE SELECTION
+# -------------------------------------------------------------------------
+# This section deals with removing features with low interaction strength:
+
+
+  intValues <- Interaction$new(mod) # Overall interaction strength
+  intVal <- intValues$results # get interaction results
+  a <- intVal
+  a[,".feature"] <- as.factor(a[,".feature"])
+  a <- a[with(a,order(.interaction, decreasing = T)),] #reordering
+
+
+  n <- nrow(a) # Number of rows in a
+  percent_variables_remove = 0.1 # percentage of variables that you want to remove
+  n_begin = n - round(n*percent_variables_remove) # Getting the indices of those variables with the lowest variable interactions
+  variables_remove = a[n_begin:n,1]
+
+  dat <- data[,-which(names(data) %in% variables_remove)] # Removing the columns here
+
+  varChar <- as.character(variables_remove)
+  task1 <- dropFeatures(task, c(varChar)) # drop the features from the task
+
+
+  # Re-learn/train the mlr model
+  lrn.ID <- model$learner$id
+  lnr <- makeLearner(lrn.ID)
+  mlrMod <- train(lnr, task1)
+
+
+# -------------------------------------------------------------------------
+# Recreate iml model/interaction
+
+
+  mod1 <- Predictor$new(mlrMod, data = dat) # make predictions on new data
+
+  ovars <- getTaskFeatureNames(task1)
+  nam <- getTaskFeatureNames(task1)
 
   # Create progress bar
   pb <- progress_bar$new(
@@ -61,7 +100,7 @@ allInt <- function(task, model, type = "lollipop", top = 0, ...){
 
   res  <- NULL
   for (i in 1:length(ovars)){
-    res <- rbind(res, Interaction$new(mod, grid.size = 10, feature=ovars[i])$results)
+    res <- rbind(res, Interaction$new(mod1, grid.size = 10, feature=ovars[i])$results)
     pb$tick()
   }
 
@@ -75,26 +114,26 @@ allInt <- function(task, model, type = "lollipop", top = 0, ...){
 
   df <- transform(data.frame(dinteraction), y=row.names(dinteraction))
 
-  # RESHAPE LONG
+  # Reshape long
   long_df <- reshape(df, varying = colnames(dinteraction), times = colnames(dinteraction),
                      timevar="x", v.names="value", direction="long")
 
-  # ORDER VALUES
+  # Order values
   long_df <- with(long_df, long_df[order(value),])
   long_df$xy <- with(long_df, paste(x, y, sep=":"))
 
-  # SELECT THE DATA I WANT
+  # Select correct data
   df <- long_df[,c(3,5)]
 
-  # REMOVE ZEROS
+  # Remove zeros
   df<-df[!apply(df[,1:2] == 0, 1, FUN = any, na.rm = TRUE),]
 
-
-
+  # Show only top X results
   if(top > 0){
-    res <- tail(res,top)
+    df <- tail(df,top)
   }
-
+# -------------------------------------------------------------------------
+# Plotting
   if(type == "barplot"){
   # barplot
     pp <-  ggplot(df, aes(x = reorder(xy, value), y = value)) +
@@ -106,8 +145,6 @@ allInt <- function(task, model, type = "lollipop", top = 0, ...){
       ylab("Interaction Strength") +
       theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) +
       coord_flip()
-
-    pp
   return(pp)
   }else if(type == "circleBar"){
   # Circle barplot
