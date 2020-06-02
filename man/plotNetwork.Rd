@@ -5,8 +5,7 @@
 \title{plotNetwork}
 \usage{
 plotNetwork(
-  task,
-  model,
+  mat,
   thresholdValue = 0,
   label = FALSE,
   minInt = 0,
@@ -20,9 +19,7 @@ plotNetwork(
 )
 }
 \arguments{
-\item{task}{Task created from the mlr package, either regression or classification.}
-
-\item{model}{Any machine learning model.}
+\item{mat}{A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.}
 
 \item{thresholdValue}{A value chosen by the user which will show all the edges with weights (i.e., the interacions) above that value. For example, if thresholdValue = 0.2, then only the the interacions greater than 0.2 will be displayed.}
 

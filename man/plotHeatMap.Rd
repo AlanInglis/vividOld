@@ -5,8 +5,7 @@
 \title{plotHeatMap}
 \usage{
 plotHeatMap(
-  task,
-  model,
+  mat,
   plotly = FALSE,
   intLow = "floralwhite",
   intHigh = "dodgerblue4",
@@ -18,9 +17,7 @@ plotHeatMap(
 )
 }
 \arguments{
-\item{task}{Task created from the mlr package, either regression or classification.}
-
-\item{model}{Any machine learning model.}
+\item{mat}{A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.}
 
 \item{plotly}{If TRUE then an interactive plot is displayed.}
 

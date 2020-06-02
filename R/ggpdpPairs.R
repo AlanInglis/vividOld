@@ -153,6 +153,7 @@ ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", 
   Pred <- pred.data$predict(data)
   Pred <- Pred$.prediction
 
+
   p <- ggpairs(xdata,
                mapping=ggplot2::aes(colour = Pred),
                upper=list(continuous = ggpdp, combo=ggpdpc, discrete=ggpdp),
