@@ -18,6 +18,11 @@ sim_friedman = function(n, p = 0, res_sd = 1, pars = c(10, 20, 10, 5)) {
 # Create some data
 my_data = sim_friedman(200)
 
+
+
+# -------------------------------------------------------------------------
+
+# Regression
 # Run it through mlr
 fr_task = makeRegrTask(data = my_data, target = "y")
 fr_learn = makeLearner("regr.randomForest")
@@ -31,8 +36,40 @@ test_that("allInt works", {
   expect_list(allInt(task = fr_task, model = fr_mod, top = 2))
 })
 
-# Test that the function works for classification
 
-# Perhaps test other learners e.g. linear regression to make sure that interactions are zero
+# -------------------------------------------------------------------------
+# classification
+ir <- iris
+# Run it through mlr
+ir_task = makeClassifTask(data = ir, target = "Species")
+ir_learn = makeLearner("classif.randomForest", predict.type = 'prob')
+ir_mod = mlr::train(ir_learn, ir_task)
+
+# Test that the basic function works for classification
+test_that("allInt works", {
+  expect_list(allInt(task = ir_task, model = ir_mod))
+  expect_list(allInt(task = ir_task, model = ir_mod, type = 'barplot'))
+  expect_list(allInt(task = ir_task, model = ir_mod, type = 'circleBar'))
+  expect_list(allInt(task = ir_task, model = ir_mod, top = 2))
+})
+
+
+# -------------------------------------------------------------------------
+# test other learners e.g. linear regression to make sure that interactions are zero
+fr_task = makeRegrTask(data = my_data, target = "y")
+fr_learn = makeLearner("regr.lm")
+fr_mod = mlr::train(fr_learn, fr_task)
+
+
+test_that("lm interactions = 0", {
+  aInt <- allInt(task = fr_task, model = fr_mod)
+  aInt <- aInt$data$value
+  expect_equal(sum(aInt), 0)
+})
+
+
+
+
+
 
 
