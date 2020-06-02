@@ -1,12 +1,48 @@
 # Prep Function -----------------------------------------------------------
 # -------------------------------------------------------------------------
 
+#' prepFunction
+#'
+#' @description Creates a matrix displaying Variable importance on the diagonal
+#'  and Variable Interaction on the off-diagonal.
+#'
+#'
+#' @param task Task created from the mlr package, either regression or classification.
+#' @param model Any machine learning model.
+#' @param ... Not currently implemented.
+#'
+#' @return A matrix of values
+#'
+#' @importFrom mlr "getTaskData"
+#' @importFrom mlr "getFeatureImportance"
+#' @importFrom mlr "getTaskFeatureNames"
+#' @importFrom iml "Predictor"
+#' @importFrom iml "Interaction"
+#' @importFrom iml "FeatureImp"
+#' @import progress
+#'
+#' @examples
+#' # Load in the data:
+#' aq <- data.frame(airquality)
+#' aq <- na.omit(aq)
+#'
+#' # Run an mlr random forest model:
+#' library(mlr)
+#' library(randomForest)
+#' aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
+#' aqRegrLrn <- makeLearner("regr.randomForest")
+#' aqMod <- train(aqRegrLrn, aqRgrTask)
+#'
+#' # Create graph:
+#' plotNetwork(task = aqRgrTask, model = aqMod,
+#' thresholdValue = 0, cluster = F)
+#'
+#' @export
+
 
 prepFunc <- function(task, model){
 
-  # setting conditon to true after function has run
-  # prep = TRUE
-
+  message(" Calculating variable importance...")
   # get data:
   data <- getTaskData(task)
 
@@ -45,7 +81,7 @@ prepFunc <- function(task, model){
 
   # Create progress bar
   pb <- progress_bar$new(
-    format = "  Calculating variable interactions...[:bar]:percent. Estimated completion time::eta ",
+    format = "  Calculating variable interactions...[:bar]:percent. Est::eta ",
     total = length(ovars),
     clear = FALSE)
 
@@ -65,6 +101,6 @@ prepFunc <- function(task, model){
   dinteraction1 <- data.frame(interaction=as.vector(dinteraction))
   diag(dinteraction) <- Imp
   dinteraction
-  dinteraction <<- dinteraction
+  #dinteraction <<- dinteraction
 }
 

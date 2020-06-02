@@ -3,9 +3,7 @@
 #' @description Create a Network style plot displaying Variable
 #'  and Variable Interaction.
 #'
-#'
-#' @param task Task created from the mlr package, either regression or classification.
-#' @param model Any machine learning model.
+#' @param mat A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.
 #' @param thresholdValue A value chosen by the user which will show all the edges with weights (i.e., the interacions) above that value. For example, if thresholdValue = 0.2, then only the the interacions greater than 0.2 will be displayed.
 #' @param label If label = TRUE the numerical value for the interaction strength will be displayed.
 #' @param minInt Minimum interaction strength to be displayed on the legend.
@@ -62,24 +60,24 @@
 # Graph Function ----------------------------------------------------------
 # -------------------------------------------------------------------------
 
-plotNetwork <- function(task, model, thresholdValue = 0,
+plotNetwork <- function(mat, thresholdValue = 0,
                           label = FALSE, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
                           labelNudge = 0.05, layout = "circle",
                           cluster = F,...){
-  message(" Calculating variable importance...")
 
-  if(!exists("dinteraction")){
-    netPrep <- prepFunc(task, model)
-  }else{netPrep <- dinteraction}
 
-  plotNet(task, netPrep, model, thresholdValue, label)
+  # if(!exists("dinteraction")){
+  # netPrep <- prepFunc(task, model)
+  # }else{netPrep <- dinteraction}
+
+  netPrep <- mat
+  plotNet(netPrep, model, thresholdValue, label)
 }
 
 
 # Plotting Function -------------------------------------------------------
 # -------------------------------------------------------------------------
-plotNet <- function(task,
-                    dinteraction,
+plotNet <- function(dinteraction,
                     model,
                     thresholdValue = 0,
                     label, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,

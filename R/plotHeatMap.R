@@ -2,8 +2,7 @@
 #'
 #' @description Plots a Heatmap-tyle display showingVariable Importance and Variable Interaction
 #'
-#' @param task Task created from the mlr package, either regression or classification.
-#' @param model Any machine learning model.
+#' @param mat A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.
 #' @param plotly If TRUE then an interactive plot is displayed.
 #' @param intLow Colour, set by the user, to display low interaction strengths.
 #' @param intHigh Colour, set by the user, to display high interaction strengths.
@@ -53,26 +52,24 @@
 #' @export
 
 
-
-# Heatmap Plotting Function -------------------------------------------------------
-
-plotHeatMap <- function(task, model,
+plotHeatMap <- function(mat,
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
                        impLow = "white", impHigh = "firebrick1", top = NULL, reorder=TRUE,...)
   {
-  message(" Calculating variable importance...")
+  #myEnv<-new.env()
   #dint <- prepPlotly(task, model, method = method)
+  dint <- mat
+  # if(!exists("dinteraction")){
+  #   dint <- prepFunc(task, model)
+  # }else{dint <- dinteraction}
 
-  if(!exists("dinteraction")){
-  dint <- prepFunc(task, model)
-  }else{dint <- dinteraction}
-
+  #dint <- dinteraction
 
 
   #top <- max(top)
 
   if (is.null(top)) {
-    top <- length(getTaskFeatureNames(task))
+    top <- length(colnames(dint))
   }
   else {
     top <- max(top)
