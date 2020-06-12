@@ -4,24 +4,18 @@
 \alias{importancePlot}
 \title{importancePlot}
 \usage{
-importancePlot(
-  task,
-  model,
-  method = "randomForest_importance",
-  type = "lollipop",
-  ...
-)
+importancePlot(mat, type = "lollipop", ...)
 }
 \arguments{
+\item{type}{The type of plot to display, either "lollipop" (default), "barplot", or "circleBar"}
+
+\item{...}{Not currently implemented}
+
 \item{task}{Task created from the mlr package, either regression or classification.}
 
 \item{model}{Any machine learning model.}
 
 \item{method}{A list of variable importance methods to be set by the user. These can include any of the importance methods contained within the mlr package. The default is method = randomForest.}
-
-\item{type}{The type of plot to display, either "lollipop" (default), "barplot", or "circleBar"}
-
-\item{...}{Not currently implemented}
 }
 \description{
 Plots variable importance

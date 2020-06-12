@@ -4,7 +4,7 @@
 \alias{allInt}
 \title{allInt}
 \usage{
-allInt(mat, type = "lollipop", top = 0, remove = FALSE, ...)
+allInt(mat, type = "lollipop", top = 0, ...)
 }
 \arguments{
 \item{mat}{A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.}
