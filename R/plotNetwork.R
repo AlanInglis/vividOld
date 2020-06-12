@@ -71,7 +71,7 @@ plotNetwork <- function(mat, thresholdValue = 0,
   # }else{netPrep <- dinteraction}
 
   netPrep <- mat
-  plotNet(netPrep, model, thresholdValue, label)
+  plotNet(netPrep, model, thresholdValue, label, layout = layout)
 }
 
 
@@ -149,7 +149,7 @@ plotNet <- function(dinteraction,
 
   # Set shape of plot:
   if(thresholdValue > 0){
-   # l <- layout.fruchterman.reingold(net.bg)
+   #l <- layout.fruchterman.reingold(net.bg)
     l <- layout.reingold.tilford(net.bg, circular=T)
     edgeColour <- (E(net.sp)$weight)
     cut_int <- cut(edgeColour, 9)
