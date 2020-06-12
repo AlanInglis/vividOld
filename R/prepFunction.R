@@ -9,6 +9,8 @@
 #'
 #' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
+#' @param remove If TRUE then remove the variables with low interaction strength.
+#' @param percentRemove The percentage of variables with low interaction strength to remove from the interaction calculation.
 #' @param ... Not currently implemented.
 #'
 #' @return A matrix of values
@@ -40,7 +42,7 @@
 #' @export
 
 
-prepFunc <- function(task, model){
+prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5){
 
   message(" Calculating variable importance...")
   # get data:
@@ -50,18 +52,17 @@ prepFunc <- function(task, model){
   mod <- Predictor$new(model, data = data)
 
 
-  lrnID <- model$learner$id
+  ## Get Variable Importance:
+  lrnID <- model$learner$properties
+  testString <- "featimp"
+
+
+  for(i in length(lrnID)){
+    logID <- grepl(lrnID[i], testString, fixed = TRUE)
+  }
 
   # If (embedded learner) - else(agnostic varimp calc)
-  if(lrnID == "regr.randomForest" | lrnID == "regr.ranger" | lrnID == "regr.cforest" |
-     lrnID == "regr.gbm" | lrnID == "regr.randomForestSRC" | lrnID == "regr.rpart" |
-     lrnID == "regr.RRF" | lrnID == "regr.xgboost" |
-     lrnID ==  "classif.randomForest" | lrnID == "classif.boosting" |
-     lrnID == "classif.cforest" | lrnID == "classif.gbm" |
-     lrnID ==  "classif.h2o.deeplearning" | lrnID == "classif.h2o.gbm" |
-     lrnID == "classif.h2o.glm" | lrnID == "classif.h2o.randomForest" |
-     lrnID == "classif.randomForestSRC" | lrnID == "classif.ranger" |
-     lrnID == "classif.rpart" | lrnID == "classif.RRF" | lrnID == "classif.xgboost"){
+  if(logID == TRUE){
     Importance <- getFeatureImportance(model)
     Importance <- Importance$res
     suppressMessages({
@@ -79,28 +80,80 @@ prepFunc <- function(task, model){
 
 
 
-  # Create progress bar
-  pb <- progress_bar$new(
-    format = "  Calculating variable interactions...[:bar]:percent. Est::eta ",
-    total = length(ovars),
-    clear = FALSE)
+  # -------------------------------------------------------------------------
+  #                         FEATURE SELECTION
+  # -------------------------------------------------------------------------
+  # This section deals with removing features with low interaction strength:
 
-  res  <- NULL
-  for (i in 1:length(ovars)){
-    res <- rbind(res, Interaction$new(mod, grid.size = 10, feature=ovars[i])$results)
-    pb$tick()
+
+  intValues <- Interaction$new(mod) # Overall interaction strength
+  intVal <- intValues$results # get interaction results
+  a <- intVal
+  a[,".feature"] <- as.factor(a[,".feature"])
+  a <- a[with(a,order(.interaction, decreasing = T)),] #reordering
+
+
+  n <- nrow(a) # Number of rows in a
+  percent_variables_remove = percentRemove # percentage of variables that you want to remove
+  n_begin = n - round(n*percent_variables_remove) # Getting the indices of those variables with the lowest variable interactions
+  variables_remove = a[n_begin:n,1]
+
+
+  ovars <- getTaskFeatureNames(task)
+
+  if(remove == TRUE){
+
+    intValues <- Interaction$new(mod) # Overall interaction strength
+    intVal <- intValues$results # get interaction results
+    a <- intVal
+    a[,".feature"] <- as.factor(a[,".feature"])
+    a <- a[with(a,order(.interaction, decreasing = T)),] #reordering
+
+
+    n <- nrow(a) # Number of rows in a
+    percent_variables_remove = 0.5 # percentage of variables that you want to remove
+    n_begin = n - round(n*percent_variables_remove) # Getting the indices of those variables with the lowest variable interactions
+    variables_remove = a[n_begin:n,1]
+
+    ovars1 <- ovars[-which(ovars %in% variables_remove)]
+
+    # Create progress bar
+    pb <- progress_bar$new(
+      format = "  Calculating variable interactions...[:bar]:percent. ETA::eta ",
+      total = length(ovars1),
+      clear = FALSE)
+
+    res  <- NULL
+    for (i in 1:length(ovars1)){
+      res <- rbind(res, Interaction$new(mod, grid.size = 10, feature=ovars1[i])$results)
+      pb$tick()
+    }
+
+    res[[".feature"]]<- reorder(res[[".feature"]], res[[".interaction"]])
+
+  }else{
+    # Create progress bar
+    pb <- progress_bar$new(
+      format = "  Calculating variable interactions...[:bar]:percent. ETA::eta ",
+      total = length(ovars),
+      clear = FALSE)
+
+    res  <- NULL
+    for (i in 1:length(ovars)){
+      res <- rbind(res, Interaction$new(mod, grid.size = 10, feature=ovars[i])$results)
+      pb$tick()
+    }
+
+    res[[".feature"]]<- reorder(res[[".feature"]], res[[".interaction"]])
   }
-
-  res[[".feature"]]<- reorder(res[[".feature"]], res[[".interaction"]])
 
   vars2 <- t(simplify2array(strsplit(as.character(res[[".feature"]]),":"))) # split/get feature names
   dinteraction <- matrix(0, length(ovars), length(ovars))                   # create matrix
   rownames(dinteraction) <- colnames(dinteraction) <- ovars                 # set names
   dinteraction[vars2] <- res[[".interaction"]]                              # set values
-  dinteraction <- (dinteraction+t(dinteraction))/2                          # avg over values to make symmetrical
+  dinteraction <- (dinteraction+t(dinteraction))/2   # avg over values to make symmetrical
   dinteraction1 <- data.frame(interaction=as.vector(dinteraction))
   diag(dinteraction) <- Imp
   dinteraction
-  #dinteraction <<- dinteraction
 }
 

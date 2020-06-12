@@ -2,12 +2,12 @@
 
 #' allInt
 #'
-#' @description Plots a Heatmap-tyle display showingVariable Importance and Variable Interaction
+#' @description Plots a Heatmap-tyle display showing Variable Importance and Variable Interaction.
 #'
-#' @param task Task created from the mlr package, either regression or classification.
-#' @param model Any machine learning model.
-#' @param type The type of plot to display, either "lollipop", "barplot", or "circleBar"
-#' @param top A value set by the user to only display the top x amount variables
+#'
+#' @param mat A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.
+#' @param type The type of plot to display, either "lollipop", "barplot", or "circleBar".
+#' @param top A value set by the user to only display the top x amount variables.
 #' @param ... Not currently implemented
 #'
 #' @importFrom mlr "getTaskData"
@@ -41,76 +41,14 @@
 
 # Function ----------------------------------------------------------------
 
-allInt <- function(task, model, type = "lollipop", top = 0, ...){
+allInt <- function(mat, type = "lollipop", top = 0, ...){
 
   # if(type != "lollipop" || type != "barplot" || type != "circleBar"){
   #   stop("Invalid plotting type. See ?allInt for available plotting types")
   # }
-  message(" Initilizing...")
 
-  data <- getTaskData(task)
-
-  mod <- Predictor$new(model, data = data) # create iml model
-
-
-# -------------------------------------------------------------------------
-#                         FEATURE SELECTION
-# -------------------------------------------------------------------------
-# This section deals with removing features with low interaction strength:
-
-
-  intValues <- Interaction$new(mod) # Overall interaction strength
-  intVal <- intValues$results # get interaction results
-  a <- intVal
-  a[,".feature"] <- as.factor(a[,".feature"])
-  a <- a[with(a,order(.interaction, decreasing = T)),] #reordering
-
-
-  n <- nrow(a) # Number of rows in a
-  percent_variables_remove = 0.1 # percentage of variables that you want to remove
-  n_begin = n - round(n*percent_variables_remove) # Getting the indices of those variables with the lowest variable interactions
-  variables_remove = a[n_begin:n,1]
-
-  dat <- data[,-which(names(data) %in% variables_remove)] # Removing the columns here
-
-  varChar <- as.character(variables_remove)
-  task1 <- dropFeatures(task, c(varChar)) # drop the features from the task
-
-
-  # Re-learn/train the mlr model
-  lrn.ID <- model$learner$id
-  lnr <- makeLearner(lrn.ID)
-  mlrMod <- train(lnr, task1)
-
-
-# -------------------------------------------------------------------------
-# Recreate iml model/interaction
-
-
-  mod1 <- Predictor$new(mlrMod, data = dat) # make predictions on new data
-
-  ovars <- getTaskFeatureNames(task1)
-  nam <- getTaskFeatureNames(task1)
-
-  # Create progress bar
-  pb <- progress_bar$new(
-    format = "  Calculating variable interactions...[:bar]:percent. Estimated completion time::eta ",
-    total = length(ovars),
-    clear = FALSE)
-
-  res  <- NULL
-  for (i in 1:length(ovars)){
-    res <- rbind(res, Interaction$new(mod1, grid.size = 10, feature=ovars[i])$results)
-    pb$tick()
-  }
-
-  res[[".feature"]]<- reorder(res[[".feature"]], res[[".interaction"]])
-
-  vars2 <- t(simplify2array(strsplit(as.character(res[[".feature"]]),":"))) # split/get feature names
-  dinteraction <- matrix(0, length(ovars), length(ovars))                   # create matrix
-  rownames(dinteraction) <- colnames(dinteraction) <- ovars                 # set names
-  dinteraction[vars2] <- res[[".interaction"]]                              # set values
-  dinteraction <- (dinteraction+t(dinteraction))/2   # avg over values to make symmetrical
+  dinteraction <- mat
+  diag(dinteraction) <- 0
 
   df <- transform(data.frame(dinteraction), y=row.names(dinteraction))
 
@@ -124,6 +62,9 @@ allInt <- function(task, model, type = "lollipop", top = 0, ...){
 
   # Select correct data
   df <- long_df[,c(3,5)]
+
+  # Replace low vales with zero
+  df[df < 0.04 ] <- 0
 
   # Remove zeros
   df<-df[!apply(df[,1:2] == 0, 1, FUN = any, na.rm = TRUE),]

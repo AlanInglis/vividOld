@@ -4,21 +4,19 @@
 \alias{allInt}
 \title{allInt}
 \usage{
-allInt(task, model, type = "lollipop", top = 0, ...)
+allInt(mat, type = "lollipop", top = 0, remove = FALSE, ...)
 }
 \arguments{
-\item{task}{Task created from the mlr package, either regression or classification.}
+\item{mat}{A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.}
 
-\item{model}{Any machine learning model.}
+\item{type}{The type of plot to display, either "lollipop", "barplot", or "circleBar".}
 
-\item{type}{The type of plot to display, either "lollipop", "barplot", or "circleBar"}
-
-\item{top}{A value set by the user to only display the top x amount variables}
+\item{top}{A value set by the user to only display the top x amount variables.}
 
 \item{...}{Not currently implemented}
 }
 \description{
-Plots a Heatmap-tyle display showingVariable Importance and Variable Interaction
+Plots a Heatmap-tyle display showing Variable Importance and Variable Interaction.
 }
 \examples{
 # Load in the data:

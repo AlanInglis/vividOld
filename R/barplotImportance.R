@@ -42,18 +42,16 @@
 
 
 
-importancePlot <- function(task,model, method = "randomForest_importance", type = "lollipop", ...){
+importancePlot <- function(mat, type = "lollipop", ...){
 
-data <- getTaskData(task)
 
-# Get Importance Measures -------------------------------------------------
+# # Get Importance Measures -------------------------------------------------
 
-normTask <- normalizeFeatures(task, method = "standardize")
 
-impFeat <- generateFilterValuesData(normTask, method = method)
-yImp <- impFeat$data$value
+yImp <- diag(mat)
+
 yImpRound <- round(yImp, 2)
-nam <- getTaskFeatureNames(task)
+nam <- names(yImp)
 
 yDF <- reorder(nam, yImp)
 yDF <- data.frame(yDF)
