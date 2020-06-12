@@ -59,6 +59,49 @@ In all the following examples, a subset of the data is used and *Rings* is used 
 
 ## Commands:
 
+# `prepFunc()`
+
+-----
+
+* This function creates a matrix creates a symmetrical matrix filled with pair-wise interaction strengths and varible importance on the diagonal. 
+
+-----
+
+**Description**
+
+Uses Friedman's H-Statistic to calculate the pair-wise interaction strength and uses embedded feature selection methods to determine the variable importance. If the supplied learner does not support an embedded variable importance measure, an agnostic approach will be applied to genereate the importance values. This function takes in any task and model created from the `mlr` package and results in a matrix which can be supplied to the plotting functions in the `vivid` package. However, if the user wishes, they can supply their own matrix to plot. 
+
+**Usage**
+
+prepFunc(task, model, remove, percentRemove)
+
+**Example**
+
+Load in the data:
+```{r, messages = FALSE}
+library(AppliedPredictiveModeling)
+data(abalone)
+ab <- data.frame(abalone)
+ab <- na.omit(ab)
+ab <- ab[1:500,]
+```
+
+Run an `mlr` random forest model:
+
+```{r}
+library(mlr)
+ab_task  <- makeRegrTask(data = ab, target = "Rings")
+ab_lrn <- makeLearner("regr.randomForest")
+ab_mod <- train(ab_lrn, ab_task)
+```
+
+Create a matrix to be supplied to the plotting functions.
+
+```{r}
+myMatrix <- prepFunc(task = ab_task, model = ab_mod, remove = FALSE, percentRemove = 0.5)
+```
+
+
 # `plotHeatMap()`
 
 -----
@@ -75,34 +118,16 @@ the off-diagonal
 
 **Usage**
 
-plotHeatMap(task, model, plotly, intLow, intHigh, impLow, impHigh, top, reorder)
+plotHeatMap(mat, plotly, intLow, intHigh, impLow, impHigh, top, reorder)
 
 
 **Example**
-
-Load in the data:
-```{r, messages = FALSE}
-library(AppliedPredictiveModeling)
-data(abalone)
-ab <- data.frame(abalone)
-ab <- na.omit(ab)
-ab <- ab[1:1500,]
-```
-
-Run an `mlr` random forest model:
-
-```{r}
-library(mlr)
-ab_task  <- makeRegrTask(data = ab, target = "Rings")
-ab_lrn <- makeLearner("regr.randomForest")
-ab_mod <- train(ab_lrn, ab_task)
-```
 
 To call the plot we use the `plotHeatMap()` command as follows:
 
 ```{r, fig.width = 9, fig.height = 7}
 set.seed(1701)
-plotHeatMap(ab_task, ab_mod,  plotly = F,
+plotHeatMap(mat = myMatrix,  plotly = F,
           intLow = "floralwhite", intHigh = "dodgerblue4",
           impLow = "white", impHigh = "firebrick1")
 ```
@@ -127,34 +152,17 @@ Plots a network style graph, where node size represents variable importance and 
 
 **Usage**
 
-plotNetwork(task, model, thresholdValue = 0,
+plotNetwork(mat, thresholdValue = 0,
                           label = FALSE, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
                           labelNudge = 0.05, layout = "circle",
                           cluster = F,...)
 **Example**
 
-Load in the data:
-```{r, messages = FALSE}
-library(AppliedPredictiveModeling)
-data(abalone)
-ab <- data.frame(abalone)
-ab <- na.omit(ab)
-ab <- ab[1:1500,]
-```
-
-Run an `mlr` random forest model:
-```{r}
-library(mlr)
-ab_task  <- makeRegrTask(data = ab, target = "Rings")
-ab_lrn <- makeLearner("regr.randomForest")
-ab_mod <- train(ab_lrn, ab_task)
-```
-
 To call the plot we use the `plotNetwork()` command as follows:
 
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-plotNetwork(task = ab_task, model = ab_mod, thresholdValue = 0, 
+plotNetwork(mat = myMatrix, thresholdValue = 0, 
               minInt = 0, maxInt = 1, 
               minImp = 0, maxImp = 100,
               labelNudge = 0.05)
@@ -173,7 +181,7 @@ The user can control which interaction values to display by using the `threshold
 
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-plotNetwork(task = ab_task, model = ab_mod, method = "randomForest_importance", thresholdValue = 0.11, cluster = F)
+plotNetwork(mat = myMatrix, thresholdValue = 0.11, cluster = F)
 ```
 <center>
 Fig 2.1: *Network style plot displaying thresholded 2-way interaction strengths between each of the variables and individual variable importance. In this plot only the interactions greater than 0.11 are shown.*
@@ -206,7 +214,7 @@ library(AppliedPredictiveModeling)
 data(abalone)
 ab <- data.frame(abalone)
 ab <- na.omit(ab)
-ab <- ab[1:1500,]
+ab <- ab[1:500,]
 ```
 
 Run an `mlr` random forest model:
@@ -245,31 +253,13 @@ Plot displaying the 2-way interactions on the y-axis and the interaction strengt
 
 **Usage**
 
-allInt(task, model, type)
+allInt(mat, typetype = "lollipop", top = 0)
 
-**Example**
-
-Load in the data:
-```{r, messages = FALSE}
-library(AppliedPredictiveModeling)
-data(abalone)
-ab <- data.frame(abalone)
-ab <- na.omit(ab)
-ab <- ab[1:1500,]
-```
-
-Run an `mlr` random forest model:
-```{r}
-library(mlr)
-ab_task  <- makeRegrTask(data = ab, target = "Rings")
-ab_lrn <- makeLearner("regr.randomForest")
-ab_mod <- train(ab_lrn, ab_task)
-```
 
 To call the pdp pairs plot we use:
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-allInt(task = ab_task, model =  ab_mod, type = "barplot")
+allInt(mat = myMatrix, type = "barplot")
 ```
 <center>
 Fig 4.0: *A plot displaying all 2-way interaction in a model.*
@@ -300,7 +290,7 @@ library(AppliedPredictiveModeling)
 data(abalone)
 ab <- data.frame(abalone)
 ab <- na.omit(ab)
-ab <- ab[1:1500,]
+ab <- ab[1:500,]
 ```
 
 Run an `mlr` random forest model:
@@ -335,31 +325,14 @@ Plots variables on the y-axis and the variable importance on the x-axis. This fu
 
 **Usage**
 
-importancePlot(task, model, type)
+importancePlot(mat, type = "lollipop")
 
 **Example**
-
-Load in the data:
-```{r, messages = FALSE}
-library(AppliedPredictiveModeling)
-data(abalone)
-ab <- data.frame(abalone)
-ab <- na.omit(ab)
-ab <- ab[1:1500,]
-```
-
-Run an `mlr` random forest model:
-```{r}
-library(mlr)
-ab_task  <- makeRegrTask(data = ab, target = "Rings")
-ab_lrn <- makeLearner("regr.randomForest")
-ab_mod <- train(ab_lrn, ab_task)
-```
 
 To call the pdp pairs plot we use:
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-importancePlot(task = ab_task, model =  ab_mod)
+importancePlot(mat = myMatrix, type = "barplot")
 ```
 <center>
 Fig 6.0: *A plot displaying the variable importance for each variable in a model.*
