@@ -4,7 +4,7 @@
 \alias{prepFunc}
 \title{prepFunction}
 \usage{
-prepFunc(task, model, remove = FALSE, percentRemove = 0.5)
+prepFunc(task, model, remove = FALSE, percentRemove = 0.5, parallel)
 }
 \arguments{
 \item{task}{Task created from the mlr package, either regression or classification.}
@@ -14,6 +14,8 @@ prepFunc(task, model, remove = FALSE, percentRemove = 0.5)
 \item{remove}{If TRUE then remove the variables with low interaction strength.}
 
 \item{percentRemove}{The percentage of variables with low interaction strength to remove from the interaction calculation.}
+
+\item{parallel}{If TRUE then the method is executed in parallel.}
 
 \item{...}{Not currently implemented.}
 }

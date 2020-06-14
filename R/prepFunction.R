@@ -11,6 +11,7 @@
 #' @param model Any machine learning model.
 #' @param remove If TRUE then remove the variables with low interaction strength.
 #' @param percentRemove The percentage of variables with low interaction strength to remove from the interaction calculation.
+#' @param parallel If TRUE then the method is executed in parallel.
 #' @param ... Not currently implemented.
 #'
 #' @return A matrix of values
@@ -21,6 +22,9 @@
 #' @importFrom iml "Predictor"
 #' @importFrom iml "Interaction"
 #' @importFrom iml "FeatureImp"
+#' @importFrom doParallel "registerDoParallel"
+#' @importFrom parallel "detectCores"
+#' @importFrom parallel "makeCluster"
 #' @import progress
 #'
 #' @examples
@@ -42,7 +46,7 @@
 #' @export
 
 
-prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5){
+prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5, parallel){
 
   message(" Calculating variable importance...")
   # get data:
@@ -101,9 +105,16 @@ prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5){
 
   ovars <- getTaskFeatureNames(task)
 
+  # Set up registered cluster for parallel
+  if(parallel){
+  defaultMaxCoreNo = detectCores(logical = FALSE)
+  cl <- makeCluster(defaultMaxCoreNo)
+  registerDoParallel(cl)
+  }
+
   if(remove == TRUE){
 
-    intValues <- Interaction$new(mod) # Overall interaction strength
+    intValues <- Interaction$new(mod, parallel = parallel) # Overall interaction strength
     intVal <- intValues$results # get interaction results
     a <- intVal
     a[,".feature"] <- as.factor(a[,".feature"])
@@ -125,7 +136,7 @@ prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5){
 
     res  <- NULL
     for (i in 1:length(ovars1)){
-      res <- rbind(res, Interaction$new(mod, grid.size = 10, feature=ovars1[i])$results)
+      res <- rbind(res, Interaction$new(mod, grid.size = 10, parallel = parallel, feature=ovars1[i])$results)
       pb$tick()
     }
 
@@ -140,7 +151,7 @@ prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5){
 
     res  <- NULL
     for (i in 1:length(ovars)){
-      res <- rbind(res, Interaction$new(mod, grid.size = 10, feature=ovars[i])$results)
+      res <- rbind(res, Interaction$new(mod, grid.size = 10, parallel = parallel, feature=ovars[i])$results)
       pb$tick()
     }
 
