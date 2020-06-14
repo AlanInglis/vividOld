@@ -48,7 +48,7 @@
 ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", colHigh = "#56B1F7",
                        fitlims = NULL,gridsize = 10,class=1,cardinality = 20, ...){
 
-   prob <- model$learner$type == "classif"
+  prob <- model$learner$type == "classif"
   data <- getTaskData(task)
 
   # make iml model
@@ -124,10 +124,12 @@ ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", 
   }
 
   # Plot prep for diag pdps
+  ovars <- getTaskFeatureNames(task)
   ggpdpDiag <- function(data, mapping, ...) {
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
     pdp <- pdplist1[[paste(vars[1])]]
-    plot(pdp, rug=FALSE) }
+    plot(pdp, rug=FALSE) + geom_line(aes(y = .y.hat, group = .id, color = .y.hat))
+     }
 
   # plot prep for class.
   ggpdpc <- function(data, mapping, ...) {
