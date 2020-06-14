@@ -15,14 +15,13 @@ genFriedman(
 \arguments{
 \item{noFeatures}{Integer specifying the number of features/variables to generate. Default is 10.}
 
-\item{noSamples}{Integer specifying the number of samples to generate. Default is 100}
-
 \item{sigma}{Numreic specifying standard deviation of the noise.}
 
 \item{bins}{Integer specifiying the number of bins to split responce variable into. Setting a value greater than 1 turns this into a classification problem whre bins determines the number of classes.}
 
 \item{seed}{Integer specifying the random seed.}
 
+\item{noSamples}{Integer specifying the number of samples to generate. Default is 100}
 
 \item{...}{Not currently implemented}
 }
@@ -30,7 +29,7 @@ genFriedman(
 Simulate data from the Friedman benchmark problem 1.
 }
 \examples{
-genFriedman(noFeatures = 10, noSample = 100, sigma = 0.1, seed = NULL)
+genFriedman(noFeatures = 10, noSample = 100, sigma = 1, seed = NULL)
 
 
 }

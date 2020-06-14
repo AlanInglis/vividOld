@@ -9,9 +9,10 @@
 #' @param seed Integer specifying the random seed.
 #' @param ... Not currently implemented
 #'
+#' @importFrom stats "quantile"
 #'
 #'@examples
-#' genFriedman(noFeatures = 10, noSample = 100, sigma = 0.1, seed = NULL)
+#' genFriedman(noFeatures = 10, noSample = 100, sigma = 1, seed = NULL)
 #'
 #'
 #' @export
