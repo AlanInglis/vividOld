@@ -128,7 +128,10 @@ ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", 
   ggpdpDiag <- function(data, mapping, ...) {
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
     pdp <- pdplist1[[paste(vars[1])]]
-    plot(pdp, rug=FALSE) + geom_line(aes(y = .y.hat, group = .id, color = .y.hat))
+    aggr <- pdp$results[pdp$results$.type != "ice", ]
+    plot(pdp, rug=FALSE) +
+      geom_line(aes(y = .y.hat, group = .id, color = .y.hat)) +
+      geom_line(data = aggr, size = 2, color = "gold")
      }
 
   # plot prep for class.
