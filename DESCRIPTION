@@ -28,7 +28,9 @@ Imports:
     reshape,
     tibble,
     DendSer,
-    progress
+    progress,
+    doParallel,
+    parallel
 Suggests: 
     knitr,
     rmarkdown,
