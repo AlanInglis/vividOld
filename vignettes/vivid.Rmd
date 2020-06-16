@@ -59,7 +59,7 @@ In all the following examples, a subset of the data is used and *Rings* is used 
 
 ## Commands:
 
-# `prepFunc()`
+## `prepFunc()`
 
 -----
 
@@ -69,11 +69,11 @@ In all the following examples, a subset of the data is used and *Rings* is used 
 
 **Description**
 
-Uses Friedman's H-Statistic to calculate the pair-wise interaction strength and uses embedded feature selection methods to determine the variable importance. If the supplied learner does not support an embedded variable importance measure, an agnostic approach will be applied to genereate the importance values. This function takes in any task and model created from the `mlr` package and results in a matrix which can be supplied to the plotting functions in the `vivid` package. However, if the user wishes, they can supply their own matrix to plot. 
+Uses Friedman's H-Statistic to calculate the pair-wise interaction strength and uses embedded feature selection methods to determine the variable importance. If the supplied learner does not support an embedded variable importance measure, an agnostic approach will be applied to genereate the importance values. This function takes in any task and model created from the `mlr` package and results in a matrix which can be supplied to the plotting functions in the `vivid` package. However, if the user wishes, they can supply their own matrix to plot. The `parallel` argument (default is FALSE) allows the user to run the interaction calculation in parallel.
 
 **Usage**
 
-prepFunc(task, model, remove, percentRemove)
+prepFunc(task, model, remove, percentRemove, parallel)
 
 **Example**
 
@@ -98,11 +98,12 @@ ab_mod <- train(ab_lrn, ab_task)
 Create a matrix to be supplied to the plotting functions.
 
 ```{r}
-myMatrix <- prepFunc(task = ab_task, model = ab_mod, remove = FALSE, percentRemove = 0.5)
+myMatrix <- prepFunc(task = ab_task, model = ab_mod, remove = FALSE, 
+                     percentRemove = 0.5, parallel = F)
 ```
 
 
-# `plotHeatMap()`
+## `plotHeatMap()`
 
 -----
 
@@ -137,7 +138,7 @@ Fig 1.0: *Heat-map style plot displaying 2-way interaction strength in blue and 
 
 From the above plot we can see that `LongestShell:VisceraWeight` weight has the strongest interaction and `ShellWeight` is the most important variable for predicting `rings`.
 
-# `plotNetwork()`
+## `plotNetwork()`
 
 -----
 
@@ -156,6 +157,7 @@ plotNetwork(mat, thresholdValue = 0,
                           label = FALSE, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
                           labelNudge = 0.05, layout = "circle",
                           cluster = F,...)
+                          
 **Example**
 
 To call the plot we use the `plotNetwork()` command as follows:
@@ -189,7 +191,7 @@ Fig 2.1: *Network style plot displaying thresholded 2-way interaction strengths 
 
 
 
-# `ggpdpPairs()`
+## `ggpdpPairs()`
 
 -----
 
@@ -238,9 +240,9 @@ From the above plot, we see the 2D pdp plots on the upper diagonal. The individu
 
 
 
-In addition to displaying both the variable importance and interactions together, the following functions display only the variable importance _or_ the interaction strength. 
+In addition to displaying both the variable importance and interactions together, the `vivid` package also allows to display only the variable importance _or_ the interaction strength via the folowing functions. 
 
-# `allInt()`
+## `allInt()`
 
 -----
 
@@ -259,7 +261,7 @@ allInt(mat, typetype = "lollipop", top = 0)
 To call the pdp pairs plot we use:
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-allInt(mat = myMatrix, type = "barplot")
+allInt(mat = myMatrix, type = "barplot", top = 0)
 ```
 <center>
 Fig 4.0: *A plot displaying all 2-way interaction in a model.*
@@ -267,7 +269,7 @@ Fig 4.0: *A plot displaying all 2-way interaction in a model.*
 
 From the above plot we can see that `LongestShell:VisceraWeight` has the strongest interaction.
 
-# `interactionPlot()`
+## `interactionPlot()`
 
 -----
 
@@ -312,7 +314,7 @@ Fig 5.0: *A plot displaying the overall interaction strength for each variable i
 
 From the above plot we can see that the variable with the strongest overall interaction strength is `ShellWeight`
 
-# `importancePlot()`
+## `importancePlot()`
 
 -----
 
@@ -339,3 +341,38 @@ Fig 6.0: *A plot displaying the variable importance for each variable in a model
 </center>
 
 From the above plot, we can see that the most important variable, when prediciting `rings` is `ShuckedWeight`
+
+
+## `genFriedman()`
+
+-----
+
+*Simulates data from the Friedman benchmark problem 1*
+
+-----
+
+*Description*
+
+Simulate data from the Friedman benchmark problem 1^[Friedman, Jerome H. (1991) Multivariate adaptive regression splines. The Annals of Statistics 19 (1), pages 1-67.]. The output is created according to the formula:
+
+
+<center>
+$$y = 10 sin(π x1 x2) + 20 (x3 - 0.5)^2 + 10 x4 + 5 x5 + e$$
+</center>
+
+
+By default the number of features is set to 10 and the number of samples is set to 100. `sigma` denotes the standard deviation of the noise. `bins` denotes the number of bins to split responce variable into. Setting a value greater than 1 turns this into a classification problem where bins determines the number of classes. If the `seed` argument is not NULL, then the random seed will be set as using the function each time will produce different results. 
+
+**Usage**
+
+genFriedman(noFeatures = 10, noSamples = 100, sigma = 1, bins = NULL, seed = NULL)
+
+**Example**
+
+To call the pdp pairs plot we use:
+```{r}
+myData <- genFriedman(noFeatures = 10, noSamples = 100, sigma = 1, bins = NULL, seed = NULL)
+head(myData)
+```
+
+
