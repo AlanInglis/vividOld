@@ -72,7 +72,7 @@ ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", 
 
   # Create progress bar
   pb <- progress_bar$new(
-    format = "  Calculating pdp + ice...[:bar]:percent. Estimated completion time::eta ",
+    format = "  Calculating pdp + ice...[:bar]:percent. Est::eta ",
     total = nrow(xvarn),
     clear = FALSE)
 
@@ -95,7 +95,7 @@ ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", 
 
   # Create progress bar
   pb1 <- progress_bar$new(
-    format = "  Calculating partial dependence...[:bar]:percent. Estimated completion time::eta ",
+    format = "  Calculating partial dependence...[:bar]:percent. Est::eta ",
     total = nrow(xyvarn),
     clear = FALSE)
 
