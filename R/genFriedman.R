@@ -12,19 +12,19 @@
 #' @importFrom stats "quantile"
 #'
 #'@examples
-#' genFriedman(noFeatures = 10, noSample = 100, sigma = 1, seed = NULL)
+#' genFriedman(noFeatures = 10, noSamples = 100, sigma = 1, seed = NULL)
 #'
 #'
 #' @export
 
-genFriedman <- function(noFeatures = 10, noSample = 100, sigma = 1, bins = NULL, seed = NULL){
+genFriedman <- function(noFeatures = 10, noSamples = 100, sigma = 1, bins = NULL, seed = NULL){
 
   if (!is.null(seed)) {
     set.seed(seed)
   }
 
   # Set Values
-  n <- noSample  # no of rows
+  n <- noSamples  # no of rows
   p <- noFeatures  # no of variables
   e <- rnorm(n, sd = sigma)
 
