@@ -25,6 +25,7 @@
 #' @importFrom doParallel "registerDoParallel"
 #' @importFrom parallel "detectCores"
 #' @importFrom parallel "makeCluster"
+#' @importFrom parallel "stopCluster"
 #' @import progress
 #'
 #' @examples
@@ -46,7 +47,7 @@
 #' @export
 
 
-prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5, parallel){
+prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5, parallel = FALSE){
 
   message(" Calculating variable importance...")
   # get data:
@@ -106,7 +107,7 @@ prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5, parallel)
   ovars <- getTaskFeatureNames(task)
 
   # Set up registered cluster for parallel
-  if(parallel){
+  if(parallel == TRUE){
   defaultMaxCoreNo = detectCores(logical = FALSE)
   cl <- makeCluster(defaultMaxCoreNo)
   registerDoParallel(cl)
@@ -156,6 +157,10 @@ prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5, parallel)
     }
 
     res[[".feature"]]<- reorder(res[[".feature"]], res[[".interaction"]])
+  }
+
+  if(parallel == TRUE){
+  stopCluster(cl)
   }
 
   vars2 <- t(simplify2array(strsplit(as.character(res[[".feature"]]),":"))) # split/get feature names
