@@ -5,6 +5,7 @@
 #' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
 #' @param method "pdp" (default) or "ale"
+#' @param corrVal If TRUE, then display the correlation coefficient on top of scatterplot.
 #' @param corr If TRUE then a correlation matrix is displayed in the lower triangle.
 #' @param corrMethod a character string indicating which correlation coefficient (or covariance) is to be computed.
 #'  One of "pearson" (default), "kendall", or "spearman".
@@ -50,7 +51,7 @@
 #'
 #' @export
 
-ggpdpPairs <- function(task, model, method="pdp", corr = FALSE, corrMethod = "p", vars=NULL, colLow = "#132B43", colHigh = "#56B1F7",
+ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corr = FALSE, corrMethod = "p", vars=NULL, colLow = "#132B43", colHigh = "#56B1F7",
                        fitlims = NULL,gridsize = 10,class=1,cardinality = 20, ...){
 
   prob <- model$learner$type == "classif"
@@ -86,7 +87,7 @@ ggpdpPairs <- function(task, model, method="pdp", corr = FALSE, corrMethod = "p"
   for (i in 1:nrow(xvarn)){
     pdplist1[[i]] <-FeatureEffect$new(pred.data, xvarn[i,], method = "pdp+ice", grid.size=10)
     pb$tick()
-  names(pdplist1)  <- paste(xvarn[,1])
+    names(pdplist1)  <- paste(xvarn[,1])
   }
 
   # Get data for pairs of variables
@@ -109,10 +110,10 @@ ggpdpPairs <- function(task, model, method="pdp", corr = FALSE, corrMethod = "p"
   for (i in 1:nrow(xyvarn)){
     pdplist[[i]] <-FeatureEffect$new(pred.data, xyvarn[i,], method = method, grid.size=gridsize)
     pb1$tick()
-  names(pdplist)  <- paste(xyvarn[,1], xyvarn[,2], sep="pp")
- }
+    names(pdplist)  <- paste(xyvarn[,1], xyvarn[,2], sep="pp")
+  }
 
-   # Set limits for pairs
+  # Set limits for pairs
   if (is.null(fitlims)){
     r <- sapply(pdplist, function(x) range(x$results[,3]))
     r <- range(r)
@@ -137,7 +138,7 @@ ggpdpPairs <- function(task, model, method="pdp", corr = FALSE, corrMethod = "p"
     plot(pdp, rug=FALSE) +
       geom_line(aes(y = .y.hat, group = .id, color = .y.hat)) +
       geom_line(data = aggr, size = 2, color = "gold")
-     }
+  }
 
   # plot prep for class.
   ggpdpc <- function(data, mapping, ...) {
@@ -162,12 +163,62 @@ ggpdpPairs <- function(task, model, method="pdp", corr = FALSE, corrMethod = "p"
   # get predictions
   Pred <- pred.data$predict(data)
   Pred <- Pred$.prediction
-
-
-
   ggTitle <- model$learner$id
 
-  if(corr == TRUE){
+  # Display warning if both corr & corrVal = TRUE
+  if(corr == TRUE && corrVal == TRUE){
+    message(" warning: Trying to plot 2 different displays.
+            please select either corr = TRUE or corrVal = TRUE.
+            Defaulting to corrVal = TRUE")
+  }
+
+  if(corrVal == TRUE){
+    GGscatterPlot <- function(data, mapping,method = corrMethod)
+    {
+      #Get correlation coefficient
+      x <- eval_data_col(data, mapping$x)
+      y <- eval_data_col(data, mapping$y)
+
+      corr <- cor(x, y, method = method)
+
+      # Assemble data frame
+      df <- data.frame(x = x, y = y)
+
+      # Set colour for label
+      colFn <- colorRampPalette(c("dodgerblue", "floralwhite", "firebrick1"), interpolate ='spline')
+      fill <- colFn(100)[findInterval(corr, seq(-1, 1, length=100))]
+
+      #Prepare plot
+      ggplot(df, aes(x = x, y = y, color = Pred)) +
+        geom_point(shape = 16, size = 1, show.legend = FALSE) +
+        geom_abline(intercept = 0, slope = 1, col="darkred") +
+        geom_label(
+          data = data.frame(
+            xlabel = min(x, na.rm = TRUE),
+            ylabel = max(y, na.rm = TRUE),
+            lab = round(corr, digits = 3)),
+          mapping = ggplot2::aes(x = xlabel,
+                                 y = ylabel,
+                                 label = lab),
+          fill = fill,
+          hjust = 0, vjust = 1,
+          size = 3, fontface = "bold",
+          inherit.aes = FALSE) +
+        theme_minimal()
+    }
+
+    p <- ggpairs(xdata, title = ggTitle,
+                 upper = list(continuous = ggpdp, combo = ggpdpc, discrete = ggpdp),
+                 diag  = list(continuous = ggpdpDiag),
+                 lower = list(continuous = GGscatterPlot),
+                 legend=w,
+                 cardinality_threshold = cardinality) +
+      theme_bw() +
+      theme(panel.border=element_blank(), axis.line=element_line(),
+            axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+            strip.text = element_text(face ="bold", colour ="red", size = 5))
+    p
+  }else if(corr == TRUE){
     my_fn <- function(data, mapping, method = corrMethod, use="pairwise", ...){
 
       # grab data
@@ -192,7 +243,7 @@ ggpdpPairs <- function(task, model, method="pdp", corr = FALSE, corrMethod = "p"
       # calculate colour based on correlation value
       # Here I have set a correlation of minus one to blue,
       # zero to white, and one to red
-      colFn <- colorRampPalette(c("dodgerblue4", "floralwhite", "firebrick1"), interpolate ='spline')
+      colFn <- colorRampPalette(c("dodgerblue", "floralwhite", "firebrick1"), interpolate ='spline')
       fill <- colFn(100)[findInterval(corr, seq(-1, 1, length=100))]
 
       ggplot(data = data, mapping = mapping, ...) +
@@ -209,29 +260,30 @@ ggpdpPairs <- function(task, model, method="pdp", corr = FALSE, corrMethod = "p"
 
     }
 
-   p <- ggpairs(xdata, title = ggTitle,
-              mapping=ggplot2::aes(label = lbl),
-               upper=list(continuous = ggpdp, combo=ggpdpc, discrete=ggpdp),
-               diag = list(continuous = ggpdpDiag),
-               lower=list(continuous= my_fn),
-               legend=w,
-               #lower=list(continuous=wrap("points", size=.2)), legend=w,
-               cardinality_threshold = cardinality) +
-    theme(panel.border=element_blank(), axis.line=element_line(),
-                      strip.text = element_text(face="bold", colour="red", size = 5))
-   p
+    p <- ggpairs(xdata, title = ggTitle,
+                 mapping=ggplot2::aes(label = lbl),
+                 upper=list(continuous = ggpdp, combo = ggpdpc, discrete = ggpdp),
+                 diag = list(continuous = ggpdpDiag),
+                 lower=list(continuous = my_fn),
+                 legend=w,
+                 #lower=list(continuous=wrap("points", size=.2)), legend=w,
+                 cardinality_threshold = cardinality) +
+      theme(panel.border=element_blank(), axis.line=element_line(),
+            strip.text = element_text(face ="bold", colour ="red", size = 5))
+    p
   }else{
     p <- ggpairs(xdata, title = ggTitle,
                  mapping=ggplot2::aes(colour = Pred),
-                 upper=list(continuous = ggpdp, combo=ggpdpc, discrete=ggpdp),
+                 upper=list(continuous = ggpdp, combo = ggpdpc, discrete = ggpdp),
                  diag = list(continuous = ggpdpDiag),
-                 lower=list(continuous=wrap("points", size=.2)), legend=w,
+                 lower=list(continuous=wrap("points", size = 0.5)),
+                 legend=w,
                  cardinality_threshold = cardinality) +
-     theme_bw() + theme(panel.border=element_blank(), axis.line=element_line(),
-                        axis.text.x = element_text(angle = 45, hjust = 1, size=8),
-                        strip.text = element_text(face="bold", colour="red", size = 5))
+      theme_bw() + theme(panel.border=element_blank(), axis.line=element_line(),
+                         axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+                         strip.text = element_text(face ="bold", colour ="red", size = 5))
 
-     p
+    p
   }
 
 
