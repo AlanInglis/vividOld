@@ -23,6 +23,8 @@
 #' @importFrom iml "Predictor"
 #' @importFrom GGally "ggpairs"
 #' @importFrom GGally "wrap"
+#' @importFrom GGally "eval_data_col"
+#'
 #' @import progress
 #'
 #' @examples
