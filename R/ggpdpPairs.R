@@ -163,7 +163,7 @@ ggpdpPairs <- function(task, model, method="pdp", corr = FALSE, corrMethod = "p"
 
 
 
-  ggTitle <- fr_mod$learner$id
+  ggTitle <- model$learner$id
 
   if(corr == TRUE){
     my_fn <- function(data, mapping, method = corrMethod, use="pairwise", ...){
@@ -172,12 +172,13 @@ ggpdpPairs <- function(task, model, method="pdp", corr = FALSE, corrMethod = "p"
       x <- eval_data_col(data, mapping$x)
       y <- eval_data_col(data, mapping$y)
 
-      # calculate correlation: for significance stars
+      # calculate correlation: for significance stars and set some values
       corr <- cor.test(x, y, method=method)
       est <- corr$estimate
-      sz <- 7
-      ndp <- 2 #number of decimal points
+      sz = 8
+      ndp <- 2 # number of decimal points
       lb.size <- sz*abs(est) # set label size
+
 
       # get significance stars
       stars <- c("***", "**", "*", "")[findInterval(corr$p.value, c(0, 0.001, 0.01, 0.05, 1))]
