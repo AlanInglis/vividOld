@@ -5,6 +5,9 @@
 #' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
 #' @param method "pdp" (default) or "ale"
+#' @param corr If TRUE then a correlation matrix is displayed in the lower triangle.
+#' @param corrMethod a character string indicating which correlation coefficient (or covariance) is to be computed.
+#'  One of "pearson" (default), "kendall", or "spearman".
 #' @param vars Variables to plot. Defaults to all predictors
 #' @param colLow Color to be used for low values
 #' @param colHigh Color to be used for low values
@@ -45,7 +48,7 @@
 #'
 #' @export
 
-ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", colHigh = "#56B1F7",
+ggpdpPairs <- function(task, model, method="pdp", corr = FALSE, corrMethod = "p", vars=NULL, colLow = "#132B43", colHigh = "#56B1F7",
                        fitlims = NULL,gridsize = 10,class=1,cardinality = 20, ...){
 
   prob <- model$learner$type == "classif"
@@ -159,14 +162,73 @@ ggpdpPairs <- function(task, model, method="pdp",vars=NULL, colLow = "#132B43", 
   Pred <- Pred$.prediction
 
 
-  p <- ggpairs(xdata,
-               mapping=ggplot2::aes(colour = Pred),
+
+  ggTitle <- fr_mod$learner$id
+
+  if(corr == TRUE){
+    my_fn <- function(data, mapping, method = corrMethod, use="pairwise", ...){
+
+      # grab data
+      x <- eval_data_col(data, mapping$x)
+      y <- eval_data_col(data, mapping$y)
+
+      # calculate correlation: for significance stars
+      corr <- cor.test(x, y, method=method)
+      est <- corr$estimate
+      sz <- 7
+      ndp <- 2 #number of decimal points
+      lb.size <- sz*abs(est) # set label size
+
+      # get significance stars
+      stars <- c("***", "**", "*", "")[findInterval(corr$p.value, c(0, 0.001, 0.01, 0.05, 1))]
+      lbl <- paste0(round(est, ndp), stars)
+
+      # calculate correlation
+      corr <- cor(x, y, method = corrMethod, use=use)
+
+      # calculate colour based on correlation value
+      # Here I have set a correlation of minus one to blue,
+      # zero to white, and one to red
+      colFn <- colorRampPalette(c("dodgerblue4", "floralwhite", "firebrick1"), interpolate ='spline')
+      fill <- colFn(100)[findInterval(corr, seq(-1, 1, length=100))]
+
+      ggplot(data = data, mapping = mapping, ...) +
+        theme_void() +
+        annotate("text",
+                 x=mean(x, na.rm=TRUE),
+                 y=mean(y, na.rm=TRUE),
+                 label=lbl,
+                 size=lb.size,
+                 ...) +
+        theme(panel.background = element_rect(fill=fill,  # to fill background of panel with color
+                                              colour=NA), # to remove border of panel
+              panel.grid.major = element_blank())
+    }
+
+
+   p <- ggpairs(xdata, title = ggTitle,
+              mapping=ggplot2::aes(label = lbl),
                upper=list(continuous = ggpdp, combo=ggpdpc, discrete=ggpdp),
                diag = list(continuous = ggpdpDiag),
-               lower=list(continuous=wrap("points", size=.2)), legend=w,
-               cardinality_threshold = cardinality) +
-    theme_bw() + theme(panel.border=element_blank(), axis.line=element_line(),
-                       strip.text = element_text(face="bold", colour="red", size = 5))
+               lower=list(continuous= my_fn),
+               legend=w,
+               #lower=list(continuous=wrap("points", size=.2)), legend=w,
+               cardinality_threshold = cardinality) #+
+   theme_bw() + theme(panel.border=element_blank(), axis.line=element_line(),
+                      strip.text = element_text(face="bold", colour="red", size = 5))
+   p
+  }else{
+    p <- ggpairs(xdata, title = ggTitle,
+                 mapping=ggplot2::aes(colour = Pred),
+                 upper=list(continuous = ggpdp, combo=ggpdpc, discrete=ggpdp),
+                 diag = list(continuous = ggpdpDiag),
+                 lower=list(continuous=wrap("points", size=.2)), legend=w,
+                 cardinality_threshold = cardinality) #+
+     theme_bw() + theme(panel.border=element_blank(), axis.line=element_line(),
+                        strip.text = element_text(face="bold", colour="red", size = 5))
+     p
+  }
+
 
   suppressMessages(print(p))
   invisible(p)
