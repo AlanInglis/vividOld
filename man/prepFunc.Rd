@@ -4,7 +4,7 @@
 \alias{prepFunc}
 \title{prepFunction}
 \usage{
-prepFunc(task, model, remove = FALSE, percentRemove = 0.5, parallel)
+prepFunc(task, model, remove = FALSE, percentRemove = 0.5, parallel = FALSE)
 }
 \arguments{
 \item{task}{Task created from the mlr package, either regression or classification.}
