@@ -206,8 +206,8 @@ ggpdpPairs <- function(task, model, method="pdp", corr = FALSE, corrMethod = "p"
         theme(panel.background = element_rect(fill=fill,  # to fill background of panel with color
                                               colour=NA), # to remove border of panel
               panel.grid.major = element_blank())
-    }
 
+    }
 
    p <- ggpairs(xdata, title = ggTitle,
               mapping=ggplot2::aes(label = lbl),
@@ -216,8 +216,8 @@ ggpdpPairs <- function(task, model, method="pdp", corr = FALSE, corrMethod = "p"
                lower=list(continuous= my_fn),
                legend=w,
                #lower=list(continuous=wrap("points", size=.2)), legend=w,
-               cardinality_threshold = cardinality) #+
-   theme_bw() + theme(panel.border=element_blank(), axis.line=element_line(),
+               cardinality_threshold = cardinality) +
+    theme(panel.border=element_blank(), axis.line=element_line(),
                       strip.text = element_text(face="bold", colour="red", size = 5))
    p
   }else{
@@ -226,9 +226,11 @@ ggpdpPairs <- function(task, model, method="pdp", corr = FALSE, corrMethod = "p"
                  upper=list(continuous = ggpdp, combo=ggpdpc, discrete=ggpdp),
                  diag = list(continuous = ggpdpDiag),
                  lower=list(continuous=wrap("points", size=.2)), legend=w,
-                 cardinality_threshold = cardinality) #+
+                 cardinality_threshold = cardinality) +
      theme_bw() + theme(panel.border=element_blank(), axis.line=element_line(),
+                        axis.text.x = element_text(angle = 45, hjust = 1, size=8),
                         strip.text = element_text(face="bold", colour="red", size = 5))
+
      p
   }
 
