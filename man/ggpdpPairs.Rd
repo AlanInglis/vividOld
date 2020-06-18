@@ -8,6 +8,8 @@ ggpdpPairs(
   task,
   model,
   method = "pdp",
+  corr = FALSE,
+  corrMethod = "p",
   vars = NULL,
   colLow = "#132B43",
   colHigh = "#56B1F7",
@@ -24,6 +26,11 @@ ggpdpPairs(
 \item{model}{Any machine learning model.}
 
 \item{method}{"pdp" (default) or "ale"}
+
+\item{corr}{If TRUE then a correlation matrix is displayed in the lower triangle.}
+
+\item{corrMethod}{a character string indicating which correlation coefficient (or covariance) is to be computed.
+One of "pearson" (default), "kendall", or "spearman".}
 
 \item{vars}{Variables to plot. Defaults to all predictors}
 
