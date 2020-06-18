@@ -8,6 +8,7 @@ ggpdpPairs(
   task,
   model,
   method = "pdp",
+  corrVal = FALSE,
   corr = FALSE,
   corrMethod = "p",
   vars = NULL,
@@ -26,6 +27,8 @@ ggpdpPairs(
 \item{model}{Any machine learning model.}
 
 \item{method}{"pdp" (default) or "ale"}
+
+\item{corrVal}{If TRUE, then display the correlation coefficient on top of scatterplot.}
 
 \item{corr}{If TRUE then a correlation matrix is displayed in the lower triangle.}
 
