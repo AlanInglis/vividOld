@@ -22,10 +22,7 @@
 #' @importFrom iml "Predictor"
 #' @importFrom iml "Interaction"
 #' @importFrom iml "FeatureImp"
-#' @importFrom doParallel "registerDoParallel"
-#' @importFrom parallel "detectCores"
-#' @importFrom parallel "makeCluster"
-#' @importFrom parallel "stopCluster"
+#' @importFrom future "plan"
 #' @import progress
 #'
 #' @examples
@@ -90,6 +87,10 @@ prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5, parallel 
   # -------------------------------------------------------------------------
   # This section deals with removing features with low interaction strength:
 
+  # Set up registered cluster for parallel
+  if(parallel == TRUE){
+    plan("cluster")
+  }
 
   intValues <- Interaction$new(mod) # Overall interaction strength
   intVal <- intValues$results # get interaction results
@@ -106,16 +107,9 @@ prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5, parallel 
 
   ovars <- getTaskFeatureNames(task)
 
-  # Set up registered cluster for parallel
-  if(parallel == TRUE){
-  defaultMaxCoreNo = detectCores(logical = FALSE)
-  cl <- makeCluster(defaultMaxCoreNo)
-  registerDoParallel(cl)
-  }
-
   if(remove == TRUE){
 
-    intValues <- Interaction$new(mod, parallel = parallel) # Overall interaction strength
+    intValues <- Interaction$new(mod) # Overall interaction strength
     intVal <- intValues$results # get interaction results
     a <- intVal
     a[,".feature"] <- as.factor(a[,".feature"])
@@ -137,7 +131,7 @@ prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5, parallel 
 
     res  <- NULL
     for (i in 1:length(ovars1)){
-      res <- rbind(res, Interaction$new(mod, grid.size = 10, parallel = parallel, feature=ovars1[i])$results)
+      res <- rbind(res, Interaction$new(mod, grid.size = 10, feature=ovars1[i])$results)
       pb$tick()
     }
 
@@ -152,7 +146,7 @@ prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5, parallel 
 
     res  <- NULL
     for (i in 1:length(ovars)){
-      res <- rbind(res, Interaction$new(mod, grid.size = 10, parallel = parallel, feature=ovars[i])$results)
+      res <- rbind(res, Interaction$new(mod, grid.size = 10, feature=ovars[i])$results)
       pb$tick()
     }
 
@@ -160,7 +154,8 @@ prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5, parallel 
   }
 
   if(parallel == TRUE){
-  stopCluster(cl)
+    # Closing works by setting them to default
+    plan("default")
   }
 
   vars2 <- t(simplify2array(strsplit(as.character(res[[".feature"]]),":"))) # split/get feature names
