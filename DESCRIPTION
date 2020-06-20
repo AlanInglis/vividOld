@@ -29,8 +29,7 @@ Imports:
     tibble,
     DendSer,
     progress,
-    doParallel,
-    parallel
+    future
 Suggests: 
     knitr,
     rmarkdown,
