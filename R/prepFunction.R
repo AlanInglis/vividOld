@@ -92,17 +92,17 @@ prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5, parallel 
     plan("cluster")
   }
 
-  intValues <- Interaction$new(mod) # Overall interaction strength
-  intVal <- intValues$results # get interaction results
-  a <- intVal
-  a[,".feature"] <- as.factor(a[,".feature"])
-  a <- a[with(a,order(.interaction, decreasing = T)),] #reordering
-
-
-  n <- nrow(a) # Number of rows in a
-  percent_variables_remove = percentRemove # percentage of variables that you want to remove
-  n_begin = n - round(n*percent_variables_remove) # Getting the indices of those variables with the lowest variable interactions
-  variables_remove = a[n_begin:n,1]
+  # intValues <- Interaction$new(mod) # Overall interaction strength
+  # intVal <- intValues$results # get interaction results
+  # a <- intVal
+  # a[,".feature"] <- as.factor(a[,".feature"])
+  # a <- a[with(a,order(.interaction, decreasing = T)),] #reordering
+  #
+  #
+  # n <- nrow(a) # Number of rows in a
+  # percent_variables_remove = percentRemove # percentage of variables that you want to remove
+  # n_begin = n - round(n*percent_variables_remove) # Getting the indices of those variables with the lowest variable interactions
+  # variables_remove = a[n_begin:n,1]
 
 
   ovars <- getTaskFeatureNames(task)
