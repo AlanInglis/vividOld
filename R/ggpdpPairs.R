@@ -129,6 +129,9 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corr = FALSE,
     plot(pdp, rug=FALSE) + scale_fill_gradient(name="\u0177",low=colLow, high=colHigh,limits=limits)
   }
 
+  # get predictions
+  Pred <- pred.data$predict(data)
+  Pred <- Pred$.prediction
   # Plot prep for diag pdps
   ovars <- getTaskFeatureNames(task)
   ggpdpDiag <- function(data, mapping, ...) {
@@ -136,7 +139,7 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corr = FALSE,
     pdp <- pdplist1[[paste(vars[1])]]
     aggr <- pdp$results[pdp$results$.type != "ice", ]
     plot(pdp, rug=FALSE) +
-      geom_line(aes(y = .y.hat, group = .id, color = .y.hat)) +
+      geom_line(aes(y = .value, group = .id, color = .value)) +
       geom_line(data = aggr, size = 2, color = "gold")
   }
 
@@ -160,9 +163,6 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corr = FALSE,
   # get y-data
   yData <- pred.data$data$y
   yData <- as.numeric(unlist(yData))
-  # get predictions
-  Pred <- pred.data$predict(data)
-  Pred <- Pred$.prediction
   ggTitle <- model$learner$id
 
   # Display warning if both corr & corrVal = TRUE
