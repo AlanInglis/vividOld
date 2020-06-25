@@ -17,12 +17,6 @@
 #'
 #' @return A newtwork style plot displaying interaction strength between variables on the edges and variable importance on the nodes.
 #'
-#' @importFrom mlr "getTaskData"
-#' @importFrom mlr "getFeatureImportance"
-#' @importFrom mlr "getTaskFeatureNames"
-#' @importFrom iml "Predictor"
-#' @importFrom iml "Interaction"
-#' @importFrom iml "FeatureImp"
 #' @import igraph
 #' @importFrom igraph "sample_pa"
 #' @importFrom igraph "as_data_frame"
@@ -34,23 +28,23 @@
 #' @importFrom stats "reorder"
 #' @importFrom grDevices "blues9"
 #' @importFrom reshape "melt"
-#' @import progress
 #'
 #' @examples
 #' # Load in the data:
 #' aq <- data.frame(airquality)
 #' aq <- na.omit(aq)
 #'
-#' # Run an mlr random forest model:
-#' library(mlr)
-#' library(randomForest)
-#' aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
-#' aqRegrLrn <- makeLearner("regr.randomForest")
-#' aqMod <- train(aqRegrLrn, aqRgrTask)
+#' # Run an mlr ranger model:
+#' library(mlr3)
+#' aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
+#' aq_lrn = lrn("regr.ranger", importance = "permutation")
+#' aq_Mod <- lrn$train(aq_Task)
+#'
+#'#' # Create matrix
+#' myMat <- prepFunc(task = aq_Task, learner = aq_Lrn, model = aq_Mod)
 #'
 #' # Create graph:
-#' plotNetwork(task = aqRgrTask, model = aqMod,
-#' thresholdValue = 0, cluster = F)
+#' plotNetwork(myMat, thresholdValue = 0, cluster = F)
 #'
 #' @export
 
@@ -65,10 +59,6 @@ plotNetwork <- function(mat, thresholdValue = 0,
                           labelNudge = 0.05, layout = "circle",
                           cluster = F,...){
 
-
-  # if(!exists("dinteraction")){
-  # netPrep <- prepFunc(task, model)
-  # }else{netPrep <- dinteraction}
 
   netPrep <- mat
   plotNet(netPrep, model, thresholdValue, label, layout = layout)

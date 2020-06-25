@@ -13,12 +13,6 @@
 #' @param ... Not currently implemented
 #'
 #'
-#' @importFrom mlr "getTaskData"
-#' @importFrom mlr "getFeatureImportance"
-#' @importFrom mlr "getTaskFeatureNames"
-#' @importFrom iml "Predictor"
-#' @importFrom iml "Interaction"
-#' @importFrom iml "FeatureImp"
 #' @importFrom ggplot2 "ggplot"
 #' @importFrom ggnewscale "new_scale_fill"
 #' @importFrom plotly "ggplotly"
@@ -31,23 +25,23 @@
 #' @importFrom utils "globalVariables"
 #' @import DendSer
 #' @importFrom utils "globalVariables"
-#' @importFrom DendSer "dser"
-#' @import progress
 #'
 #'@examples
 #' # Load in the data:
 #' aq <- data.frame(airquality)
 #' aq <- na.omit(aq)
 #'
-#' # Run an mlr random forest model:
-#' library(mlr)
-#' library(randomForest)
-#' aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
-#' aqRegrLrn <- makeLearner("regr.randomForest")
-#' aqMod <- train(aqRegrLrn, aqRgrTask)
+#' # Run an mlr ranger model:
+#' library(mlr3)
+#' aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
+#' aq_lrn = lrn("regr.ranger", importance = "permutation")
+#' aq_Mod <- lrn$train(aq_Task)
+#'
+#'#' # Create matrix
+#' myMat <- prepFunc(task = aq_Task, learner = aq_Lrn, model = aq_Mod)
 #'
 #' # Create plot:
-#' plotHeatMap(aqRgrTask, aqMod, method = "randomForest_importance", interact = F)
+#' plotHeatMap(myMat)
 #'
 #' @export
 
@@ -56,17 +50,8 @@ plotHeatMap <- function(mat,
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
                        impLow = "white", impHigh = "firebrick1", top = NULL, reorder=TRUE,...)
   {
-  #myEnv<-new.env()
-  #dint <- prepPlotly(task, model, method = method)
+
   dint <- mat
-  # if(!exists("dinteraction")){
-  #   dint <- prepFunc(task, model)
-  # }else{dint <- dinteraction}
-
-  #dint <- dinteraction
-
-
-  #top <- max(top)
 
   if (is.null(top)) {
     top <- length(colnames(dint))
