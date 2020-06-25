@@ -10,10 +10,6 @@
 #' @param ... Not currently implemented
 #'
 #'
-#' @importFrom mlr "getTaskData"
-#' @importFrom mlr "normalizeFeatures"
-#' @importFrom mlr "generateFilterValuesData"
-#' @importFrom mlr "getTaskFeatureNames"
 #' @importFrom iml "Predictor"
 #' @importFrom iml "Interaction"
 #' @importFrom ggplot2 "ggplot"
@@ -23,15 +19,14 @@
 #' aq <- data.frame(airquality)
 #' aq <- na.omit(aq)
 #'
-#' # Run an mlr random forest model:
-#' library(mlr)
-#' library(randomForest)
-#' aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
-#' aqRegrLrn <- makeLearner("regr.randomForest")
-#' aqMod <- train(aqRegrLrn, aqRgrTask)
+#' # Run an mlr ranger model:
+#' library(mlr3)
+#' aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
+#' aq_lrn = lrn("regr.ranger", importance = "permutation")
+#' aq_Mod <- lrn$train(aq_Task)
 #'
 #' # Create plot:
-#' interactionPlot(aqRgrTask, aqMod)
+#' interactionPlot(aq_Task, aq_Mod)
 #'
 #' @export
 
@@ -41,11 +36,14 @@
 interactionPlot <- function(task, model, type = "lollipop"){
 
   # Get data
-  data <- getTaskData(task)
-  nam <- getTaskFeatureNames(task)
+  # get data:
+  data <-  task$data()
+  data <- as.data.frame(data)
+  target <- task$target_names
+  nam <- task$feature_names
 
   # Get values
-  preMod  <- Predictor$new(model, data = data)
+  preMod  <- Predictor$new(model, data = data, y = target)
 
   intValues <- Interaction$new(preMod)
   intVal <- intValues$results$.interaction
@@ -55,6 +53,7 @@ interactionPlot <- function(task, model, type = "lollipop"){
 
 
   # Barplot
+  if (type == "barplot"){
   p <-  ggplot(intDF, aes(x = intDF, y = intVal)) +
     geom_col(aes(fill = intVal)) +
     scale_fill_gradient2(low = "floralwhite",
@@ -67,7 +66,8 @@ interactionPlot <- function(task, model, type = "lollipop"){
     theme(axis.title.y = element_text(angle = 0, vjust = 0.5))+
     coord_flip()
   p <- p + labs(fill = "Interaction\nStrength")
-
+  return(p)
+  }else if(type == "circleBar"){
   # Circular barplot
     pp <- ggplot(intDF, aes(x = intDF, y = intVal)) +
       geom_col(aes(fill = intVal)) +
@@ -85,18 +85,10 @@ interactionPlot <- function(task, model, type = "lollipop"){
       geom_text(aes(label = nam), vjust = -2, color = "black", size = 3.5) +
       geom_text(aes(label = intRound),vjust = 0, color = "black", size = 3)
     pp <- pp + labs(fill = "Interaction\nStrength")
-
-
-  # Lollipop
+    return(pp)
+   }else if(type == "lollipop"){# Lollipop
   ppp  <- plot(Interaction$new(preMod)) +
     theme_bw()
-
-  if(type == "barplot"){
-    return(p)
-  }else if(type == "circleBar"){
-    return(pp)
-  }else if(type == "lollipop"){
-    (return(ppp))
-  }
+  return(ppp)}
 }
 

@@ -11,12 +11,6 @@
 #' @param ... Not currently implemented
 #'
 #'
-#' @importFrom mlr "getTaskData"
-#' @importFrom mlr "normalizeFeatures"
-#' @importFrom mlr "generateFilterValuesData"
-#' @importFrom mlr "getTaskFeatureNames"
-#' @importFrom iml "Predictor"
-#' @importFrom iml "Interaction"
 #' @importFrom ggplot2 "ggplot"
 #'
 #'@examples
@@ -24,15 +18,18 @@
 #' aq <- data.frame(airquality)
 #' aq <- na.omit(aq)
 #'
-#' # Run an mlr random forest model:
-#' library(mlr)
-#' library(randomForest)
-#' aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
-#' aqRegrLrn <- makeLearner("regr.randomForest")
-#' aqMod <- train(aqRegrLrn, aqRgrTask)
+#' # Run an mlr ranger model:
+#' library(mlr3)
+#' aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
+#' aq_lrn = lrn("regr.ranger", importance = "permutation")
+#' aq_Mod <- lrn$train(aq_Task)
+#'
+#' # Create matrix
+#' myMat <- prepFunc(task = aq_Task, learner = aq_Lrn, model = aq_Mod)
+#'
 #'
 #' # Create plot:
-#' importancePlot(aqRgrTask, aqMod)
+#' importancePlot(myMat)
 #'
 #' @export
 
@@ -57,6 +54,7 @@ yDF <- reorder(nam, yImp)
 yDF <- data.frame(yDF)
 
 # Barplot
+if(type == "barplot"){
 p <- ggplot(yDF, aes(x = yDF, y = yImp)) +
   geom_col(aes(fill = yImp)) +
   scale_fill_gradient2(low = "white",
@@ -69,7 +67,8 @@ p <- ggplot(yDF, aes(x = yDF, y = yImp)) +
   theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) +
   coord_flip()
 p <- p + labs(fill = "Variable\nImportance")
-
+return(p)
+}else if(type == "circleBar"){
 # Circular barplot
 
   pp <- ggplot(yDF, aes(x=yDF, y=yImp)) +
@@ -88,7 +87,7 @@ p <- p + labs(fill = "Variable\nImportance")
     geom_text(aes(label = nam), vjust = 1.6, color = "black", size = 3.5) +
     geom_text(aes(label = yImpRound),vjust = 4, color = "black", size = 3)
   pp <- pp + labs(fill = "Variable\nImportance") #+ ggtitle(label = "Variable Importance")
-
+return(pp)}else if(type == "lollipop"){
 
   # lollipop plot
   ppp <- ggplot( yDF, aes(x=yDF, y=yImp)) +
@@ -97,15 +96,7 @@ p <- p + labs(fill = "Variable\nImportance")
     ylab("Importance Value") +
     theme_bw() +
     coord_flip()
-
-
-  if(type == "barplot"){
-    return(p)
-  }else if(type == "circleBar"){
-    return(pp)
-  }else if(type == "lollipop")
-    return(ppp)
-
+return(ppp)}
 }
 
 
