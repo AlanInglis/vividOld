@@ -29,9 +29,7 @@ These include a heat-map style plot that displays 2-way interactions and
 individual variable importance. Also, a network style plot where the
 size of a node represents variable importance (the bigger the node, the
 more important the variable) and the edge weight represents the 2-way
-interaction strength. Also included is an option to display partial
-dependence plots that utilize an Eularian tour to help the user to
-easily identify which variables interact the most. The interaction is
+interaction strength.  The interaction is
 calculated using *Friedman’s H-Statistic*^[Friedman, H. and Popescu, B.E. Predictive learning via rule ensemble. The Annals of Applied Statistics. 2008. 916-954]
 
 ## Data used in this vignette:
@@ -86,19 +84,20 @@ ab <- na.omit(ab)
 ab <- ab[1:500,]
 ```
 
-Run an `mlr` random forest model:
+Run an `mlr3` ranger model:
 
 ```{r}
-library(mlr)
-ab_task  <- makeRegrTask(data = ab, target = "Rings")
-ab_lrn <- makeLearner("regr.randomForest")
-ab_mod <- train(ab_lrn, ab_task)
+library(mlr3)
+library(mlr3learners)
+ab_task  <- TaskRegr$new(id = "abalone", backend = ab, target = "Rings")
+ab_lrn <- lrn("regr.ranger", importance = "permutation")
+ab_mod <- ab_lrn$train(ab_task)
 ```
 
 Create a matrix to be supplied to the plotting functions.
 
 ```{r}
-myMatrix <- prepFunc(task = ab_task, model = ab_mod, remove = FALSE, 
+myMatrix <- prepFunc(task = ab_task, learner = ab_lrn, model = ab_mod, remove = FALSE, 
                      percentRemove = 0.5, parallel = F)
 ```
 
@@ -205,8 +204,9 @@ Plots a pdp (partial dependence plot) pairs style matrix. The partial dependence
 
 **Usage**
 
-ggpdpPairs(task, model, method="pdp",vars=NULL, colLow = "#132B43", colHigh = "#56B1F7",
-                       fitlims = NULL, gridsize = 10, class=1, cardinality = 20)
+ggpdpPairs(task, model, method="pdp", corrVal = FALSE, corr = FALSE, corrMethod = "p",
+                       parallel = FALSE, vars=NULL, colLow = "#132B43", colHigh = "#56B1F7",
+                       fitlims = NULL,gridsize = 10,class=1,cardinality = 20)
 
 **Example**
 
@@ -219,12 +219,13 @@ ab <- na.omit(ab)
 ab <- ab[1:500,]
 ```
 
-Run an `mlr` random forest model:
+Run an `mlr3` ranger model:
 ```{r}
-library(mlr)
-ab_task  <- makeRegrTask(data = ab, target = "Rings")
-ab_lrn <- makeLearner("regr.randomForest")
-ab_mod <- train(ab_lrn, ab_task)
+library(mlr3)
+library(mlr3learners)
+ab_task  <- TaskRegr$new(id = "abalone", backend = ab, target = "Rings")
+ab_lrn <- lrn("regr.ranger", importance = "permutation")
+ab_mod <- ab_lrn$train(ab_task)
 ```
 
 To call the pdp pairs plot we use:
@@ -255,13 +256,13 @@ Plot displaying the 2-way interactions on the y-axis and the interaction strengt
 
 **Usage**
 
-allInt(mat, typetype = "lollipop", top = 0)
+allInt(mat, type = "lollipop", top = 0)
 
 
 To call the pdp pairs plot we use:
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-allInt(mat = myMatrix, type = "barplot", top = 0)
+allInt(mat = myMatrix, top = 0)
 ```
 <center>
 Fig 4.0: *A plot displaying all 2-way interaction in a model.*
@@ -295,15 +296,16 @@ ab <- na.omit(ab)
 ab <- ab[1:500,]
 ```
 
-Run an `mlr` random forest model:
+Run an `mlr3` ranger model:
 ```{r}
-library(mlr)
-ab_task  <- makeRegrTask(data = ab, target = "Rings")
-ab_lrn <- makeLearner("regr.randomForest")
-ab_mod <- train(ab_lrn, ab_task)
+library(mlr3)
+library(mlr3learners)
+ab_task  <- TaskRegr$new(id = "abalone", backend = ab, target = "Rings")
+ab_lrn <- lrn("regr.ranger", importance = "permutation")
+ab_mod <- ab_lrn$train(ab_task)
 ```
 
-To call the pdp pairs plot we use:
+To call the interaction plot we use:
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
 interactionPlot(task = ab_task, model =  ab_mod, type = "barplot")
