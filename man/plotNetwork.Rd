@@ -53,15 +53,16 @@ Create a Network style plot displaying Variable
 aq <- data.frame(airquality)
 aq <- na.omit(aq)
 
-# Run an mlr random forest model:
-library(mlr)
-library(randomForest)
-aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
-aqRegrLrn <- makeLearner("regr.randomForest")
-aqMod <- train(aqRegrLrn, aqRgrTask)
+# Run an mlr ranger model:
+library(mlr3)
+aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
+aq_lrn = lrn("regr.ranger", importance = "permutation")
+aq_Mod <- lrn$train(aq_Task)
+
+#' # Create matrix
+myMat <- prepFunc(task = aq_Task, learner = aq_Lrn, model = aq_Mod)
 
 # Create graph:
-plotNetwork(task = aqRgrTask, model = aqMod,
-thresholdValue = 0, cluster = F)
+plotNetwork(myMat, thresholdValue = 0, cluster = F)
 
 }

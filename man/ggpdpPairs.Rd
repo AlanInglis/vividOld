@@ -11,6 +11,7 @@ ggpdpPairs(
   corrVal = FALSE,
   corr = FALSE,
   corrMethod = "p",
+  parallel = FALSE,
   vars = NULL,
   colLow = "#132B43",
   colHigh = "#56B1F7",
@@ -35,6 +36,8 @@ ggpdpPairs(
 \item{corrMethod}{a character string indicating which correlation coefficient (or covariance) is to be computed.
 One of "pearson" (default), "kendall", or "spearman".}
 
+\item{parallel}{If TRUE then the method is executed in parallel.}
+
 \item{vars}{Variables to plot. Defaults to all predictors}
 
 \item{colLow}{Color to be used for low values}
@@ -57,23 +60,22 @@ Creates a plot of the partial dependence of each of the variables in ggpairs plo
 }
 \examples{
 
-# Run an mlr random forest model:
-library(mlr)
-library(randomForest)
+# Run an mlr3 ranger model:
+library(mlr3)
 library(MASS)
 Boston1 <- Boston[,c(4:6,8,13:14)]
 Boston1$chas <- factor(Boston1$chas)
-task  <- makeRegrTask(data = Boston1, target = "medv")
-learner <- makeLearner("regr.randomForest")
-fit <- train(learner, task)
+task <- TaskRegr$new(id = "Boston1", backend = Boston1, target = "medv")
+learner = lrn("regr.ranger", importance = "permutation")
+fit <- lrn$train(task)
 ggpdpPairs(task , fit)
 
 Boston2 <- Boston1
 Boston2$medv <- ggplot2::cut_interval(Boston2$medv, 3)
 levels(Boston2$medv) <- c("lo","mid", "hi")
-task  <- makeClassifTask(data = Boston2, target = "medv")
-learner <- makeLearner("classif.randomForest",predict.type = "prob")
-fit <- train(learner, task)
+task = TaskClassif$new(id = "Boston2", backend = Boston2, target = "medv")
+learner = lrn("classif.ranger", importance = "impurity", predit_type = "prob")
+fit <- learner$train(task)
 ggpdpPairs(task , fit, class="hi")
 
 }

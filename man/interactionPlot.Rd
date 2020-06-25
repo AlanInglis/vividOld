@@ -23,14 +23,13 @@ Plots a selected variable against all other variables in a model
 aq <- data.frame(airquality)
 aq <- na.omit(aq)
 
-# Run an mlr random forest model:
-library(mlr)
-library(randomForest)
-aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
-aqRegrLrn <- makeLearner("regr.randomForest")
-aqMod <- train(aqRegrLrn, aqRgrTask)
+# Run an mlr ranger model:
+library(mlr3)
+aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
+aq_lrn = lrn("regr.ranger", importance = "permutation")
+aq_Mod <- lrn$train(aq_Task)
 
 # Create plot:
-interactionPlot(aqRgrTask, aqMod)
+interactionPlot(aq_Task, aq_Mod)
 
 }
