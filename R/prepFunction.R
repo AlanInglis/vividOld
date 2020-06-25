@@ -16,13 +16,14 @@
 #'
 #' @return A matrix of values
 #'
-#' @importFrom mlr "getTaskData"
-#' @importFrom mlr "getFeatureImportance"
-#' @importFrom mlr "getTaskFeatureNames"
+#' @import mlr3filters
 #' @importFrom iml "Predictor"
 #' @importFrom iml "Interaction"
 #' @importFrom iml "FeatureImp"
 #' @importFrom future "plan"
+#' @import future.callr
+#'
+#' @importFrom reshape "melt"
 #' @import progress
 #'
 #' @examples
@@ -30,47 +31,53 @@
 #' aq <- data.frame(airquality)
 #' aq <- na.omit(aq)
 #'
-#' # Run an mlr random forest model:
-#' library(mlr)
-#' library(randomForest)
-#' aqRgrTask  <- makeRegrTask(data = aq, target = "Ozone")
-#' aqRegrLrn <- makeLearner("regr.randomForest")
-#' aqMod <- train(aqRegrLrn, aqRgrTask)
+#' # Run an mlr ranger model:
+#' library(mlr3)
+#' aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
+#' aq_lrn = lrn("regr.ranger", importance = "permutation")
+#' aq_Mod <- lrn$train(aq_Task)
+#'
+#' # Create matrix
+#' myMat <- prepFunc(task = aq_Task, learner = aq_Lrn, model = aq_Mod)
 #'
 #' # Create graph:
-#' plotNetwork(task = aqRgrTask, model = aqMod,
-#' thresholdValue = 0, cluster = F)
+#' plotHeatMap(myMat)
 #'
 #' @export
 
 
-prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5, parallel = FALSE){
-  message(" Calculating variable importance...")
-  # get data:
-  data <- getTaskData(task)
 
+prepFunc <- function(task, learner, model, remove = FALSE, percentRemove = 0.5, parallel = FALSE){
+  message(" Calculating variable importance...")
+
+
+  # get data:
+  data <-  task$data()
+  data <- as.data.frame(data)
+  target <- task$target_names
   # iml prediction
-  mod <- Predictor$new(model, data = data)
+  mod <- Predictor$new(model, data = data, y = target)
 
 
   ## Get Variable Importance:
-  lrnID <- model$learner$properties
-  testString <- "featimp"
+  lrnID <- model$properties
+  testString <- "importance"
 
-
-  for(i in length(lrnID)){
-    logID <- grepl(lrnID[i], testString, fixed = TRUE)
+  logID <- logical(length(lrnID))
+  for(i in seq_along(lrnID)){
+    logID[i] <- grepl(lrnID[i], testString, fixed = TRUE)
   }
 
   # If (embedded learner) - else(agnostic varimp calc)
-  if(logID == TRUE){
-    Importance <- getFeatureImportance(model)
-    Importance <- Importance$res
+  if(any(logID) == TRUE){
+    filter = flt("importance", learner = learner)
+    VIscore <- filter$calculate(task)
+    Importance <- VIscore$scores
     suppressMessages({
       Importance <- melt(Importance)
     })
     Imp <-  Importance$value
-    ovars <- getTaskFeatureNames(task)
+    ovars <-  task$feature_names
   }else{
     imp <- FeatureImp$new(mod, loss = "mse")
     Imp <- imp$results$importance
@@ -85,14 +92,17 @@ prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5, parallel 
   # This section deals with removing features with low interaction strength:
 
   # Set up registered cluster for parallel
-  if(parallel == TRUE){
+  if(parallel){
+    # noOfCores <- detectCores()
+    # cl <- makeCluster(noOfCores)
+    # registerDoParallel(cl)
     plan(future::cluster)
   }
 
 
-  ovars <- getTaskFeatureNames(task)
+  ovars <- task$feature_names
 
-  if(remove == TRUE){
+  if(remove){
     intValues <- Interaction$new(mod) # Overall interaction strength
     intVal <- intValues$results # get interaction results
     a <- intVal
@@ -137,10 +147,6 @@ prepFunc <- function(task, model, remove = FALSE, percentRemove = 0.5, parallel 
     res[[".feature"]]<- reorder(res[[".feature"]], res[[".interaction"]])
   }
 
-  if(parallel == TRUE){
-    # Closing works by setting them to default
-    plan("default")
-  }
 
   vars2 <- t(simplify2array(strsplit(as.character(res[[".feature"]]),":"))) # split/get feature names
   dinteraction <- matrix(0, length(ovars), length(ovars))                   # create matrix
