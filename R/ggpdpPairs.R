@@ -144,7 +144,7 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corr = FALSE,
   colnames(Pred) <- "prd"
   Pred <- Pred$prd
   # Plot prep for diag pdps
-  ovars <- getTaskFeatureNames(task)
+  ovars <- task$feature_names
   ggpdpDiag <- function(data, mapping, ...) {
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
     pdp <- pdplist1[[paste(vars[1])]]
