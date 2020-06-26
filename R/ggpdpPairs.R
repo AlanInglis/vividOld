@@ -32,6 +32,7 @@
 #'
 #' # Run an mlr3 ranger model:
 #' library(mlr3)
+#' library(mlr3learners)
 #' library(MASS)
 #' Boston1 <- Boston[,c(4:6,8,13:14)]
 #' Boston1$chas <- factor(Boston1$chas)
