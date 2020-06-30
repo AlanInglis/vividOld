@@ -4,10 +4,10 @@
 #'
 #' @description Plots variable importance
 #'
-#' @param task Task created from the mlr package, either regression or classification.
-#' @param model Any machine learning model.
-#' @param method A list of variable importance methods to be set by the user. These can include any of the importance methods contained within the mlr package. The default is method = randomForest.
-#' @param type The type of plot to display, either "lollipop" (default), "barplot", or "circleBar"
+#' @param mat A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.
+#' @param type The type of plot to display, either "lollipop" (default), "barplot", or "circleBar".
+#' @param minImp Minimum importance value to be displayed on the legend.
+#' @param maxImp Maximum importance value to be displayed on the legend.
 #' @param ... Not currently implemented
 #'
 #'
@@ -21,6 +21,7 @@
 #' # Run an mlr ranger model:
 #' library(mlr3)
 #' library(mlr3learners)
+#' library(ranger)
 #' aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
 #' aq_lrn = lrn("regr.ranger", importance = "permutation")
 #' aq_Mod <- lrn$train(aq_Task)
@@ -40,7 +41,7 @@
 
 
 
-importancePlot <- function(mat, type = "lollipop", ...){
+importancePlot <- function(mat, type = "lollipop", minImp = 0, maxImp = NULL, ...){
 
 
 # # Get Importance Measures -------------------------------------------------
@@ -49,17 +50,36 @@ importancePlot <- function(mat, type = "lollipop", ...){
 yImp <- diag(mat)
 
 yImpRound <- round(yImp, 2)
+maximumImp <- max(yImp)
+minimumImp <- min(yImp)
 nam <- names(yImp)
 
 yDF <- reorder(nam, yImp)
 yDF <- data.frame(yDF)
 
+if(is.null(maxImp)){
+  maxImp <- maximumImp
+}else{maxImp <- maxImp}
+
+
+
 # Barplot
 if(type == "barplot"){
+
+  # Warning message:
+  if(maxImp < maximumImp){
+    message("Warning: Maximum chosen importance value is less than
+            some of the importance values. Some values may not be displayed correctly")
+  }
+  if(minImp > minimumImp){
+    message("Warning: Minimum chosen importance value is greater than
+            some of the importance values. Some values may not be displayed correctly")
+  }
+
 p <- ggplot(yDF, aes(x = yDF, y = yImp)) +
   geom_col(aes(fill = yImp)) +
   scale_fill_gradient2(low = "white",
-                       high = "firebrick1") +
+                       high = "firebrick1", limits = c(minImp, maxImp)) +
   ggtitle(label = "Variable Importance") +
   geom_text(aes(label = yImpRound), vjust = 1.6, color = "black", size = 3.5)+
   theme_minimal() +

@@ -10,7 +10,11 @@
 #' @param impHigh Colour, set by the user, to display high importance values.
 #' @param top Returns the first part of the interaction matrix and resulting plot. Similar to head() function.
 #' @param reorder If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances
-#' @param ... Not currently implemented
+#' @param minInt Minimum interaction strength to be displayed on the legend.
+#' @param maxInt Maximum interaction strength to be displayed on the legend.
+#' @param minImp Minimum importance value to be displayed on the legend.
+#' @param maxImp Maximum importance value to be displayed on the legend.
+#'  @param ... Not currently implemented
 #'
 #'
 #' @importFrom ggplot2 "ggplot"
@@ -34,6 +38,7 @@
 #' # Run an mlr ranger model:
 #' library(mlr3)
 #' library(mlr3learners)
+#' library(ranger)
 #' aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
 #' aq_lrn = lrn("regr.ranger", importance = "permutation")
 #' aq_Mod <- lrn$train(aq_Task)
@@ -49,7 +54,8 @@
 
 plotHeatMap <- function(mat,
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
-                       impLow = "white", impHigh = "firebrick1", top = NULL, reorder=TRUE,...)
+                       impLow = "white", impHigh = "firebrick1", top = NULL, reorder=TRUE,
+                       minImp = 0, maxImp = NULL, minInt = 0, maxInt = NULL,...)
   {
 
   dint <- mat
@@ -68,16 +74,33 @@ plotHeatMap <- function(mat,
 
     maxinteraction <- max(as.dist(dint))
     maxvimp <- max(as.dist(vimp))
+    intVals <- lower.tri(dint)
+    minInteraction <- min(intVals)
+    minImportance <-  min(vimp)
+
     # give equal weight to both interaction and varimp
     o <- dser( -as.dist(vimp/maxvimp+ dint/maxinteraction), cost=costLPL)
     dint <- dint[o,o]
   }
   dint <- dint[1:top,1:top]
 
+  ## Warning messages:
+  if(minInt > minInteraction){
+    message(" Warning: Minimum chosen interaction value is larger than
+            some of the interaction values. These values may not be displayed")
+  }
+  if(minImp > minImportance){
+    message(" Warning: Minimum chosen importance value is larger than
+            some of the importance values. These values may not be displayed")
+  }
+
+
+
   if(plotly){
     plotlyPlot(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh,...)
 
-  }else{plotHeat(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh,...)
+  }else{plotHeat(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh,
+                 minImp=minImp, maxImp=maxImp, minInt=minInt, maxInt=maxInt)
   }
 }
 
@@ -90,19 +113,29 @@ plotHeatMap <- function(mat,
 
 plotHeat <- function(dinteraction,
                         plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
-                        impLow = "white", impHigh = "firebrick1", top = NULL ,title="",...){
+                        impLow = "white", impHigh = "firebrick1", top = NULL , title="",
+                        minImp = 0, maxImp = NULL, minInt = 0, maxInt = NULL,...){
 
 
   maximumInt <- max(as.dist(dinteraction))+0.01
   maximumInt <- ceiling(maximumInt*100)/100
 
-  ImpMax <- max(diag(dinteraction))+1
+  maximumImp <- max(diag(dinteraction))+1
   labelNames <- colnames(dinteraction)
 
   #set values below zero to = zero:
   dinteraction[dinteraction<0] <- 0
   nvar <- nrow(dinteraction)
   index <- 1:nvar
+
+  # min/max legend values:
+  if(is.null(maxInt)){
+    maxInt <- maximumInt
+  }else{maxInt <- maxInt}
+
+  if(is.null(maxImp)){
+    maxImp <- maximumImp
+  }else{maxImp <- maxImp}
 
   # Set up plot -------------------------------------------------------
 
@@ -125,12 +158,11 @@ plotHeat <- function(dinteraction,
     scale_y_reverse(breaks = index, labels = labelNames) +
     geom_raster(aes(fill = `Interaction\nStrength`),
                 alpha = var_int$alpha_int) +
-    scale_fill_gradient(low = intLow, high = intHigh, limits=c(0, maximumInt)) +
+    scale_fill_gradient(low = intLow, high = intHigh, limits=c(minInt, maxInt)) +
     new_scale_fill() +
     geom_raster(aes(fill = `Variable\nImportance`),
                 alpha = var_int$alpha_imp) +
-    scale_fill_gradient(low = impLow ,high = impHigh, limits=c(0, ImpMax)) +
-    ggtitle(title) +
+    scale_fill_gradient(low = impLow ,high = impHigh, limits=c(minImp, maxImp)) +
     xlab('') +
     ylab('') +
     theme_light() +
@@ -145,18 +177,21 @@ plotHeat <- function(dinteraction,
 
 plotlyPlot <- function(dinteraction,
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
-                       impLow = "white", impHigh = "firebrick1", top = NULL, title="",...){
+                       impLow = "white", impHigh = "firebrick1", top = NULL, title="",
+                       minImp = 0, maxImp = NULL, minInt = 0, maxInt = NULL,...){
 
   maximumInt <- max(as.dist(dinteraction))+0.01
   maximumInt <- ceiling(maximumInt*100)/100
 
 
-  ImpMax <- max(diag(dinteraction))+1
+  maximumImp <- max(diag(dinteraction))+1
   labelNames <- colnames(dinteraction)
   #set values below zero to = zero:
   dinteraction[dinteraction<0] <- 0
   nvar <- nrow(dinteraction)
   index <- 1:nvar
+
+
 
   # Set up plot -------------------------------------------------------
 
@@ -177,7 +212,7 @@ plotlyPlot <- function(dinteraction,
     scale_x_continuous(breaks = index, labels = labelNames, position = "top") +
     scale_y_reverse(breaks = index, labels = labelNames) +
     geom_tile(aes(fill = `Interaction\nStrength`),alpha = var_int$alpha_int) +
-    scale_fill_gradient(low = intLow, high = intHigh, limits=c(0, maximumInt)) +
+    scale_fill_gradient(low = intLow, high = intHigh, limits=c(0, maxInt)) +
     geom_point(aes(colour = `Variable\nImportance`), size = 10,
                alpha = var_int$alpha_imp) +
     scale_colour_gradient(low = impLow ,high = impHigh, limits=c(0, ImpMax)) +
