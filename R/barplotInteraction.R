@@ -22,6 +22,7 @@
 #' # Run an mlr ranger model:
 #' library(mlr3)
 #' library(mlr3learners)
+#' library(ranger)
 #' aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
 #' aq_lrn = lrn("regr.ranger", importance = "permutation")
 #' aq_Mod <- lrn$train(aq_Task)
@@ -45,8 +46,9 @@ interactionPlot <- function(task, model, type = "lollipop"){
 
   # Get values
   preMod  <- Predictor$new(model, data = data, y = target)
-
+  suppressMessages({
   intValues <- Interaction$new(preMod)
+  })
   intVal <- intValues$results$.interaction
   intRound <- round(intVal, 3)
   intDF <- reorder(nam, intVal)

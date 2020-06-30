@@ -34,6 +34,7 @@
 #' # Run an mlr ranger model:
 #' library(mlr3)
 #' library(mlr3learners)
+#' library(ranger)
 #' aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
 #' aq_lrn = lrn("regr.ranger", importance = "permutation")
 #' aq_Mod <- lrn$train(aq_Task)
@@ -104,7 +105,9 @@ prepFunc <- function(task, learner, model, remove = FALSE, percentRemove = 0.5, 
   ovars <- task$feature_names
 
   if(remove){
+    suppressMessages({
     intValues <- Interaction$new(mod) # Overall interaction strength
+    })
     intVal <- intValues$results # get interaction results
     a <- intVal
     a[,".feature"] <- as.factor(a[,".feature"])
@@ -126,7 +129,9 @@ prepFunc <- function(task, learner, model, remove = FALSE, percentRemove = 0.5, 
 
     res  <- NULL
     for (i in 1:length(ovars1)){
+      suppressMessages({
       res <- rbind(res, Interaction$new(mod, grid.size = 10, feature=ovars1[i])$results)
+      })
       pb$tick()
     }
 
@@ -141,7 +146,9 @@ prepFunc <- function(task, learner, model, remove = FALSE, percentRemove = 0.5, 
 
     res  <- NULL
     for (i in 1:length(ovars)){
+      suppressMessages({
       res <- rbind(res, Interaction$new(mod, grid.size = 10, feature=ovars[i])$results)
+      })
       pb$tick()
     }
 
