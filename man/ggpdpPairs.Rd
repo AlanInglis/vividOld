@@ -13,8 +13,9 @@ ggpdpPairs(
   corrMethod = "p",
   parallel = FALSE,
   vars = NULL,
-  colLow = "#132B43",
-  colHigh = "#56B1F7",
+  colLow = "red",
+  colMid = "yellow",
+  colHigh = "blue",
   fitlims = NULL,
   gridsize = 10,
   class = 1,
@@ -38,19 +39,21 @@ One of "pearson" (default), "kendall", or "spearman".}
 
 \item{parallel}{If TRUE then the method is executed in parallel.}
 
-\item{vars}{Variables to plot. Defaults to all predictors}
+\item{vars}{Variables to plot. Defaults to all predictors.}
 
-\item{colLow}{Color to be used for low values}
+\item{colLow}{Colour to be used for low values.}
 
-\item{colHigh}{Color to be used for low values}
+\item{colMid}{Colour to be used for mid values.}
+
+\item{colHigh}{Colour to be used for low values.}
 
 \item{fitlims}{If supplied, should be a numeric vector of length 2, specifying the fit range.}
 
-\item{gridsize}{for the pdp/ale plots, defaults to 10}
+\item{gridsize}{for the pdp/ale plots, defaults to 10.}
 
 \item{class}{For a classification model, show the probability of this class. Defaults to 1.}
 
-\item{...}{Not currently implemented}
+\item{...}{Not currently implemented.}
 }
 \value{
 A ggpairs style plot displaying the partial dependence.
@@ -62,6 +65,7 @@ Creates a plot of the partial dependence of each of the variables in ggpairs plo
 
 # Run an mlr3 ranger model:
 library(mlr3)
+library(mlr3learners)
 library(MASS)
 Boston1 <- Boston[,c(4:6,8,13:14)]
 Boston1$chas <- factor(Boston1$chas)

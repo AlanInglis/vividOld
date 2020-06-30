@@ -13,6 +13,10 @@ plotHeatMap(
   impHigh = "firebrick1",
   top = NULL,
   reorder = TRUE,
+  minImp = 0,
+  maxImp = NULL,
+  minInt = 0,
+  maxInt = NULL,
   ...
 )
 }
@@ -33,7 +37,14 @@ plotHeatMap(
 
 \item{reorder}{If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances}
 
-\item{...}{Not currently implemented}
+\item{minImp}{Minimum importance value to be displayed on the legend.}
+
+\item{maxImp}{Maximum importance value to be displayed on the legend.
+@param ... Not currently implemented}
+
+\item{minInt}{Minimum interaction strength to be displayed on the legend.}
+
+\item{maxInt}{Maximum interaction strength to be displayed on the legend.}
 }
 \description{
 Plots a Heatmap-tyle display showingVariable Importance and Variable Interaction
@@ -45,6 +56,8 @@ aq <- na.omit(aq)
 
 # Run an mlr ranger model:
 library(mlr3)
+library(mlr3learners)
+library(ranger)
 aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
 aq_lrn = lrn("regr.ranger", importance = "permutation")
 aq_Mod <- lrn$train(aq_Task)
