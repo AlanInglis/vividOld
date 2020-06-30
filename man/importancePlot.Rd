@@ -4,18 +4,18 @@
 \alias{importancePlot}
 \title{importancePlot}
 \usage{
-importancePlot(mat, type = "lollipop", ...)
+importancePlot(mat, type = "lollipop", minImp = 0, maxImp = NULL, ...)
 }
 \arguments{
-\item{type}{The type of plot to display, either "lollipop" (default), "barplot", or "circleBar"}
+\item{mat}{A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.}
+
+\item{type}{The type of plot to display, either "lollipop" (default), "barplot", or "circleBar".}
+
+\item{minImp}{Minimum importance value to be displayed on the legend.}
+
+\item{maxImp}{Maximum importance value to be displayed on the legend.}
 
 \item{...}{Not currently implemented}
-
-\item{task}{Task created from the mlr package, either regression or classification.}
-
-\item{model}{Any machine learning model.}
-
-\item{method}{A list of variable importance methods to be set by the user. These can include any of the importance methods contained within the mlr package. The default is method = randomForest.}
 }
 \description{
 Plots variable importance
