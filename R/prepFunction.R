@@ -21,7 +21,6 @@
 #' @importFrom iml "Interaction"
 #' @importFrom iml "FeatureImp"
 #' @importFrom future "plan"
-#' @import future.callr
 #'
 #' @importFrom reshape "melt"
 #' @import progress
