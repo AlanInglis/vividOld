@@ -37,6 +37,7 @@
 #' # Run an mlr ranger model:
 #' library(mlr3)
 #' library(mlr3learners)
+#' library(ranger)
 #' aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
 #' aq_lrn = lrn("regr.ranger", importance = "permutation")
 #' aq_Mod <- lrn$train(aq_Task)
@@ -62,7 +63,8 @@ plotNetwork <- function(mat, thresholdValue = 0,
 
 
   netPrep <- mat
-  plotNet(netPrep, model, thresholdValue, label, layout = layout)
+  plotNet(netPrep, model, thresholdValue, label, layout = layout,
+          minInt, maxInt, minImp , maxImp)
 }
 
 
@@ -81,7 +83,7 @@ plotNet <- function(dinteraction,
   impWarn <- max(impWarn)
   impLegend <- Imp
   impLegend <- round(impLegend, 2)
-  impLegend <- max(impLegend)+10
+  impLegend <- max(impLegend)+0.5
 
 
   sortInt = t(dinteraction)[lower.tri(t(dinteraction), diag=FALSE)]  # get upper triangle of the matrix by row order
@@ -140,27 +142,27 @@ plotNet <- function(dinteraction,
 
   # Set shape of plot:
   if(thresholdValue > 0){
-   #l <- layout.fruchterman.reingold(net.bg)
     l <- layout.reingold.tilford(net.bg, circular=T)
     edgeColour <- (E(net.sp)$weight)
     cut_int <- cut(edgeColour, 9)
     npal <- colfunction(9)
     edgeCols <- npal[cut_int]
   }else{l <- layout
-  edgeColour <- (E(net.sp)$weight)
-  cut_int <- cut(edgeColour, 9)
-  npal <- colfunction(9)
-  edgeCols <- npal[cut_int]
+    edgeColour <- (E(net.sp)$weight)
+    cut_int <- cut(edgeColour, 9)
+    npal <- colfunction(9)
+    edgeCols <- npal[cut_int]
   }
 
 
   # min/max legend values:
   if(is.null(maxInt)){
     maxInt <- maximumInt
-  }
+  }else{maxInt <- maxInt}
   if(is.null(maxImp)){
     maxImp <- impLegend
-  }
+  }else{maxImp <- maxImp}
+  intMatrix <- round(dinteraction, 3)
 
   # create plot -------------------------------------------------------
   if(!(label)){
@@ -172,13 +174,14 @@ plotNet <- function(dinteraction,
       geom_label(aes(label = nam),nudge_y = labelNudge) +
       geom_point(aes(fill = Imp1), size = Imp*2, col = "transparent", shape = 21) +
       scale_fill_continuous(name = "Variable\nImportance",
+                            limits=c(minImp, maxImp),
                             low = "floralwhite" ,high = "firebrick1") +
       new_scale_fill() +
       geom_point(aes(fill = 0), size = -1) +
       scale_fill_continuous( name = "Interaction\nStrength",
-                             limits=c(minInt, maximumInt),
+                             limits=c(minInt, maxInt),
                              low = "floralwhite" ,high = "dodgerblue4")
-    myList <- list("Variable Importance:" = impDf, "Interaction Matrix:" = dinteraction, p)
+    myList <- list("Variable Importance:" = impDf, "Interaction Matrix:" = intMatrix, p)
     return(myList)
   }else{
     p <- ggnet2(net.sp, mode = l,
