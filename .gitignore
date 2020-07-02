@@ -28,3 +28,5 @@
 src/*.so
 Src/*.o
 inst/doc
+doc
+Meta
