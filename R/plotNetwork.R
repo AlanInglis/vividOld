@@ -181,8 +181,7 @@ plotNet <- function(dinteraction,
       scale_fill_continuous( name = "Interaction\nStrength",
                              limits=c(minInt, maxInt),
                              low = "floralwhite" ,high = "dodgerblue4")
-    myList <- list("Variable Importance:" = impDf, "Interaction Matrix:" = intMatrix, p)
-    return(myList)
+    return(p)
   }else{
     p <- ggnet2(net.sp, mode = l,
                 size = 0,
@@ -199,8 +198,8 @@ plotNet <- function(dinteraction,
       scale_fill_continuous(name = "Interaction\nStrength",
                             limits=c(minInt, maximumInt),
                             low = "floralwhite" ,high = "dodgerblue4")
-    myList <- list("Variable Importance:" = impDf, "Interaction Matrix:" = dinteraction, p)
-    return(myList)
+
+    return(p)
    }
   # }else if(Threshold == FALSE && Cluster == TRUE){
   # V(net.bg)$label <- nam
