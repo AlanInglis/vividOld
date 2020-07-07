@@ -6,17 +6,18 @@
 #' @param model Any machine learning model.
 #' @param method "pdp" (default) or "ale"
 #' @param corrVal If TRUE, then display the correlation coefficient on top of scatterplot.
-#' @param corr If TRUE then a correlation matrix is displayed in the lower triangle.
 #' @param corrMethod a character string indicating which correlation coefficient (or covariance) is to be computed.
 #'  One of "pearson" (default), "kendall", or "spearman".
 #' @param parallel If TRUE then the method is executed in parallel.
-#' @param vars Variables to plot. Defaults to all predictors
-#' @param colLow Color to be used for low values
-#' @param colHigh Color to be used for low values
+#' @param vars Variables to plot. Defaults to all predictors.
+#' @param colLow Colour to be used for low values.
+#' @param colMid Colour to be used for mid values.
+#' @param colHigh Colour to be used for low values.
 #' @param fitlims If supplied, should be a numeric vector of length 2, specifying the fit range.
-#' @param gridsize for the pdp/ale plots, defaults to 10
+#' @param gridsize for the pdp/ale plots, defaults to 10.
 #' @param class For a classification model, show the probability of this class. Defaults to 1.
-#' @param ... Not currently implemented
+#' @param cardinality Manually set the cardinality.
+#' @param ... Not currently implemented.
 #'
 #' @return A ggpairs style plot displaying the partial dependence.
 #' @importFrom iml "FeatureEffect"
@@ -25,6 +26,9 @@
 #' @importFrom GGally "wrap"
 #' @importFrom GGally "eval_data_col"
 #' @importFrom future "plan"
+#' @importFrom stats "median"
+#' @importFrom stats "cor"
+#' @importFrom stats "loess"
 #'
 #' @import progress
 #'
@@ -38,21 +42,21 @@
 #' Boston1$chas <- factor(Boston1$chas)
 #' task <- TaskRegr$new(id = "Boston1", backend = Boston1, target = "medv")
 #' learner = lrn("regr.ranger", importance = "permutation")
-#' fit <- lrn$train(task)
+#' fit <- learner$train(task)
 #' ggpdpPairs(task , fit)
 #'
 #' Boston2 <- Boston1
 #' Boston2$medv <- ggplot2::cut_interval(Boston2$medv, 3)
 #' levels(Boston2$medv) <- c("lo","mid", "hi")
 #' task = TaskClassif$new(id = "Boston2", backend = Boston2, target = "medv")
-#' learner = lrn("classif.ranger", importance = "impurity", predit_type = "prob")
+#' learner = lrn("classif.ranger", importance = "impurity")
 #' fit <- learner$train(task)
 #' ggpdpPairs(task , fit, class="hi")
 #'
 #' @export
 
-ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corr = FALSE, corrMethod = "p",
-                       parallel = FALSE, vars=NULL, colLow = "#132B43", colHigh = "#56B1F7",
+ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = "p",
+                       parallel = FALSE, vars=NULL, colLow = "red", colMid = "yellow", colHigh = "blue",
                        fitlims = NULL,gridsize = 10,class=1,cardinality = 20, ...){
 
   # Set up registered cluster for parallel
@@ -131,18 +135,23 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corr = FALSE,
   } else
     limits <- fitlims
 
+  # get predictions
+  Pred <- pred.data$predict(data)
+  colnames(Pred) <- "prd"
+  Pred <- Pred$prd
+  midLimit <- median(Pred)
+
   # Plot prep for pairs
   ggpdp <- function(data, mapping, ...) {
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
     pdp <- pdplist[[paste(vars[2], vars[1], sep="pp")]]
     # pdp <-FeatureEffect$new(pred.data, vars, method = method, grid.size=gridsize)
-    plot(pdp, rug=FALSE) + scale_fill_gradient(name="\u0177",low=colLow, high=colHigh,limits=limits)
+    plot(pdp, rug=FALSE, ) +
+      scale_fill_gradient2(name="\u0177",low = colLow, mid = colMid, high = colHigh,
+                           midpoint = midLimit, limits=limits)
   }
 
-  # get predictions
-  Pred <- pred.data$predict(data)
-  colnames(Pred) <- "prd"
-  Pred <- Pred$prd
+
   # Plot prep for diag pdps
   ovars <- task$feature_names
   ggpdpDiag <- function(data, mapping, ...) {
@@ -151,7 +160,9 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corr = FALSE,
     aggr <- pdp$results[pdp$results$.type != "ice", ]
     plot(pdp, rug=FALSE) +
       geom_line(aes(y = .value, group = .id, color = .value)) +
-      geom_line(data = aggr, size = 2, color = "gold")
+      scale_colour_gradient2(low = colLow, mid = colMid, high = colHigh,
+                             midpoint = midLimit) +
+      geom_line(data = aggr, size = 1, color = "black")
   }
 
   # plot prep for class.
@@ -176,13 +187,6 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corr = FALSE,
   yData <- as.numeric(unlist(yData))
   ggTitle <- model$id
   #ggTitle <- model$learner$id
-
-  # Display warning if both corr & corrVal = TRUE
-  if(corr == TRUE && corrVal == TRUE){
-    message(" warning: Trying to plot 2 different displays at once.
-            please select either corr = TRUE or corrVal = TRUE.
-            Defaulting to corrVal = TRUE")
-  }
 
   if(corrVal == TRUE){
     GGscatterPlot <- function(data, mapping,method = corrMethod)
@@ -230,64 +234,29 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corr = FALSE,
             axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
             strip.text = element_text(face ="bold", colour ="red", size = 5))
     p
-  }else if(corr == TRUE){
-    my_fn <- function(data, mapping, method = corrMethod, use="pairwise", ...){
+  }else{
+    default_fn <-  function(data, mapping)
+      {
+        #Get correlation coefficient
+        x <- eval_data_col(data, mapping$x)
+        y <- eval_data_col(data, mapping$y)
 
-      # grab data
-      x <- eval_data_col(data, mapping$x)
-      y <- eval_data_col(data, mapping$y)
-
-      # calculate correlation: for significance stars and set some values
-      corr <- cor.test(x, y, method=method)
-      est <- corr$estimate
-      sz = 8
-      ndp <- 2 # number of decimal points
-      lb.size <- sz*abs(est) # set label size
+        # Assemble data frame
+        df <- data.frame(x = x, y = y)
 
 
-      # get significance stars
-      stars <- c("***", "**", "*", "")[findInterval(corr$p.value, c(0, 0.001, 0.01, 0.05, 1))]
-      lbl <- paste0(round(est, ndp), stars)
-
-      # calculate correlation
-      corr <- cor(x, y, method = corrMethod, use=use)
-
-      # calculate colour based on correlation value
-      # Here I have set a correlation of minus one to blue,
-      # zero to white, and one to red
-      colFn <- colorRampPalette(c("dodgerblue", "floralwhite", "firebrick1"), interpolate ='spline')
-      fill <- colFn(100)[findInterval(corr, seq(-1, 1, length=100))]
-
-      ggplot(data = data, mapping = mapping, ...) +
-        theme_void() +
-        annotate("text",
-                 x=mean(x, na.rm=TRUE),
-                 y=mean(y, na.rm=TRUE),
-                 label=lbl,
-                 size=lb.size,
-                 ...) +
-        theme(panel.background = element_rect(fill = fill,  # to fill background of panel with colour
-                                              colour = NA), # to remove border of panel
-              panel.grid.major = element_blank())
-
+        # Prepare plot
+        ggplot(df, aes(x = x, y = y, color = Pred)) +
+          geom_point(shape = 16, size = 1, show.legend = FALSE) +
+           scale_colour_gradient2(low = colLow, mid = colMid, high = colHigh, midpoint = midLimit)
     }
 
-    p <- ggpairs(xdata, title = ggTitle,
-                 mapping=ggplot2::aes(label = lbl),
-                 upper=list(continuous = ggpdp, combo = ggpdpc, discrete = ggpdp),
-                 diag = list(continuous = ggpdpDiag),
-                 lower=list(continuous = my_fn),
-                 legend=w,
-                 cardinality_threshold = cardinality) +
-      theme(panel.border=element_blank(), axis.line=element_line(),
-            strip.text = element_text(face ="bold", colour ="red", size = 5))
-    p
-  }else{
     p <- ggpairs(xdata, title = ggTitle,
                  mapping=ggplot2::aes(colour = Pred),
                  upper=list(continuous = ggpdp, combo = ggpdpc, discrete = ggpdp),
                  diag = list(continuous = ggpdpDiag),
-                 lower=list(continuous=wrap("points", size = 0.5)),
+                 lower = list(continuous = default_fn),
+                # lower=list(continuous=wrap("points", size = 0.5)),
                  legend=w,
                  cardinality_threshold = cardinality) +
       theme_bw() + theme(panel.border=element_blank(), axis.line=element_line(),
