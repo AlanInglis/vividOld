@@ -1,5 +1,6 @@
 # Test the allInteractions function
-library(mlr)
+library(mlr3)
+library(mlr3learners)
 
 # Function to simulate freidman data
 sim_friedman = function(n, p = 0, res_sd = 1, pars = c(10, 20, 10, 5)) {
@@ -23,17 +24,21 @@ my_data = sim_friedman(200)
 # -------------------------------------------------------------------------
 
 # Regression
-# Run it through mlr
-fr_task = makeRegrTask(data = my_data, target = "y")
-fr_learn = makeLearner("regr.randomForest")
-fr_mod = mlr::train(fr_learn, fr_task)
+# Run it through mlr3
+fr_task = TaskRegr$new(id = "Fried", backend = my_data, target = "y")
+fr_learn = lrn("regr.ranger", importance = "permutation")
+fr_mod = fr_learn$train(fr_task)
+
+
+# Create Matrix
+myMat <- prepFunc(fr_task, fr_learn, fr_mod)
 
 # Test that the basic function works for regression
 test_that("allInt works", {
-  expect_list(allInt(task = fr_task, model = fr_mod))
-  expect_list(allInt(task = fr_task, model = fr_mod, type = 'barplot'))
-  expect_list(allInt(task = fr_task, model = fr_mod, type = 'circleBar'))
-  expect_list(allInt(task = fr_task, model = fr_mod, top = 2))
+  expect_list(allInt(myMat))
+  expect_list(allInt(myMat, type = 'barplot'))
+  expect_list(allInt(myMat, type = 'circleBar'))
+  expect_list(allInt(myMat, top = 2))
 })
 
 
@@ -41,31 +46,35 @@ test_that("allInt works", {
 # classification
 ir <- iris
 # Run it through mlr
-ir_task = makeClassifTask(data = ir, target = "Species")
-ir_learn = makeLearner("classif.randomForest", predict.type = 'prob')
-ir_mod = mlr::train(ir_learn, ir_task)
+ir_task = TaskClassif$new(id = "iris", backend = ir, target = "Species")
+ir_learn = lrn("classif.ranger", importance = "impurity", predict_type = "prob")
+ir_mod = ir_learn$train(ir_task)
 
+# Create matrix
+myMat1 <- prepFunc(ir_task, ir_learn, ir_mod)
 # Test that the basic function works for classification
 test_that("allInt works", {
-  expect_list(allInt(task = ir_task, model = ir_mod))
-  expect_list(allInt(task = ir_task, model = ir_mod, type = 'barplot'))
-  expect_list(allInt(task = ir_task, model = ir_mod, type = 'circleBar'))
-  expect_list(allInt(task = ir_task, model = ir_mod, top = 2))
+  expect_list(allInt(myMat1))
+  expect_list(allInt(myMat1, type = 'barplot'))
+  expect_list(allInt(myMat1, type = 'circleBar'))
+  expect_list(allInt(myMat1, top = 2))
 })
 
 
 # -------------------------------------------------------------------------
 # test other learners e.g. linear regression to make sure that interactions are zero
-fr_task = makeRegrTask(data = my_data, target = "y")
-fr_learn = makeLearner("regr.lm")
-fr_mod = mlr::train(fr_learn, fr_task)
+fr_task = TaskRegr$new(id = "Fried", backend = my_data, target = "y")
+fr_learn = lrn("regr.lm")
+fr_mod = fr_learn$train(fr_task)
 
+# Create matrix
 
-test_that("lm interactions = 0", {
-  aInt <- allInt(task = fr_task, model = fr_mod)
-  aInt <- aInt$data$value
-  expect_equal(sum(aInt), 0)
-})
+# myMat <- prepFunc(fr_task, fr_learn, fr_mod)
+# test_that("lm interactions = 0", {
+#   aInt <- allInt(myMat)
+#   aInt <- aInt$data$value
+#   expect_equal(sum(aInt), 0)
+# })
 
 
 

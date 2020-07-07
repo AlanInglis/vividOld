@@ -1,5 +1,6 @@
 # Test the allInteractions function
-library(mlr)
+library(mlr3)
+library(mlr3learners)
 
 # Function to simulate freidman data
 sim_friedman = function(n, p = 0, res_sd = 1, pars = c(10, 20, 10, 5)) {
@@ -23,15 +24,15 @@ my_data = sim_friedman(200)
 # -------------------------------------------------------------------------
 
 # Regression
-# Run it through mlr
-fr_task = makeRegrTask(data = my_data, target = "y")
-fr_learn = makeLearner("regr.randomForest")
-fr_mod = mlr::train(fr_learn, fr_task)
+# Run it through mlr3
+fr_task = TaskRegr$new(id = "Fried", backend = my_data, target = "y")
+fr_learn = lrn("regr.ranger", importance = "permutation")
+fr_mod = fr_learn$train(fr_task)
 
 
 # Basic Test
 test_that("plotHeatMap works", {
-  mat <- prepFunc(fr_task, fr_mod)
+  mat <- prepFunc(fr_task, fr_learn, fr_mod)
   expect_list(plotHeatMap(mat))
   expect_list(plotHeatMap(mat, top = 2))
   expect_list(plotHeatMap(mat, top = 2, reorder = T))
