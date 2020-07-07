@@ -14,7 +14,6 @@
 #' @param maxInt Maximum interaction strength to be displayed on the legend.
 #' @param minImp Minimum importance value to be displayed on the legend.
 #' @param maxImp Maximum importance value to be displayed on the legend.
-#'  @param ... Not currently implemented
 #'
 #'
 #' @importFrom ggplot2 "ggplot"
@@ -41,10 +40,10 @@
 #' library(ranger)
 #' aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
 #' aq_lrn = lrn("regr.ranger", importance = "permutation")
-#' aq_Mod <- lrn$train(aq_Task)
+#' aq_Mod <- aq_lrn$train(aq_Task)
 #'
 #'#' # Create matrix
-#' myMat <- prepFunc(task = aq_Task, learner = aq_Lrn, model = aq_Mod)
+#' myMat <- prepFunc(task = aq_Task, learner = aq_lrn, model = aq_Mod)
 #'
 #' # Create plot:
 #' plotHeatMap(myMat)
@@ -55,7 +54,7 @@
 plotHeatMap <- function(mat,
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
                        impLow = "white", impHigh = "firebrick1", top = NULL, reorder=TRUE,
-                       minImp = 0, maxImp = NULL, minInt = 0, maxInt = NULL,...)
+                       minImp = 0, maxImp = NULL, minInt = 0, maxInt = NULL)
   {
 
   dint <- mat
@@ -97,7 +96,7 @@ plotHeatMap <- function(mat,
 
 
   if(plotly){
-    plotlyPlot(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh,...)
+    plotlyPlot(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh)
 
   }else{plotHeat(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh,
                  minImp=minImp, maxImp=maxImp, minInt=minInt, maxInt=maxInt)
@@ -114,7 +113,7 @@ plotHeatMap <- function(mat,
 plotHeat <- function(dinteraction,
                         plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
                         impLow = "white", impHigh = "firebrick1", top = NULL , title="",
-                        minImp = 0, maxImp = NULL, minInt = 0, maxInt = NULL,...){
+                        minImp = 0, maxImp = NULL, minInt = 0, maxInt = NULL){
 
 
   maximumInt <- max(as.dist(dinteraction))+0.01
@@ -178,7 +177,7 @@ plotHeat <- function(dinteraction,
 plotlyPlot <- function(dinteraction,
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
                        impLow = "white", impHigh = "firebrick1", top = NULL, title="",
-                       minImp = 0, maxImp = NULL, minInt = 0, maxInt = NULL,...){
+                       minImp = 0, maxImp = NULL, minInt = 0, maxInt = NULL){
 
   maximumInt <- max(as.dist(dinteraction))+0.01
   maximumInt <- ceiling(maximumInt*100)/100
