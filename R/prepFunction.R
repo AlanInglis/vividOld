@@ -7,12 +7,12 @@
 #'  and Variable Interaction on the off-diagonal.
 #'
 #'
-#' @param task Task created from the mlr package, either regression or classification.
+#' @param task Task created from the mlr3 package, either regression or classification.
+#' @param learner Learner created from the mlr3learners package.
 #' @param model Any machine learning model.
 #' @param remove If TRUE then remove the variables with low interaction strength.
 #' @param percentRemove The percentage of variables with low interaction strength to remove from the interaction calculation.
 #' @param parallel If TRUE then the method is executed in parallel.
-#' @param ... Not currently implemented.
 #'
 #' @return A matrix of values
 #'
@@ -36,10 +36,10 @@
 #' library(ranger)
 #' aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
 #' aq_lrn = lrn("regr.ranger", importance = "permutation")
-#' aq_Mod <- lrn$train(aq_Task)
+#' aq_Mod <- aq_lrn$train(aq_Task)
 #'
 #' # Create matrix
-#' myMat <- prepFunc(task = aq_Task, learner = aq_Lrn, model = aq_Mod)
+#' myMat <- prepFunc(task = aq_Task, learner = aq_lrn, model = aq_Mod)
 #'
 #' # Create graph:
 #' plotHeatMap(myMat)
