@@ -7,9 +7,10 @@
 #' @param sigma Numreic specifying standard deviation of the noise.
 #' @param bins Integer specifiying the number of bins to split responce variable into. Setting a value greater than 1 turns this into a classification problem whre bins determines the number of classes.
 #' @param seed Integer specifying the random seed.
-#' @param ... Not currently implemented
 #'
 #' @importFrom stats "quantile"
+#' @importFrom stats "rnorm"
+#' @importFrom stats "runif"
 #'
 #'@examples
 #' genFriedman(noFeatures = 10, noSamples = 100, sigma = 1, seed = NULL)

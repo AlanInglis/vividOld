@@ -11,6 +11,7 @@
 #' @param ... Not currently implemented
 #'
 #' @importFrom ggplot2 "ggplot"
+#' @importFrom stats "reshape"
 #' @import progress
 #'
 #'@examples
@@ -18,16 +19,16 @@
 #' aq <- data.frame(airquality)
 #' aq <- na.omit(aq)
 #'
-#' # Run an mlr ranger model:
+#' # Run an mlr3 ranger model:
 #' library(mlr3)
 #' library(mlr3learners)
 #' library(ranger)
 #' aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
 #' aq_lrn = lrn("regr.ranger", importance = "permutation")
-#' aq_Mod <- lrn$train(aq_Task)
+#' aq_Mod = aq_lrn$train(aq_Task)
 #'
 #' # Create matrix
-#' myMat <- prepFunc(task = aq_Task, learner = aq_Lrn, model = aq_Mod)
+#' myMat <- prepFunc(task = aq_Task, learner = aq_lrn, model = aq_Mod)
 #'
 #'
 #' # Create plot:
