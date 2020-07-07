@@ -16,8 +16,7 @@ plotHeatMap(
   minImp = 0,
   maxImp = NULL,
   minInt = 0,
-  maxInt = NULL,
-  ...
+  maxInt = NULL
 )
 }
 \arguments{
@@ -39,8 +38,7 @@ plotHeatMap(
 
 \item{minImp}{Minimum importance value to be displayed on the legend.}
 
-\item{maxImp}{Maximum importance value to be displayed on the legend.
-@param ... Not currently implemented}
+\item{maxImp}{Maximum importance value to be displayed on the legend.}
 
 \item{minInt}{Minimum interaction strength to be displayed on the legend.}
 
@@ -60,10 +58,10 @@ library(mlr3learners)
 library(ranger)
 aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
 aq_lrn = lrn("regr.ranger", importance = "permutation")
-aq_Mod <- lrn$train(aq_Task)
+aq_Mod <- aq_lrn$train(aq_Task)
 
 #' # Create matrix
-myMat <- prepFunc(task = aq_Task, learner = aq_Lrn, model = aq_Mod)
+myMat <- prepFunc(task = aq_Task, learner = aq_lrn, model = aq_Mod)
 
 # Create plot:
 plotHeatMap(myMat)

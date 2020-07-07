@@ -9,7 +9,6 @@ ggpdpPairs(
   model,
   method = "pdp",
   corrVal = FALSE,
-  corr = FALSE,
   corrMethod = "p",
   parallel = FALSE,
   vars = NULL,
@@ -32,8 +31,6 @@ ggpdpPairs(
 
 \item{corrVal}{If TRUE, then display the correlation coefficient on top of scatterplot.}
 
-\item{corr}{If TRUE then a correlation matrix is displayed in the lower triangle.}
-
 \item{corrMethod}{a character string indicating which correlation coefficient (or covariance) is to be computed.
 One of "pearson" (default), "kendall", or "spearman".}
 
@@ -53,6 +50,8 @@ One of "pearson" (default), "kendall", or "spearman".}
 
 \item{class}{For a classification model, show the probability of this class. Defaults to 1.}
 
+\item{cardinality}{Manually set the cardinality.}
+
 \item{...}{Not currently implemented.}
 }
 \value{
@@ -71,14 +70,14 @@ Boston1 <- Boston[,c(4:6,8,13:14)]
 Boston1$chas <- factor(Boston1$chas)
 task <- TaskRegr$new(id = "Boston1", backend = Boston1, target = "medv")
 learner = lrn("regr.ranger", importance = "permutation")
-fit <- lrn$train(task)
+fit <- learner$train(task)
 ggpdpPairs(task , fit)
 
 Boston2 <- Boston1
 Boston2$medv <- ggplot2::cut_interval(Boston2$medv, 3)
 levels(Boston2$medv) <- c("lo","mid", "hi")
 task = TaskClassif$new(id = "Boston2", backend = Boston2, target = "medv")
-learner = lrn("classif.ranger", importance = "impurity", predit_type = "prob")
+learner = lrn("classif.ranger", importance = "impurity")
 fit <- learner$train(task)
 ggpdpPairs(task , fit, class="hi")
 

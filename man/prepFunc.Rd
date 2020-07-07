@@ -14,7 +14,9 @@ prepFunc(
 )
 }
 \arguments{
-\item{task}{Task created from the mlr package, either regression or classification.}
+\item{task}{Task created from the mlr3 package, either regression or classification.}
+
+\item{learner}{Learner created from the mlr3learners package.}
 
 \item{model}{Any machine learning model.}
 
@@ -23,8 +25,6 @@ prepFunc(
 \item{percentRemove}{The percentage of variables with low interaction strength to remove from the interaction calculation.}
 
 \item{parallel}{If TRUE then the method is executed in parallel.}
-
-\item{...}{Not currently implemented.}
 }
 \value{
 A matrix of values
@@ -44,10 +44,10 @@ library(mlr3learners)
 library(ranger)
 aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
 aq_lrn = lrn("regr.ranger", importance = "permutation")
-aq_Mod <- lrn$train(aq_Task)
+aq_Mod <- aq_lrn$train(aq_Task)
 
 # Create matrix
-myMat <- prepFunc(task = aq_Task, learner = aq_Lrn, model = aq_Mod)
+myMat <- prepFunc(task = aq_Task, learner = aq_lrn, model = aq_Mod)
 
 # Create graph:
 plotHeatMap(myMat)

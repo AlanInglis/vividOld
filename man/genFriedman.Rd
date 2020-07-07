@@ -22,8 +22,6 @@ genFriedman(
 \item{bins}{Integer specifiying the number of bins to split responce variable into. Setting a value greater than 1 turns this into a classification problem whre bins determines the number of classes.}
 
 \item{seed}{Integer specifying the random seed.}
-
-\item{...}{Not currently implemented}
 }
 \description{
 Simulate data from the Friedman benchmark problem 1.
