@@ -4,7 +4,9 @@
 ^cran-comments\.md$
 ^CRAN-RELEASE$
 <<<<<<< HEAD
-^vignettes
+^vignette
 ^vivid_vignette.md
 =======
 >>>>>>> ad723c8977ec20f15fdbdd8a2302ff7ff26c3ab9
+^doc$
+^Meta$
