@@ -66,8 +66,6 @@ if(is.null(minImp)){
   minImp <- minimumImp
 }else{minImp <- minImp}
 
-
-
 # Barplot
 if(type == "barplot"){
 
