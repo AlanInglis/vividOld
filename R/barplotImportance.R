@@ -41,7 +41,7 @@
 
 
 
-importancePlot <- function(mat, type = "lollipop", minImp = 0, maxImp = NULL, ...){
+importancePlot <- function(mat, type = "lollipop", minImp = NULL, maxImp = NULL, ...){
 
 
 # # Get Importance Measures -------------------------------------------------
@@ -52,6 +52,7 @@ yImp <- diag(mat)
 yImpRound <- round(yImp, 2)
 maximumImp <- max(yImp)
 minimumImp <- min(yImp)
+midImp <- median(yImp)
 nam <- names(yImp)
 
 yDF <- reorder(nam, yImp)
@@ -60,6 +61,10 @@ yDF <- data.frame(yDF)
 if(is.null(maxImp)){
   maxImp <- maximumImp
 }else{maxImp <- maxImp}
+
+if(is.null(minImp)){
+  minImp <- minimumImp
+}else{minImp <- minImp}
 
 
 
@@ -78,8 +83,11 @@ if(type == "barplot"){
 
 p <- ggplot(yDF, aes(x = yDF, y = yImp)) +
   geom_col(aes(fill = yImp)) +
-  scale_fill_gradient2(low = "white",
-                       high = "firebrick1", limits = c(minImp, maxImp)) +
+  scale_fill_gradient2(low = "dodgerblue4",
+                       mid = "white",
+                       high = "firebrick1",
+                       midpoint = midImp,
+                        limits = c(minImp, maxImp)) +
   ggtitle(label = "Variable Importance") +
   geom_text(aes(label = yImpRound), vjust = 1.6, color = "black", size = 3.5)+
   theme_minimal() +
