@@ -57,7 +57,7 @@
 # -------------------------------------------------------------------------
 
 plotNetwork <- function(mat, thresholdValue = 0,
-                          label = FALSE, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
+                          label = FALSE, minInt = 0, maxInt = NULL, minImp = NULL, maxImp = NULL,
                           labelNudge = 0.05, layout = "circle",
                           cluster = F,...){
 
@@ -73,7 +73,7 @@ plotNetwork <- function(mat, thresholdValue = 0,
 plotNet <- function(dinteraction,
                     model,
                     thresholdValue = 0,
-                    label, minInt = 0, maxInt = NULL, minImp = 0, maxImp = NULL,
+                    label, minInt = 0, maxInt = NULL, minImp = NULL, maxImp = NULL,
                     labelNudge = 0.05, layout = "circle",
                     cluster = F){
 
@@ -84,6 +84,7 @@ plotNet <- function(dinteraction,
   impLegend <- Imp
   impLegend <- round(impLegend, 2)
   impLegend <- max(impLegend)+0.5
+  minimumImp <- min(Imp)
 
 
   sortInt = t(dinteraction)[lower.tri(t(dinteraction), diag=FALSE)]  # get upper triangle of the matrix by row order
@@ -159,9 +160,16 @@ plotNet <- function(dinteraction,
   if(is.null(maxInt)){
     maxInt <- maximumInt
   }else{maxInt <- maxInt}
+
   if(is.null(maxImp)){
     maxImp <- impLegend
   }else{maxImp <- maxImp}
+
+  if(is.null(minImp)){
+    minImp <- minimumImp
+  }else{minImp <- minImp}
+
+
   intMatrix <- round(dinteraction, 3)
 
   # create plot -------------------------------------------------------
