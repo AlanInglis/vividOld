@@ -71,14 +71,13 @@ prepFunc <- function(task, learner, model, remove = FALSE, percentRemove = 0.5, 
 
   # If (embedded learner) - else(agnostic varimp calc)
   if(any(logID) == TRUE){
-    filter = flt("importance", learner = learner)
-    VIscore <- filter$calculate(task)
-    Importance <- VIscore$scores
+   ovars <- task$feature_names
+   Importance <- model$importance()
+   impReorder <- Importance[order(factor(names(Importance), levels = ovars))]
     suppressMessages({
-      Importance <- melt(Importance)
+      Importance <- melt(impReorder)
     })
     Imp <-  Importance$value
-    ovars <-  task$feature_names
   }else{
     imp <- FeatureImp$new(mod, loss = "mse")
     Imp <- imp$results$importance
@@ -102,7 +101,6 @@ prepFunc <- function(task, learner, model, remove = FALSE, percentRemove = 0.5, 
 
 
   ovars <- task$feature_names
-
   if(remove){
     suppressMessages({
     intValues <- Interaction$new(mod) # Overall interaction strength
