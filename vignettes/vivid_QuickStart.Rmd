@@ -1,0 +1,127 @@
+---
+title: "vivid: quick start guide"
+author: "Alan Inglis, Catherine Hurley, Andrew Parnell"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{quick_start}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+## Step 1: install `vivid`
+
+Use:
+```{r, eval = FALSE}
+install.packages('vivid')
+```
+
+then
+```{r, message=FALSE}
+library(vivid)
+```
+
+
+## Step 2: Create an `mlr3` model:
+
+For example, using the Abalone data from the `AppliedPredictiveModeling` package, 
+we create a 'mlr3' model that utilizes the `ranger` package. First we load the required libraries:
+
+```{r}
+library(mlr3)  # To create a model
+library(mlr3learners)
+library(AppliedPredictiveModeling) # To get the abalone data
+library(ranger)
+```
+
+Then load the data:
+
+```{r, messages = FALSE}
+data(abalone)
+ab <- data.frame(abalone)
+ab <- na.omit(ab)
+ab <- ab[1:500,]
+```
+
+Then create the `mlr3` model, using `Rings` as the response:
+
+```{r}
+set.seed(1701)
+ab_task  <- TaskRegr$new(id = "abalone", backend = ab, target = "Rings")
+ab_lrn <- lrn("regr.ranger", importance = "permutation")
+ab_mod <- ab_lrn$train(ab_task)
+```
+
+
+Create a matrix of interaction/importance values using the `vivid` package: 
+
+```{r, message = F, warning = F}
+set.seed(1701)
+myMatrix <- prepFunc(task = ab_task,  model = ab_mod, 
+                     remove = FALSE, percentRemove = 0, parallel = F)
+
+```
+
+Create a HeatMap style plot displaying the importance on the diagonal and interactions on the off-diagonal:
+
+```{r, fig.width = 9, fig.height = 7}
+plotHeatMap(mat = myMatrix,  plotly = F,
+          intLow = "floralwhite", intHigh = "dodgerblue4",
+          impLow = "white", impHigh = "firebrick1", 
+          minImp = 0, maxImp = NULL, minInt = 0, maxInt = NULL)
+```
+
+Create a Network style plot displaying where the importance is displayed by both the size of the node (the bigger the node, the more important the variable) and the colour of the node (low to high values go from white to red)
+
+```{r, fig.width = 8, fig.height = 7}
+plotNetwork(mat = myMatrix, thresholdValue = 0, label = FALSE,
+            minInt = 0, maxInt = NULL, minImp = 0, maxImp=NULL,
+            labelNudge = 0.05, layout = "circle")
+```
+
+
+Create a partial dependence pair style plot:
+
+```{r, fig.width = 8, fig.height = 7}
+set.seed(1701)
+ggpdpPairs(task = ab_task, model =  ab_mod,  
+           colLow = "darkblue",
+           colMid = "darkcyan",
+           colHigh = "green")
+```
+
+Create a plot displaying all interactions:
+
+```{r, fig.width = 8, fig.height = 7}
+allInt(mat = myMatrix, top = 0)
+```
+
+Create a plot displaying the overall interaction strength:
+
+```{r, fig.width = 8, fig.height = 7, message=F, warning=F}
+interactionPlot(task = ab_task, model =  ab_mod, type = "barplot")
+```
+
+Create a plot displaying just the variable importance:
+
+```{r, fig.width = 8, fig.height = 7}
+importancePlot(mat = myMatrix, type = "barplot")
+```
+
+Generate data from the Friedman benchmark problem 1:
+
+```{r}
+myData <- genFriedman(noFeatures = 10, noSamples = 100, sigma = 1, bins = NULL, seed = NULL)
+head(myData,3)
+```
+
+
+
+
+
+
+
+
+
