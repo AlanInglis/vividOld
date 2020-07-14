@@ -84,7 +84,7 @@ p <- ggplot(yDF, aes(x = yDF, y = yImp)) +
   scale_fill_gradient2(low = "dodgerblue4",
                        mid = "white",
                        high = "firebrick1",
-                       midpoint = midImp,
+                       midpoint = 0,
                         limits = c(minImp, maxImp)) +
   ggtitle(label = "Variable Importance") +
   geom_text(aes(label = yImpRound), vjust = 1.6, color = "black", size = 3.5)+
