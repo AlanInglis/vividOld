@@ -4,7 +4,7 @@
 \alias{importancePlot}
 \title{importancePlot}
 \usage{
-importancePlot(mat, type = "lollipop", minImp = 0, maxImp = NULL, ...)
+importancePlot(mat, type = "lollipop", minImp = NULL, maxImp = NULL, ...)
 }
 \arguments{
 \item{mat}{A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.}
