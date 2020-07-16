@@ -13,7 +13,6 @@ Imports:
     igraph,
     mlr3,
     mlr3learners,
-    mlr3filters,
     iml,
     ggplot2,
     GGally,
@@ -22,7 +21,6 @@ Imports:
     tidyverse,
     ggnewscale,
     plotly,
-    reshape2,
     colorspace,
     stats,
     tidyr,
@@ -36,7 +34,6 @@ Suggests:
     knitr,
     rmarkdown,
     testthat,
-    randomForest,
     MASS,
     ranger,
     labeling
