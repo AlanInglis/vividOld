@@ -85,7 +85,7 @@ Create a matrix to be supplied to the plotting functions.
 
 ```{r, message = F, warning = F}
 set.seed(1701)
-myMatrix <- prepFunc(task = ab_task, learner = ab_lrn, model = ab_mod, remove = FALSE, 
+myMatrix <- prepFunc(task = ab_task, model = ab_mod, remove = FALSE, 
                      percentRemove = 0, parallel = F)
 
 ```
@@ -165,9 +165,9 @@ To call the pdp pairs plot we use:
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
 ggpdpPairs(task = ab_task, model =  ab_mod,  
-           colLow = "orange",
+           colLow = "darkblue",
            colMid = "darkcyan",
-           colHigh = "darkblue")
+           colHigh = "green")
 ```
 <center>
 Fig 3.0: *A pairs style matrix plot displaying the partial dependence between each of the variables in the upper diagonal, the individual pdp and ice curves on the diagonal and a scatter-plot on the lower diagonal*
