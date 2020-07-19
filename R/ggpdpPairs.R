@@ -139,8 +139,8 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
   Pred <- pred.data$predict(data)
   colnames(Pred) <- "prd"
   Pred <- Pred$prd
-  #midLimit <- floor(median(Pred))
-  midLimit <-  diff(range(Pred))/2
+  midLimit <- floor(median(Pred))
+ # midLimit <-  diff(range(Pred))/2
 
   # Plot prep for pairs
   ggpdp <- function(data, mapping, ...) {
