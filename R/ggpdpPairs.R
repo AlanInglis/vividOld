@@ -56,7 +56,7 @@
 #' @export
 
 ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = "p",
-                       parallel = FALSE, vars=NULL, colLow = "red", colMid = "yellow", colHigh = "blue",
+                       parallel = FALSE, vars=NULL, colLow = "darkblue", colMid = "darkcyan", colHigh = "green",
                        fitlims = NULL,gridsize = 10,class=1,cardinality = 20, ...){
 
   # Set up registered cluster for parallel
@@ -139,14 +139,15 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
   Pred <- pred.data$predict(data)
   colnames(Pred) <- "prd"
   Pred <- Pred$prd
-  midLimit <- median(Pred)
+  #midLimit <- floor(median(Pred))
+  midLimit <-  diff(range(Pred))/2
 
   # Plot prep for pairs
   ggpdp <- function(data, mapping, ...) {
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
     pdp <- pdplist[[paste(vars[2], vars[1], sep="pp")]]
     # pdp <-FeatureEffect$new(pred.data, vars, method = method, grid.size=gridsize)
-    plot(pdp, rug=FALSE, ) +
+    plot(pdp, rug=FALSE ) +
       scale_fill_gradient2(name="\u0177",low = colLow, mid = colMid, high = colHigh,
                            midpoint = midLimit, limits=limits)
   }
@@ -162,7 +163,7 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
       geom_line(aes(y = .value, group = .id, color = .value)) +
       scale_colour_gradient2(low = colLow, mid = colMid, high = colHigh,
                              midpoint = midLimit) +
-      geom_line(data = aggr, size = 1, color = "black")
+      geom_line(data = aggr, size = 2, color = "black")
   }
 
   # plot prep for class.
@@ -201,7 +202,7 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
       df <- data.frame(x = x, y = y)
 
       # Set colour for label
-      colFn <- colorRampPalette(c("dodgerblue", "floralwhite", "firebrick1"), interpolate ='spline')
+      colFn <- colorRampPalette(c("darkblue", "floralwhite", "green"), interpolate ='spline')
       fill <- colFn(100)[findInterval(corr, seq(-1, 1, length=100))]
 
       # Prepare plot
@@ -256,12 +257,13 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
                  upper=list(continuous = ggpdp, combo = ggpdpc, discrete = ggpdp),
                  diag = list(continuous = ggpdpDiag),
                  lower = list(continuous = default_fn),
-                # lower=list(continuous=wrap("points", size = 0.5)),
+                 # lower=list(continuous=wrap("points", size = 0.5)),
                  legend=w,
                  cardinality_threshold = cardinality) +
       theme_bw() + theme(panel.border=element_blank(), axis.line=element_line(),
                          axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
                          strip.text = element_text(face ="bold", colour ="red", size = 5))
+
 
     p
   }
