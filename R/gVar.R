@@ -15,4 +15,5 @@ utils::globalVariables(c("Interaction\nStrength",
                          "lab",
                          "var",
                          "model",
-                         "ImpMax"))
+                         "ImpMax",
+                         "ggpdpPairs"))
