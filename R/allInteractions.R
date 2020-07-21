@@ -1,4 +1,4 @@
-#' allInteractions
+#' allInteractionsPlot
 #'
 #' @description Plots all 2-way interactions
 #'
@@ -30,12 +30,13 @@
 #'
 #' # Create plot:
 #' plot(myMat, type = "allInteractions", plotType = "barplot")
+#'
 
 
 
 # Function ----------------------------------------------------------------
 
-allInt <- function(mat, plotType = NULL, top = NULL, ...){
+allInteractionsPlot <- function(mat, plotType = NULL, top = NULL, ...){
 
   # if(type != "lollipop" || type != "barplot" || type != "circleBar"){
   #   stop("Invalid plotting type. See ?allInt for available plotting types")
