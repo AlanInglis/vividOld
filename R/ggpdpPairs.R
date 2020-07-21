@@ -56,7 +56,7 @@
 #' @export
 
 ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = "p",
-                       parallel = FALSE, vars=NULL, colLow = "darkblue", colMid = "darkcyan", colHigh = "green",
+                       parallel = FALSE, vars=NULL, colLow = "#D7191C", colMid = "#FFFFBF", colHigh = "#2B83BA",
                        fitlims = NULL,gridsize = 10,class=1,cardinality = 20, ...){
 
   # Set up registered cluster for parallel
