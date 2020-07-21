@@ -39,7 +39,7 @@
 #' myMat <- vividMatrix(task = aq_Task, model = aq_Mod)
 #'
 #' # Create graph:
-#' plot(myMat, type = 'heatMap)
+#' plot(myMat, type = "heatMap")
 #'
 #' @export
 
