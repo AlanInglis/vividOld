@@ -18,7 +18,6 @@ Imports:
     GGally,
     RColorBrewer,
     grDevices,
-    tidyverse,
     ggnewscale,
     plotly,
     colorspace,
@@ -26,7 +25,6 @@ Imports:
     tidyr,
     dplyr,
     reshape,
-    tibble,
     DendSer,
     progress,
     future
