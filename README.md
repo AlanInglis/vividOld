@@ -1,4 +1,4 @@
-![alt text](https://github.com/AlanInglis/vivid/blob/master/badge/vividLogo.png?raw=true){width=20%}
+<img src="https://github.com/AlanInglis/vivid/blob/master/badge/vividLogo.png" width="200" height="200" />
 
 
 # Variable Interaction and Variable Importance Displays (vivid)
