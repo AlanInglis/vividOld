@@ -10,3 +10,35 @@ An important tool for the use of analysis or for the exploration of data, is tha
 Traditional methods of displaying variable importance and interaction have relied heavily on the use of line, lollipop or bar charts. However, in variable importance plots there is no emphasis on displaying how interacting variables may also be important in a model. Similarly, in variable interaction plots there is no indication as to which is the most important variable in making a prediction. Both variable importance and variable interaction are clearly important tools in feature selection, yet traditional visualisation techniques deal with them separately. 
 
 Here we present a new way to visualise the importance of variables and the interactions that exist between them, through the use of our R-package 'vivid' (variable importance and variable interaction displays). The vivid package allows a researcher to display a graphic that shows both the variable importance and the interaction strength between variables in an easily interpretable way. This has the added benefit of allowing researchers to identify variables, which may have a low value of importance, but interact strongly with other variables in the model. The package also contains an option to display the variables partial dependence. This can be of benefit to those who are conducting feature selection, or those who wish to gain a deeper insight into their model. 
+
+To install vivid use:
+
+```
+install.packages("vivid")
+```
+You can then load the package and view either the quick start or the full user manuals with:
+
+```
+library(vivid)
+vignette("vivid_vignette")
+vignette("vivid_QuickStart")
+```
+
+Alternatively you can install the latest development version of the package in R with the commands:
+
+```
+if(!require(remotes)) install.packages('remotes')
+remotes::install_github('AlanInglis/vivid')
+```
+
+You can then load the package with:
+
+```
+library(vivid)
+```
+
+
+
+
+
+
