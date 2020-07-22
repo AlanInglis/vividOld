@@ -1,3 +1,6 @@
+![alt text](https://github.com/AlanInglis/vivid/blob/master/badge/vividLogo.png?raw=true){width=20%}
+
+
 # Variable Interaction and Variable Importance Displays (vivid)
 
 An R-package used to display variable importance and variable interactions. The vivid package contains a suite of plots that enable importance and interaction to be evaluated in a more efficient manor than would traditionally be possible.
