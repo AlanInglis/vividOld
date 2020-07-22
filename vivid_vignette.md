@@ -1,461 +1,281 @@
-Introduction
-------------
+---
+title: "Variable Importance and Variable Interaction Displays (vivid)"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{vivid}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
 
-This package was designed to help a user to easily distinguish which
-variables in a model are important and which variables interact with
-each other. It does this by giving the user different plotting options.
-These include a heat-map style plot that displays 2-way interactions and
-individual variable importance. Also, a network style plot where the
+
+
+
+
+## Introduction
+
+Visualizations can be an important tool for the use of analysis or for the exploration of data. The impact of a carefully chosen visualization can be significant for a researcher, as using a meaningful visualization can give emphasis to the relationships that variables have in a model, and thus serves to help the researcher gain a deeper understanding of the behavior of a model. One such area that can benefit greatly from the use of informative visualizations is that of variable importance and variable interactions. When one creates a machine learning model, a significant challenge that is faced is to visualize the importance of the variables used to train the model and the interactions between these variables and to determine which variables are important and which variables can be cut from the model. Traditional methods of displaying variable importance and variable interactions suffer from a lack of cohesion and imagination. Both  variable  importance  and  variable  interaction  are  clearly  important tools in feature selection, yet traditional visualization techniques deal with them separately
+
+The vivid (variable importance and variable interaction displays) package was designed to help a user to easily distinguish which variables in a model are important and which variables interact with each other in a sensible and interpretable way. vivid contains a suite of plots that enable importance and interaction to be evaluated in a more efficient manor than would traditionally be possible. These include a heat-map style plot that displays 2-way interactions and individual variable importance. Also, a network style plot where the
 size of a node represents variable importance (the bigger the node, the
 more important the variable) and the edge weight represents the 2-way
-interaction strength. Also included is an option to display partial
-dependence plots that utilize an Eularian tour to help the user to
-easily identify which variables interact the most. The interaction is
-calculated using *Friedman’s H-Statistic*[1]
+interaction strength. Also included is a partial dependence pairs-style plot that displays 2D partial dependence plots, individual ice curves and a scatter-plot, in the one display. The interaction is calculated using *Friedman’s H-Statistic*^[Friedman, H. and Popescu, B.E. Predictive learning via rule ensemble. The Annals of Applied Statistics. 2008. 916-954]
 
-Data used in this vignette:
----------------------------
+To begin, we load the required packages. `mlr3` and `mlr3learners` will be used to create a `ranger` regression model and the `AppliedPredictiveModeling` package is used to obtain the data. 
 
-The data used in the following examples is the *abalone* data from the
-`AppliedPredictiveModeling` package[2] which contains measurements
-obtained from 4177 abalones. The data contains measurements of the type
-(male, female and infant), the longest shell measurement, the diameter,
-height and whole, shucked, viscera and shell weights. The response
-variable is rings. The age of the abalone can be determined by counting
-the rings plus 1.5. The variables are described as follows:
 
--   Rings: +1.5 gives the age in years.
+```r
+library(vivid)
+library(mlr3)  # To create a model
+library(mlr3learners)
+library(AppliedPredictiveModeling) # To get the abalone data
+```
 
--   Longest shell: Longest shell measurement (mm).
+## Data used in this vignette:
 
--   Diameter: Perpendicular to length (mm).
+The data used in the following examples is the *abalone* data from the `AppliedPredictiveModeling` package^[AppliedPredictiveModeling: Functions and Data Sets for 'Applied Predictive Modeling'. M. Kuhn and K. Johnson. 2018. https://CRAN.R-project.org/package=AppliedPredictiveModeling] which contains measurements obtained from 4177 abalones. The data contains measurements of the type (male, female and infant), the longest shell measurement, the diameter, height and whole, shucked, viscera and shell weights. The response variable is rings. The age of the abalone can be determined by counting the rings plus 1.5.
+The variables are described as follows:
 
--   Height: With meat in shell (mm).
+  - Rings: +1.5 gives the age in years.
 
--   Whole weight: Whole abalone (gm).
+  - Longest shell: Longest shell measurement (mm).
 
--   Shucked weight: Weight of meat (gm).
+  - Diameter: Perpendicular to length (mm).
 
--   Viscera weight: Gut weight (after bleeding) (gm).
+  - Height: With meat in shell (mm).
 
--   Shell weight: After being dried (gm).
+  - Whole weight: Whole abalone (gm).
 
-In all the following examples, a subset of the data is used and *Rings*
-is used as the response variable.
+  - Shucked weight: Weight of meat (gm).
+  
+  - Viscera weight: Gut weight (after bleeding) (gm).
+  
+  - Shell weight: After being dried (gm).
 
-Commands:
----------
+In all the following examples, a subset of the data is used and *Rings* is used as the response variable.
 
-`plotHeatMap()`
-===============
+Load in the data:
 
-------------------------------------------------------------------------
+```r
+data(abalone)
+ab <- data.frame(abalone)
+ab <- na.omit(ab)
+ab <- ab[1:500,]
+```
 
-*Create a Heat-map style plot displaying Variable Importance and
-Variable Interaction*
+Create an `mlr3` `ranger` model:
 
-------------------------------------------------------------------------
 
-**Description**
+```r
+set.seed(1701)
+ab_task  <- TaskRegr$new(id = "abalone", backend = ab, target = "Rings")
+ab_lrn <- lrn("regr.ranger", importance = "permutation")
+ab_mod <- ab_lrn$train(ab_task)
+```
 
-Plots a heat-map of the interaction strength with variable importance on
-the off-diagonal
+To begin, we use the `vividMatrix` function from `vivid` to create a symmetrical matrix filled with pair-wise interaction strengths and variable importance on the diagonal. 
+The `vividMatrix` uses Friedman's H-Statistic to calculate the pair-wise interaction strength and uses embedded feature selection methods to determine the variable importance. If the supplied learner does not support an embedded variable importance measure, an agnostic approach will be applied to generate the importance values. This function takes in any task, learner and model created from the `mlr3` package and results in a matrix which can be supplied to the plotting functions in the `vivid` package. However, if the user wishes, they can supply their own matrix to plot. The `parallel` argument (default is FALSE) allows the user to run the interaction calculation in parallel.
 
-**Usage**
+Create a matrix to be supplied to the plotting functions.
 
-plotHeatMap(task, model, plotly, intLow, intHigh, impLow, impHigh, top,
-reorder)
+
+```r
+set.seed(1701)
+myMatrix <- vividMatrix(task = ab_task, model = ab_mod, remove = FALSE, 
+                     percentRemove = 0, parallel = F)
+```
+
+As calculating the H-statistic can be a computationally expensive process, the `vividMatrix()` function has the ability to be calculated in parallel (default is `FALSE`). Also, the `remove` argument (default is `FALSE`) will perform a feature selection method and will remove a certain percentage of variables (defined by the user by the `percentRemove` argument) with the lowest interaction strength, and will vastly improve the calculation speed.
+
+Taking a quick look at the created matrix, we can see that it shows the pair-wise interaction strengths for each of the variables, with variable importance on the diagonal.
+
+
+```r
+head(myMatrix, 3)
+#>                    Type LongestShell   Diameter     Height WholeWeight ShuckedWeight
+#> Type         0.08731989   0.04152462 0.07969863 0.02792620  0.01508732     0.0743219
+#> LongestShell 0.04152462   3.88632426 0.06272095 0.07189094  0.04504398     0.2049029
+#> Diameter     0.07969863   0.06272095 3.29295981 0.10678777  0.07639781     0.2802981
+#>              VisceraWeight ShellWeight
+#> Type            0.05299616  0.01318626
+#> LongestShell    0.19621383  0.04745800
+#> Diameter        0.38048684  0.05319245
+```
+
+## Visualizing the results
+
+### Heat-Map style plot
+
+The first visualization option supplied by `vivid` creates a heat-map style plot displaying variable importance on the diagonal and variable interaction on the off-diagonal
 
 **Example**
 
-Load in the data:
+To call the plot we use the generic `plot()` function with `type = "heatMap"` as follows:
 
-    library(AppliedPredictiveModeling)
-    data(abalone)
-    ab <- data.frame(abalone)
-    ab <- na.omit(ab)
-    ab <- ab[1:1500,]
 
-Run an `mlr` random forest model:
+```r
+plot(myMatrix, type = "heatMap", plotly = F,
+          intLow = "floralwhite", intHigh = "dodgerblue4",
+          impLow = "white", impHigh = "firebrick1", 
+          minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL)
+```
 
-    library(mlr)
-    #> Loading required package: ParamHelpers
-    #> 'mlr' is in maintenance mode since July 2019. Future development
-    #> efforts will go into its successor 'mlr3' (<https://mlr3.mlr-org.com>).
-    ab_task  <- makeRegrTask(data = ab, target = "Rings")
-    ab_lrn <- makeLearner("regr.randomForest")
-    ab_mod <- train(ab_lrn, ab_task)
-
-To call the plot we use the `plotHeatMap()` command as follows:
-
-    set.seed(1701)
-    plotHeatMap(ab_task, ab_mod,  plotly = F,
-              intLow = "floralwhite", intHigh = "dodgerblue4",
-              impLow = "white", impHigh = "firebrick1")
-    #>  Calculating variable importance...
-
-![](/private/var/folders/gw/f3ycbbl96g96twvwg075c7cr0000gn/T/RtmpACFrNm/preview-370d5afb1ecf.dir/vivid_files/figure-markdown_strict/unnamed-chunk-4-1.png)
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png)
 <center>
-Fig 1.0: *Heat-map style plot displaying 2-way interaction strength in
-blue and individual variable importance on the diagonal in red.*
+Fig 1.0: *Heat-map style plot displaying 2-way interaction strength in blue and individual variable importance on the diagonal in red.*
 </center>
-From the above plot we can see that `LongestShell:VisceraWeight` weight
-has the strongest interaction and `ShellWeight` is the most important
-variable for predicting `rings`.
 
-`plotNetwork()`
-===============
+In Figure 1.0, variable importance is placed on the diagonal and is displayed using a gradient of white to red, representing the low to high values of importance. In a similar manner, variable interaction is displayed using a gradient of white to dark blue, representing the low to high values of interaction strength. Plotting both the importance and the interactions from the `vivid` package can save time and minimize complications for a researcher. From the above plot we can see that `Diameter:VisceraWeight` weight has the strongest interaction and `Dianmeter` is the most important variable for predicting `rings`. Traditional visualization techniques are commonly drawn with the order of variables appearing as how they are listed in the data. It has been shown^[ E.Friendly, F. Kwan.   Effect ordering for data displays. Computational Statistics Data Analysis, 43:509–539, 2003.] that reordering the data can help improve visualizations by making them more easily interpreted. The plot in Figure 1.0 also utilizes the `DendSer`^[Catherine B. Hurley and Denise Earle.DendSer: Dendrogram seriation: ordering for visualisation, 2013. R package version 1.0.1] package to _push_ all the relevant values to the top left of the plot. This is done to enable models to be plotted neatly and to allow the user to quickly see which variables are influential in a model.  This is particularly useful for large datasets. 
 
-------------------------------------------------------------------------
 
-*Create a Network style plot displaying Variable Importance and Variable
-Interaction*
+### Network style plot
 
-------------------------------------------------------------------------
-
-**Description**
-
-Plots a network style graph, where node size represents variable
-importance and edge width and colour represents interaction strength.
-The edge colour is displayed as a gradient from black to red. Black
-represents a weak interaction, whereas red displays stronger
-interactions.
-
-**Usage**
-
-plotNetwork(task, model, thresholdValue = 0, label = FALSE, minInt = 0,
-maxInt = NULL, minImp = 0, maxImp = NULL, labelNudge = 0.05, layout =
-“circle”, cluster = F,…) **Example**
-
-Load in the data:
-
-    library(AppliedPredictiveModeling)
-    data(abalone)
-    ab <- data.frame(abalone)
-    ab <- na.omit(ab)
-    ab <- ab[1:1500,]
-
-Run an `mlr` random forest model:
-
-    library(mlr)
-    ab_task  <- makeRegrTask(data = ab, target = "Rings")
-    ab_lrn <- makeLearner("regr.randomForest")
-    ab_mod <- train(ab_lrn, ab_task)
-
-To call the plot we use the `plotNetwork()` command as follows:
-
-    set.seed(1701)
-    plotNetwork(task = ab_task, model = ab_mod, thresholdValue = 0, 
-                  minInt = 0, maxInt = 1, 
-                  minImp = 0, maxImp = 100,
-                  labelNudge = 0.05)
-    #>  Calculating variable importance...
-    #> $`Variable Importance:`
-    #>          Type  LongestShell      Diameter        Height   WholeWeight 
-    #>          1.00          2.22          2.49          2.55          3.48 
-    #> ShuckedWeight VisceraWeight   ShellWeight 
-    #>          2.91          2.99          5.00 
-    #> 
-    #> $`Interaction Matrix:`
-    #>                       Type LongestShell     Diameter       Height  WholeWeight
-    #> Type          478.74145395    0.2911013 1.994324e-01 7.773153e-02 4.939713e-02
-    #> LongestShell    0.29110133 1738.7592849 1.860490e-01 7.426678e-01 1.404499e-01
-    #> Diameter        0.19943241    0.1860490 2.013360e+03 1.733448e-01 1.197742e-01
-    #> Height          0.07773153    0.7426678 1.733448e-01 2.082786e+03 6.031257e-02
-    #> WholeWeight     0.04939713    0.1404499 1.197742e-01 6.031257e-02 3.039926e+03
-    #> ShuckedWeight   0.05328841    0.1250570 1.596405e-01 9.673288e-02 2.465170e-01
-    #> VisceraWeight   0.19911615    1.0031715 2.749365e-01 2.772544e-01 1.139134e-01
-    #> ShellWeight     0.03098178    0.1205595 9.154504e-02 5.992126e-02 6.398036e-02
-    #>               ShuckedWeight VisceraWeight  ShellWeight
-    #> Type           5.328841e-02  1.991161e-01 3.098178e-02
-    #> LongestShell   1.250570e-01  1.003172e+00 1.205595e-01
-    #> Diameter       1.596405e-01  2.749365e-01 9.154504e-02
-    #> Height         9.673288e-02  2.772544e-01 5.992126e-02
-    #> WholeWeight    2.465170e-01  1.139134e-01 6.398036e-02
-    #> ShuckedWeight  2.451483e+03  6.289149e-02 2.652974e-01
-    #> VisceraWeight  6.289149e-02  2.536229e+03 9.683194e-02
-    #> ShellWeight    2.652974e-01  9.683194e-02 4.607903e+03
-    #> 
-    #> [[3]]
-
-![](/private/var/folders/gw/f3ycbbl96g96twvwg075c7cr0000gn/T/RtmpACFrNm/preview-370d5afb1ecf.dir/vivid_files/figure-markdown_strict/unnamed-chunk-7-1.png)
-<center>
-Fig 2.0: *Network style plot displaying 2-way interaction strength
-between each of the variables and individual variable importance*
-</center>
-The edge width, in the above plot, indicates the interaction strength,
-with the actual value displayed in the centre of of the edges. The
-colour of the edges also visually represents the interaction strength
-through use a of colour gradient, with low values being in black and
-high values being in red.
-
-The node size represents individual variable importance with respect to
-predicting the response.
-
-From the above plot we can see that `LongestShell:VisceraWeight` weight
-has the strongest interaction and `ShellWeight` is the most important
-variable for predicting `rings`.
-
-The user can control which interaction values to display by using the
-`thresholdValue` argument. In the following example,
-`thresholdValue = 0.11` means that only the the edges with weights
-(i.e., the interactions) above 0.09 are displayed:
-
-    set.seed(1701)
-    plotNetwork(task = ab_task, model = ab_mod, method = "randomForest_importance", thresholdValue = 0.11, cluster = F)
-    #>  Calculating variable importance...
-    #> $`Variable Importance:`
-    #>          Type  LongestShell      Diameter        Height   WholeWeight 
-    #>          1.00          2.22          2.49          2.55          3.48 
-    #> ShuckedWeight VisceraWeight   ShellWeight 
-    #>          2.91          2.99          5.00 
-    #> 
-    #> $`Interaction Matrix:`
-    #>                       Type LongestShell     Diameter       Height  WholeWeight
-    #> Type          478.74145395    0.2911013 1.994324e-01 7.773153e-02 4.939713e-02
-    #> LongestShell    0.29110133 1738.7592849 1.860490e-01 7.426678e-01 1.404499e-01
-    #> Diameter        0.19943241    0.1860490 2.013360e+03 1.733448e-01 1.197742e-01
-    #> Height          0.07773153    0.7426678 1.733448e-01 2.082786e+03 6.031257e-02
-    #> WholeWeight     0.04939713    0.1404499 1.197742e-01 6.031257e-02 3.039926e+03
-    #> ShuckedWeight   0.05328841    0.1250570 1.596405e-01 9.673288e-02 2.465170e-01
-    #> VisceraWeight   0.19911615    1.0031715 2.749365e-01 2.772544e-01 1.139134e-01
-    #> ShellWeight     0.03098178    0.1205595 9.154504e-02 5.992126e-02 6.398036e-02
-    #>               ShuckedWeight VisceraWeight  ShellWeight
-    #> Type           5.328841e-02  1.991161e-01 3.098178e-02
-    #> LongestShell   1.250570e-01  1.003172e+00 1.205595e-01
-    #> Diameter       1.596405e-01  2.749365e-01 9.154504e-02
-    #> Height         9.673288e-02  2.772544e-01 5.992126e-02
-    #> WholeWeight    2.465170e-01  1.139134e-01 6.398036e-02
-    #> ShuckedWeight  2.451483e+03  6.289149e-02 2.652974e-01
-    #> VisceraWeight  6.289149e-02  2.536229e+03 9.683194e-02
-    #> ShellWeight    2.652974e-01  9.683194e-02 4.607903e+03
-    #> 
-    #> [[3]]
-
-![](/private/var/folders/gw/f3ycbbl96g96twvwg075c7cr0000gn/T/RtmpACFrNm/preview-370d5afb1ecf.dir/vivid_files/figure-markdown_strict/unnamed-chunk-8-1.png)
-<center>
-Fig 2.1: *Network style plot displaying thresholded 2-way interaction
-strengths between each of the variables and individual variable
-importance. In this plot only the interactions greater than 0.11 are
-shown.*
-</center>
-`ggpdpPairs()`
-==============
-
-------------------------------------------------------------------------
-
-*Creates a pairs plot style matrix plot of the 2D partial dependence of
-each of the variables in the upper diagonal, the individual pdp and ice
-curves on the diagonal and a scatter-plot of the data on the lower
-diagonal*
-
-------------------------------------------------------------------------
-
-*Description*
-
-Plots a pdp (partial dependence plot) pairs style matrix. The partial
-dependence plot shows the marginal effect one or two features have on
-the predicted outcome of a machine learning model[3]. A partial
-dependence plot is used to show whether the relationship between the
-response variable and a feature is linear or more complex.
-
-**Usage**
-
-ggpdpPairs(task, model, method=“pdp”,vars=NULL, colLow = “\#132B43”,
-colHigh = “\#56B1F7”, fitlims = NULL, gridsize = 10, class=1,
-cardinality = 20)
+Another option supplied by `vivid` is to visualize the variable importance and interactions as a network style plot. This has the advantage of allowing the user to quickly identify which variables have a strong interaction in a model. The importance of the variable is represented by both the size of the node (with larger nodes meaning they have greater importance) and the colour of the node. The importance values are displayed by using a gradient of white to red, representing the low to high values of importance. The two-way interaction strengths between variables are represented by the connecting lines (or edges). Both the size and colour of the edge are used to highlight interaction strength. Thicker lines between variables indicate a greater interaction strength. The interaction strength values are displayed by using a gradient of white to dark blue, representing the low to high values of interaction strength.
 
 **Example**
 
-Load in the data:
+To call the plot we use the generic `plot()` function with `type = "network"` as follows:
 
-    library(AppliedPredictiveModeling)
-    data(abalone)
-    ab <- data.frame(abalone)
-    ab <- na.omit(ab)
-    ab <- ab[1:1500,]
 
-Run an `mlr` random forest model:
+```r
+plot(myMatrix, type = "network", thresholdValue = 0, label = FALSE,
+            minInt = 0, maxInt = NULL, minImp = 0, maxImp=NULL,
+            labelNudge = 0.05, layout = "circle")
+```
 
-    library(mlr)
-    ab_task  <- makeRegrTask(data = ab, target = "Rings")
-    ab_lrn <- makeLearner("regr.randomForest")
-    ab_mod <- train(ab_lrn, ab_task)
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
+<center>
+Fig 2.0: *Network style plot displaying 2-way interaction strength between each of the variables and individual variable importance*
+</center>
+
+From the above plot we can see that `Diameter:VisceraWeight` weight has the strongest interaction and `Diameter` is the most important variable for predicting `rings`. 
+
+The network plot offers multiple possibilities when it comes to displaying the network style plot through use of the `layout` argument. The default layout is a circle but any of the layouts included in the `igraph`/`sna` package are accepted. 
+
+The user can control which interaction values to display by using the `thresholdValue` argument. In the following example, `thresholdValue = 0.2` means that only the the edges with weights (i.e., the interactions) above 0.2 are displayed:
+
+
+```r
+plot(myMatrix, type = "network", thresholdValue = 0.2)
+```
+
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png)
+<center>
+Fig 2.1: *Network style plot displaying thresholded 2-way interaction strengths between each of the variables and individual variable importance. In this plot only the interactions greater than 0.2 are shown.*
+</center>
+
+The preceding plots also include options to allow the user to scale the importance/interaction values, through the `minInt, maxInt, minImp, maxImp` arguments. This is particularly useful if one is comparing different fits using the visualizations, as it keeps the values on the same scale. 
+
+
+### Partial dependence pairs style plot
+
+This function creates a pairs plot style matrix plot of the 2D partial dependence of each of the variables in the upper diagonal, the individual pdp and ice curves on the diagonal and a scatter-plot of the data on the lower diagonal. The partial dependence plot shows the marginal effect one or two features have on the predicted outcome of a machine learning model^[Friedman, Jerome H. “Greedy function approximation: A gradient boosting machine.” Annals of statistics (2001): 1189-1232.]. A partial dependence plot is used to show whether the relationship between the response variable and a feature is linear or more complex.
+
+**Example**
+
 
 To call the pdp pairs plot we use:
 
-    set.seed(1701)
-    ggpdpPairs(task = ab_task, model =  ab_mod)
+```r
+set.seed(1701)
+ggpdpPairs(task = ab_task, model =  ab_mod)
+#>   Calculating pdp + ice...[=========>-------------------------------] 25%. Est: 1s   Calculating pdp + ice...[==============>--------------------------] 38%. Est: 1s   Calculating pdp + ice...[===================>---------------------] 50%. Est: 1s   Calculating pdp + ice...[=========================>---------------] 62%. Est: 1s   Calculating pdp + ice...[==============================>----------] 75%. Est: 0s   Calculating pdp + ice...[===================================>-----] 88%. Est: 0s   Calculating pdp + ice...[=========================================]100%. Est: 0s 
+#>   Calculating partial dependence...[=>------------------------------]  7%. Est: 9s   Calculating partial dependence...[==>-----------------------------] 11%. Est:11s   Calculating partial dependence...[====>---------------------------] 14%. Est:12s   Calculating partial dependence...[=====>--------------------------] 18%. Est:13s   Calculating partial dependence...[======>-------------------------] 21%. Est:12s   Calculating partial dependence...[=======>------------------------] 25%. Est:12s   Calculating partial dependence...[========>-----------------------] 29%. Est:16s   Calculating partial dependence...[=========>----------------------] 32%. Est:18s   Calculating partial dependence...[==========>---------------------] 36%. Est:19s   Calculating partial dependence...[============>-------------------] 39%. Est:20s   Calculating partial dependence...[=============>------------------] 43%. Est:20s   Calculating partial dependence...[==============>-----------------] 46%. Est:20s   Calculating partial dependence...[===============>----------------] 50%. Est:19s   Calculating partial dependence...[================>---------------] 54%. Est:19s   Calculating partial dependence...[=================>--------------] 57%. Est:18s   Calculating partial dependence...[==================>-------------] 61%. Est:17s   Calculating partial dependence...[====================>-----------] 64%. Est:16s   Calculating partial dependence...[=====================>----------] 68%. Est:14s   Calculating partial dependence...[======================>---------] 71%. Est:13s   Calculating partial dependence...[=======================>--------] 75%. Est:12s   Calculating partial dependence...[========================>-------] 79%. Est:10s   Calculating partial dependence...[=========================>------] 82%. Est: 9s   Calculating partial dependence...[==========================>-----] 86%. Est: 7s   Calculating partial dependence...[============================>---] 89%. Est: 5s   Calculating partial dependence...[=============================>--] 93%. Est: 4s   Calculating partial dependence...[==============================>-] 96%. Est: 2s   Calculating partial dependence...[================================]100%. Est: 0s
+```
 
-![](/private/var/folders/gw/f3ycbbl96g96twvwg075c7cr0000gn/T/RtmpACFrNm/preview-370d5afb1ecf.dir/vivid_files/figure-markdown_strict/unnamed-chunk-11-1.png)
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png)
 <center>
-Fig 3.0: *A pairs style matrix plot displaying the partial dependence
-between each of the variables in the upper diagonal, the individual pdp
-and ice curves on the diagonal and a scatter-plot on the lower diagonal*
+Fig 3.0: *A pairs style matrix plot displaying the partial dependence between each of the variables in the upper diagonal, the individual pdp and ice curves on the diagonal and a scatter-plot on the lower diagonal*
 </center>
-From the above plot, we see the 2D pdp plots on the upper diagonal. The
-individual pdp and ice cures on the diagonal and scatter-plots on the
-lower diagonal. As `type` is a factor variable with 3 levels, a barplot
-displaying the frequency is displayed on the diagonal and the individual
-pdp curves are shown on the upper diagonal for this variable.
 
-In addition to displaying both the variable importance and interactions
-together, the following functions display only the variable importance
-*or* the interaction strength.
+From the above plot, we see the 2D pdp plots on the upper diagonal. The individual pdp and ice curves on the diagonal (with the aggregate pdp curve in black) and scatter-plots on the lower diagonal. As `type` is a factor variable with 3 levels, a barplot displaying the frequency is displayed on the diagonal and the individual pdp curves are shown on the upper diagonal for this variable. 
 
-`allInt()`
-==========
 
-------------------------------------------------------------------------
 
-*Creates a plot, displaying the interaction strength for all the 2-way
-interactions in a model*
+In addition to displaying both the variable importance and interactions together, the `vivid` package also allows to display only the variable importance _or_ the interaction strength via the following functions. 
 
-------------------------------------------------------------------------
-
-*Description* Plot displaying the 2-way interactions on the y-axis and
-the interaction strength on the x-axis. This function also allows the
-user to switch between a lollipop style plot (which is default) and a
-barplot, by use of the `type` argument.
-
-**Usage**
-
-allInt(task, model, type)
+### Displaying all 2-way interactions
+The `type = "allInteractions"` plot displays the 2-way interactions on the y-axis and the interaction strength on the x-axis. This plot also allows the user to switch between a lollipop style plot (which is default) and a barplot, by use of the `plotType` argument. 
 
 **Example**
+To call the plot we use the generic `plot()` function with `type = "allInteractions"`:
 
-Load in the data:
+```r
+plot(myMatrix, type = "allInteractions", top = 0)
+```
 
-    library(AppliedPredictiveModeling)
-    data(abalone)
-    ab <- data.frame(abalone)
-    ab <- na.omit(ab)
-    ab <- ab[1:1500,]
-
-Run an `mlr` random forest model:
-
-    library(mlr)
-    ab_task  <- makeRegrTask(data = ab, target = "Rings")
-    ab_lrn <- makeLearner("regr.randomForest")
-    ab_mod <- train(ab_lrn, ab_task)
-
-To call the pdp pairs plot we use:
-
-    set.seed(1701)
-    allInt(task = ab_task, model =  ab_mod, type = "barplot")
-    #>  Initilizing...
-
-![](/private/var/folders/gw/f3ycbbl96g96twvwg075c7cr0000gn/T/RtmpACFrNm/preview-370d5afb1ecf.dir/vivid_files/figure-markdown_strict/unnamed-chunk-14-1.png)
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png)
 <center>
 Fig 4.0: *A plot displaying all 2-way interaction in a model.*
 </center>
-From the above plot we can see that `LongestShell:VisceraWeight` has the
-strongest interaction.
 
-`interactionPlot()`
-===================
+From the above plot we can see that `Diameter:VisceraWeight` has the strongest interaction.
 
-------------------------------------------------------------------------
+### Display the overall interaction strength
 
-*Creates a plot, displaying the overall interaction strength for each
-variable in a model*
-
-------------------------------------------------------------------------
-
-*Description* Plot displaying the variables on the y-axis and the
-overall interaction strength on the x-axis. This function also allows
-the user to switch between a lollipop style plot (which is default) and
-a barplot, by use of the `type` argument.
-
-**Usage**
-
-interactionPlot(task, model, type)
+The `interactionPlot()` function creates a plot, displaying the overall interaction strength for each variable in a model. The plot displays the variables on the y-axis and the overall interaction strength on the x-axis. This function also allows the user to switch between a lollipop style plot (which is default) and a barplot, by use of the `type` argument. 
 
 **Example**
 
-Load in the data:
+To call the interaction plot we use:
 
-    library(AppliedPredictiveModeling)
-    data(abalone)
-    ab <- data.frame(abalone)
-    ab <- na.omit(ab)
-    ab <- ab[1:1500,]
+```r
+interactionPlot(task = ab_task, model =  ab_mod, type = "barplot")
+```
 
-Run an `mlr` random forest model:
-
-    library(mlr)
-    ab_task  <- makeRegrTask(data = ab, target = "Rings")
-    ab_lrn <- makeLearner("regr.randomForest")
-    ab_mod <- train(ab_lrn, ab_task)
-
-To call the pdp pairs plot we use:
-
-    set.seed(1701)
-    interactionPlot(task = ab_task, model =  ab_mod, type = "barplot")
-
-![](/private/var/folders/gw/f3ycbbl96g96twvwg075c7cr0000gn/T/RtmpACFrNm/preview-370d5afb1ecf.dir/vivid_files/figure-markdown_strict/unnamed-chunk-17-1.png)
+![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png)
 <center>
-Fig 5.0: *A plot displaying the overall interaction strength for each
-variable in a model.*
+Fig 5.0: *A plot displaying the overall interaction strength for each variable in a model.*
 </center>
-From the above plot we can see that the variable with the strongest
-overall interaction strength is `ShellWeight`
 
-`importancePlot()`
-==================
+From the above plot we can see that the variable with the strongest overall interaction strength is `Shell Weight`
 
-------------------------------------------------------------------------
+## Display the overall variable importance
 
-*Creates a plot, displaying the variable importance for each variable in
-a model*
-
-------------------------------------------------------------------------
-
-*Description* Plots variables on the y-axis and the variable importance
-on the x-axis. This function also allows the user to switch between a
-lollipop style plot (which is default) and a barplot, by use of the
-`type` argument.
-
-**Usage**
-
-importancePlot(task, model, type)
+The `type = "importance"` call creates a plot, displaying the variable importance for each variable in a model. The plot displays variables on the y-axis and the variable importance on the x-axis. This function also allows the user to switch between a lollipop style plot (which is default) and a barplot, by use of the `plotType` argument. 
 
 **Example**
 
-Load in the data:
+To call the importance plot we use:
 
-    library(AppliedPredictiveModeling)
-    data(abalone)
-    ab <- data.frame(abalone)
-    ab <- na.omit(ab)
-    ab <- ab[1:1500,]
+```r
+plot(myMatrix, type = "importance", plotType = "barplot")
+```
 
-Run an `mlr` random forest model:
-
-    library(mlr)
-    ab_task  <- makeRegrTask(data = ab, target = "Rings")
-    ab_lrn <- makeLearner("regr.randomForest")
-    ab_mod <- train(ab_lrn, ab_task)
-
-To call the pdp pairs plot we use:
-
-    set.seed(1701)
-    importancePlot(task = ab_task, model =  ab_mod)
-
-![](/private/var/folders/gw/f3ycbbl96g96twvwg075c7cr0000gn/T/RtmpACFrNm/preview-370d5afb1ecf.dir/vivid_files/figure-markdown_strict/unnamed-chunk-20-1.png)
+![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13-1.png)
 <center>
-Fig 6.0: *A plot displaying the variable importance for each variable in
-a model.*
+Fig 6.0: *A plot displaying the variable importance for each variable in a model.*
 </center>
-From the above plot, we can see that the most important variable, when
-prediciting `rings` is `ShuckedWeight`
 
-[1] Friedman, H. and Popescu, B.E. Predictive learning via rule
-ensemble. The Annals of Applied Statistics. 2008. 916-954
+From the above plot, we can see that the most important variable, when predicting `rings` is `Diameter`.
 
-[2] AppliedPredictiveModeling: Functions and Data Sets for ‘Applied
-Predictive Modeling’. M. Kuhn and K. Johnson. 2018.
-<a href="https://CRAN.R-project.org/package=AppliedPredictiveModeling" class="uri">https://CRAN.R-project.org/package=AppliedPredictiveModeling</a>
 
-[3] Friedman, Jerome H. “Greedy function approximation: A gradient
-boosting machine.” Annals of statistics (2001): 1189-1232.
+### Generate data from the Friedman benchmark problem 1 
+
+The `genFriedman()` function simulates data from the Friedman benchmark problem 1^[Friedman, Jerome H. (1991) Multivariate adaptive regression splines. The Annals of Statistics 19 (1), pages 1-67.]. This is mainly used for testing purposes. The output is created according to the formula:
+
+
+<center>
+$$y = 10 sin(π x1 x2) + 20 (x3 - 0.5)^2 + 10 x4 + 5 x5 + e$$
+</center>
+
+
+By default the number of features is set to 10 and the number of samples is set to 100. `sigma` denotes the standard deviation of the noise. `bins` denotes the number of bins to split response variable into. Setting a value greater than 1 turns this into a classification problem where bins determines the number of classes. If the `seed` argument is not NULL, then the random seed will be set as using the function each time will produce different results. 
+
+**Example**
+
+To generate the Friedman data we use:
+
+```r
+myData <- genFriedman(noFeatures = 10, noSamples = 100, sigma = 1, bins = NULL, seed = NULL)
+head(myData,3)
+#>          x1        x2        x3        x4         x5        x6        x7        x8
+#> 1 0.1925654 0.4884138 0.1781635 0.8220239 0.02889599 0.4174608 0.2088928 0.3265943
+#> 2 0.3501297 0.4496128 0.3948622 0.9966259 0.96126846 0.2840646 0.2247447 0.2916824
+#> 3 0.3290067 0.9749012 0.8349866 0.8956613 0.13298507 0.1710446 0.1584246 0.2296050
+#>          x9        x10        y
+#> 1 0.1251565 0.42608839 13.55727
+#> 2 0.7436726 0.07741269 19.31155
+#> 3 0.3743393 0.29625462 22.20322
+```
+
+
