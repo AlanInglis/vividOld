@@ -45,15 +45,16 @@
 
 
 
-vividMatrix <- function(task, model, remove = FALSE, percentRemove = 0.5, parallel = FALSE,
+vividMatrix <- function(task, model, myData, remove = FALSE, percentRemove = 0.5, parallel = FALSE,
                      ...){
   message(" Calculating variable importance...")
 
 
-  # get data:
+  # get data and target
+  target <- task$target_names
   data <-  task$data()
   data <- as.data.frame(data)
-  target <- task$target_names
+
   # iml prediction
   mod <- Predictor$new(model, data = data, y = target)
 
