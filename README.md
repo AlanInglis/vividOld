@@ -1,4 +1,4 @@
-<img src="https://github.com/AlanInglis/vivid/blob/master/badge/vividLogo.png" width="200" height="200" />
+<img src="https://github.com/AlanInglis/vivid/blob/master/badge/vividLogo.png" width="240" height="276" />
 
 
 # Variable Interaction and Variable Importance Displays (vivid)
