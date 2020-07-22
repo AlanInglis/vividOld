@@ -16,6 +16,13 @@ knitr::opts_chunk$set(
 )
 ```
 
+```{r, echo=FALSE, eval=FALSE}
+htmltools::img(src = knitr::image_uri(file.path("/Users/alaninglis/Desktop/vividLogo.png")), 
+               alt = 'logo', 
+               style = 'position:absolute; top:0; right:0; 
+               height:276px; width:240px')
+```
+
 ```{r setup, message=FALSE, echo = FALSE,  warnings = F}
 library(vivid)
 ```
