@@ -58,6 +58,7 @@ plotNet <- function(dinteraction,
                     labelNudge = 0.05, layout = "circle",
                     cluster = F,...){
 
+
   Imp <- diag(dinteraction)
   Imp1 <-  Imp
   impWarn <- Imp
@@ -73,6 +74,8 @@ plotNet <- function(dinteraction,
   Int <- sorted_Int$x
   maximumInt <- max(Int)+0.01
   nam <- colnames(dinteraction)                     # Get feature names
+
+
 
 
   # Set path direction of graph:

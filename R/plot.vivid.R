@@ -133,8 +133,23 @@ plot.vivid <- function(x,
   }
 
 }else if ('network'%in%type) {
+  if (reorder){
     netPrep <- x
-    plotNet(netPrep, model, thresholdValue, label, layout = layout,
+    vimp <- diag(netPrep)
+    vimp <- (vimp-min(vimp))/max(vimp) # scale to 0-1 for consistency with interactions
+    vimp <- sqrt(outer(vimp, vimp)) # make a matrix
+
+    maxinteraction <- max(as.dist(netPrep))
+    maxvimp <- max(as.dist(vimp))
+    intVals <- lower.tri(netPrep)
+    minInteraction <- min(intVals)
+    minImportance <-  min(vimp)
+
+    # give equal weight to both interaction and varimp
+    o <- dser( -as.dist(vimp/maxvimp+ netPrep/maxinteraction), cost=costLPL)
+    netPrep <- netPrep[o,o]
+  }else{netPrep <- x}
+    plotNet(netPrep, model, reorder = T, thresholdValue, label, layout = layout,
             minInt, maxInt, minImp , maxImp,...)
 }else if('allInteractions'%in%type){
 
