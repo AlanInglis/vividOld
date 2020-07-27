@@ -90,6 +90,8 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
   xvarn <- xvarn[1:length(unique(xvarn))]
   xvarn <- as.matrix(xvarn)
 
+
+
   # Create progress bar
   pb <- progress_bar$new(
     format = "  Calculating pdp + ice...[:bar]:percent. Est::eta ",
@@ -159,11 +161,13 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
     pdp <- pdplist1[[paste(vars[1])]]
     aggr <- pdp$results[pdp$results$.type != "ice", ]
-    plot(pdp, rug=FALSE) +
-      geom_line(aes(y = .value, group = .id, color = .value)) +
-      scale_colour_gradient2(low = colLow, mid = colMid, high = colHigh,
+    p <- plot(pdp, rug=FALSE)
+    p$layers[[2]] <- NULL # Dont draw yellow agg line
+    p + geom_line(aes(y = .value, group = .id, color = .value)) +
+        scale_colour_gradient2(low = colLow, mid = colMid, high = colHigh,
                              midpoint = midLimit) +
-      geom_line(data = aggr, size = 2, color = "black")
+        geom_line(data = aggr, size = 1, color = "black", lineend = "round")
+
   }
 
   # plot prep for class.
