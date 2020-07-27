@@ -58,6 +58,7 @@ plotHeat <- function(dinteraction,
                      minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL,...){
 
 
+
   maximumInt <- max(as.dist(dinteraction))+0.01
   maximumInt <- ceiling(maximumInt*100)/100
 

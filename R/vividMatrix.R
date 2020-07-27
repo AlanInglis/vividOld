@@ -45,8 +45,8 @@
 
 
 
-vividMatrix <- function(task, model, myData, remove = FALSE, percentRemove = 0.5, parallel = FALSE,
-                     ...){
+vividMatrix <- function(task, model, remove = FALSE, percentRemove = 0.5,
+                        parallel = FALSE,...){
   message(" Calculating variable importance...")
 
 
@@ -70,9 +70,9 @@ vividMatrix <- function(task, model, myData, remove = FALSE, percentRemove = 0.5
 
   # If (embedded learner) - else(agnostic varimp calc)
   if(any(logID) == TRUE){
-   ovars <- task$feature_names
-   Importance <- model$importance()
-   impReorder <- Importance[order(factor(names(Importance), levels = ovars))]
+    ovars <- task$feature_names
+    Importance <- model$importance()
+    impReorder <- Importance[order(factor(names(Importance), levels = ovars))]
     suppressMessages({
       Importance <- melt(impReorder)
     })
@@ -102,7 +102,7 @@ vividMatrix <- function(task, model, myData, remove = FALSE, percentRemove = 0.5
   ovars <- task$feature_names
   if(remove){
     suppressMessages({
-    intValues <- Interaction$new(mod) # Overall interaction strength
+      intValues <- Interaction$new(mod) # Overall interaction strength
     })
     intVal <- intValues$results # get interaction results
     a <- intVal
@@ -126,7 +126,7 @@ vividMatrix <- function(task, model, myData, remove = FALSE, percentRemove = 0.5
     res  <- NULL
     for (i in 1:length(ovars1)){
       suppressMessages({
-      res <- rbind(res, Interaction$new(mod, grid.size = 10, feature=ovars1[i])$results)
+        res <- rbind(res, Interaction$new(mod, grid.size = 10, feature=ovars1[i])$results)
       })
       pb$tick()
     }
@@ -143,7 +143,7 @@ vividMatrix <- function(task, model, myData, remove = FALSE, percentRemove = 0.5
     res  <- NULL
     for (i in 1:length(ovars)){
       suppressMessages({
-      res <- rbind(res, Interaction$new(mod, grid.size = 10, feature=ovars[i])$results)
+        res <- rbind(res, Interaction$new(mod, grid.size = 10, feature=ovars[i])$results)
       })
       pb$tick()
     }
@@ -165,4 +165,3 @@ vividMatrix <- function(task, model, myData, remove = FALSE, percentRemove = 0.5
 
   dinteraction
 }
-
