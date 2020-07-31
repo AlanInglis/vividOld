@@ -28,6 +28,7 @@
 #' @importFrom stats "reorder"
 #' @importFrom grDevices "blues9"
 #' @importFrom reshape "melt"
+#' @importFrom ggalt "geom_encircle"
 #'
 #' @examples
 #' # Load in the data:
@@ -139,6 +140,12 @@ plotNet <- function(dinteraction,
   edgeCols <- npal[cut_int]
   }
 
+  # Also delete nodes if thresholding
+  #if(thresholdValue > 0){
+  #Isolated <- which(igraph::degree(net.sp)==0)
+  #net.sp <- igraph::delete.vertices(net.sp, Isolated)
+  #}
+
 
   # min/max legend values:
   if(is.null(maxInt)){
@@ -153,15 +160,36 @@ plotNet <- function(dinteraction,
     minImp <- minimumImp
   }else{minImp <- minImp}
 
+  # Whether to show edge label
+  if(label == T){
+    edgeWidth1 <- edgeWidth1
+  }else{edgeWidth1 <- NULL}
+
 
   intMatrix <- round(dinteraction, 3)
 
-  # create plot -------------------------------------------------------
-  if(!(label)){
-    p <-ggnet2(net.sp, mode = l,
-               size = 0,
-               edge.size = edgeWidth2,
-               edge.color = edgeCols) +
+  if(cluster){
+
+    # V(net.bg)$label <- nam
+    # E(net.bg)$arrow.mode <- 0
+    # E(net.bg)$label.cex <- 1
+
+    l_1 <- layout_with_fr(net.sp)
+    com <- cluster_optimal(net.sp)
+    V(net.sp)$color <- com$membership
+    group <- V(net.sp)$color
+    group <- factor(group)
+
+    g <- set_graph_attr(net.sp, "layout", layout_with_fr(net.sp))
+    colrs <- adjustcolor( c("yellow", "red", "blue", "black","purple",
+                            "orange", "pink", "green", "red" , "blue"))
+    colorC <- colrs[group]
+    pp <- ggnet2(g,
+                 mode = l_1,
+                 size = 0,
+                 edge.size = edgeWidth2,
+                 edge.label = edgeWidth1,
+                 edge.color = edgeCols) +
       theme(legend.text = element_text(size = 10)) +
       geom_label(aes(label = nam),nudge_y = labelNudge) +
       geom_point(aes(fill = Imp1), size = Imp*2, col = "transparent", shape = 21) +
@@ -173,7 +201,18 @@ plotNet <- function(dinteraction,
       scale_fill_continuous( name = "Interaction\nStrength",
                              limits=c(minInt, maxInt),
                              low = "floralwhite" ,high = "dodgerblue4")
-    return(p)
+
+
+    groupV <- as.vector(group)
+    fillCols <- c("yellow", "red", "blue", "black","purple",
+                  "orange", "pink", "green", "red" , "blue")
+    colCluster <- fillCols[group]
+    colCluster <- as.vector(colCluster)
+    pp <- pp + geom_encircle(aes(group = groupV),
+                                    alpha = 0.2,
+                                    fill = colCluster)
+
+    return(pp)
   }else{
     p <- ggnet2(net.sp, mode = l,
                 size = 0,
@@ -193,37 +232,5 @@ plotNet <- function(dinteraction,
 
     return(p)
   }
-  # }else if(Threshold == FALSE && Cluster == TRUE){
-  # V(net.bg)$label <- nam
-  # E(net.bg)$width <- Rint
-  # E(net.bg)$arrow.mode <- 0
-  # E(net.bg)$label <- Rint
-  # E(net.bg)$label.cex <- 1
-  # clp <- cluster_optimal(net.bg)
-  #ppp <- plot(clp, net.bg, vertex.label.family = "Helvetica", edge.label.family = "Helvetica")
-  # weightDF <- get.data.frame(net.bg) # get df of graph attributes
-  # EdgeWidth2 <- weightDF$weight
-  # clp <- cluster_optimal(net.bg)
-  #
-  # ppp <- ggnet2(clp)
-  # , mode = "circle",
-  #            size = Imp,
-  #            color = "grey50",
-  #            node.color = "grey50")
-  #              label = nam,
-  #              edge.size = Rint,
-  #              edge.label = Rint,
-  #    edge.color = colfunc(length(Rint)))+
-  # theme(legend.text = element_text(size = 0))
-  #  return(ppp)}
-  # }else if(Threshold == TRUE && Cluster == TRUE){
-  #   V(net.bg)$label <- nam
-  #   E(net.bg)$width <- Rint
-  #   E(net.bg)$arrow.mode <- 0
-  #   a <- sort(UINT, decreasing  = TRUE)
-  #   cut.off <- a[1:5]
-  #   net.sp  <- delete_edges(net.bg, E(net.bg)[UINT<cut.off])
-  #   clp <- cluster_optimal(net.sp)
-  #   pppp <- plot(clp, net.sp, vertex.label.family = "Helvetica", edge.label.family = "Helvetica")}
 }
 
