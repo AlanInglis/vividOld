@@ -27,7 +27,8 @@ Imports:
     reshape,
     DendSer,
     progress,
-    future
+    future,
+    ggalt
 Suggests: 
     knitr,
     rmarkdown,
