@@ -54,30 +54,21 @@
 
 plotHeat <- function(dinteraction,
                      plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
-                     impLow = "white", impHigh = "firebrick1", top = NULL , title="",
+                     impLow = "white", impHigh = "firebrick1", top = NULL ,
+                     title="",
                      minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL,...){
 
 
+# -------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 
-  maximumInt <- max(as.dist(dinteraction))+0.01
-  maximumInt <- ceiling(maximumInt*100)/100
 
-  maximumImp <- max(diag(dinteraction))+1
   labelNames <- colnames(dinteraction)
 
   #set values below zero to = zero:
   dinteraction[dinteraction < 1.0e-5] <- 0
   nvar <- nrow(dinteraction)
   index <- 1:nvar
-
-  # min/max legend values:
-  if(is.null(maxInt)){
-    maxInt <- maximumInt
-  }else{maxInt <- maxInt}
-
-  if(is.null(maxImp)){
-    maxImp <- maximumImp
-  }else{maxImp <- maxImp}
 
   # Set up plot -------------------------------------------------------
 

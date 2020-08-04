@@ -87,16 +87,6 @@ plot.vivid <- function(x,
     top <- max(top)
   }
 
-
-  intVals <- lower.tri(dint)
-  minInteraction <- min(intVals)
-  vimp <- diag(dint)
-  minImportance <-  min(vimp)
-
-  if(is.null(minImp)){
-    minImp = 0
-  }else{minImp = minImp}
-
   if (reorder){
     vimp <- diag(dint)
     vimp <- (vimp-min(vimp))/max(vimp) # scale to 0-1 for consistency with interactions
@@ -106,24 +96,51 @@ plot.vivid <- function(x,
     maxvimp <- max(as.dist(vimp))
     intVals <- lower.tri(dint)
     minInteraction <- min(intVals)
-    minImportance <-  min(vimp)
 
     # give equal weight to both interaction and varimp
     o <- dser( -as.dist(vimp/maxvimp+ dint/maxinteraction), cost=costLPL)
     dint <- dint[o,o]
   }
+
+
+  intValues <- lower.tri(dint)
+  minInteraction <- min(intValues)
+  vImportance <- diag(dint)
+  maxImportance <- max(vImportance)
+  minImportance <-  min(vImportance)
+
+  maximumInt <- max(as.dist(dint))+0.01
+  maximumInt <- ceiling(maximumInt*100)/100
+
+  if(is.null(minImp)){
+    minImp <- minImportance - 2
+  }else{minImp <- minImp}
+
+  if(is.null(maxImp)){
+    maxImp <- maxImportance + 2
+  }else{maxImp <- maxImp}
+
+  if(is.null(maxInt)){
+    maxInt <- maximumInt
+  }else{maxInt <- maxInt}
+
+  if(is.null(maxImp)){
+    maxImp <- maximumImp
+  }else{maxImp <- maxImp}
+
   dint <- dint[1:top,1:top]
 
   ## Warning messages:
   if(minInt > minInteraction){
     message(" Warning: Minimum chosen interaction value is larger than
-            some of the interaction values. These values may not be displayed")
+            some of the interaction values. These values may not be displayed correctly.
+            Adjust minInt to rectify.")
   }
   if(minImp > minImportance){
     message(" Warning: Minimum chosen importance value is larger than
-            some of the importance values. These values may not be displayed")
+            some of the importance values. These values may not be displayed correctly.
+            Adjust minImp to rectify.")
   }
-
 
   if(plotly){
     plotlyPlot(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh,...)
