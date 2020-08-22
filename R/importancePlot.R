@@ -6,6 +6,7 @@
 #' @param type The type of plot to display, either "lollipop" (default), "barplot", or "circleBar".
 #' @param minImp Minimum importance value to be displayed on the legend.
 #' @param maxImp Maximum importance value to be displayed on the legend.
+#' @param label Only compatible with plotType = "barplot". If TRUE then the importance value is displayed at the end of each bar.
 #' @param ... Not currently implemented
 #'
 #'
@@ -34,23 +35,27 @@
 
 # Function ----------------------------------------------------------------
 
-importancePlot <- function(mat, plotType = "lollipop", minImp = NULL, maxImp = NULL, ...){
+importancePlot <- function(mat, plotType = "lollipop", minImp = NULL, maxImp = NULL,label, ...){
 
 
-  plotImportance(mat, plotType = plotType, minImp = minImp, maxImp = maxImp,...)
+  plotImportance(mat, plotType = plotType, minImp = minImp, maxImp = maxImp, label,...)
 }
 
 
 
 
 
-plotImportance <- function(mat, plotType = "lollipop", minImp = NULL, maxImp = NULL,...){
+plotImportance <- function(mat, plotType = "lollipop", minImp = NULL, maxImp = NULL, label,...){
 
   # # Get Importance Measures -------------------------------------------------
   mat <- mat
   yImp <- diag(mat)
 
   yImpRound <- round(yImp, 2)
+  if(label == T){
+    yImpRound <- yImpRound
+  }else{yImpRound <- " "}
+
   maximumImp <- max(yImp)
   minimumImp <- min(yImp)
   midImp <- median(yImp)
