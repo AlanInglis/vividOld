@@ -101,44 +101,59 @@ plotNet <- function(dinteraction,
   impDf <- Imp
 
 
-
-  # Set up thresholding:
-  a <- sort(Int, decreasing  = TRUE)
-  # Warning message if threshold value is set too high or too low
-  if(thresholdValue > max(a)){
-    stop("Selected threshold value is larger than maximum interaction strength")
-  }else if(thresholdValue < 0){
-    stop("Selected threshold value is less than minimum interaction strength")
-  }
-  idx <- which(a > thresholdValue)
-  cut.off <- a[1:max(idx)]
-  `%notin%` <- Negate(`%in%`)
-  net.sp  <- delete_edges(net.bg, E(net.bg)[E(net.bg)$weight %notin% cut.off])
-  weightDF <- get.data.frame(net.sp) # get df of graph attributes
-  weightDF[weightDF<=1e-5] <- 0.01
-  edgeWidth1 <- weightDF$weight  # select edge weight
-  if(var(edgeWidth1)==0){
-    edgeWidth2 <- edgeWidth1
-  }else{
-    edgeWidth2 <- (5-1)*((edgeWidth1-min(edgeWidth1))/(max(edgeWidth1)-min(edgeWidth1)))+1 # scale between 1-5
-  }
-
   # Set the edge colours
   colfunction <- colorRampPalette(c("floralwhite", "dodgerblue4"))
-
-  # Set shape of plot:
-  if(thresholdValue > 0){
-    l <- layout.reingold.tilford(net.bg, circular=T)
-    edgeColour <- (E(net.sp)$weight)
-    cut_int <- cut(edgeColour, 9)
-    npal <- colfunction(9)
-    edgeCols <- npal[cut_int]
-  }else{l <- layout
-  edgeColour <- (E(net.sp)$weight)
+  edgeColour <- (E(net.bg)$weight)
   cut_int <- cut(edgeColour, 9)
   npal <- colfunction(9)
   edgeCols <- npal[cut_int]
+
+  # Get edge weights
+  weightDF <- get.data.frame(net.bg) # get df of graph attributes
+  weightDF[weightDF<=1e-5] <- 0.01
+  edgeWidth1 <- weightDF$weight  # select edge weight
+  edgeWidthScaled <- (5-1)*((edgeWidth1-min(edgeWidth1))/(max(edgeWidth1)-min(edgeWidth1)))+1 # scale between 1-5
+
+
+
+  # THRESHOLDING ------------------------------------------------------------
+  # -------------------------------------------------------------------------
+
+
+  if(thresholdValue > 0){
+    a <- sort(Int, decreasing  = TRUE)
+    # Warning message if threshold value is set too high or too low
+    if(thresholdValue > max(a)){
+      stop("Selected threshold value is larger than maximum interaction strength")
+    }else if(thresholdValue < 0){
+      stop("Selected threshold value is less than minimum interaction strength")
+    }
+    idx <- which(a > thresholdValue)
+    cut.off <- a[1:max(idx)]
+    # Thresholded colours
+    indexCol <- rev(edgeCols)
+    edgeCols <- indexCol[idx]
+    edgeCols <- rev(edgeCols)
+    # Thresholded edge weights
+    indexWeight <- rev(edgeWidthScaled)
+    edgeW <- indexWeight[idx]
+    edgeW <- rev(edgeW)
+    # Thresholded edge labels
+    indexLabel <- rev(edgeWidth1)
+    edgeL <- indexLabel[idx]
+    edgeL <- rev(edgeL)
+    # Thresholded network
+    `%notin%` <- Negate(`%in%`)
+    net.sp  <- delete_edges(net.bg, E(net.bg)[E(net.bg)$weight %notin% cut.off])
+    #Isolated <- which(igraph::degree(net.sp)==0)
+    #igraph::delete.vertices(net.sp, Isolated)
+  }else{net.sp <- net.bg
+  weightDF <- get.data.frame(net.sp) # get df of graph attributes
+  weightDF[weightDF<=1e-5] <- 0.01
+  edgeL <- weightDF$weight  # select edge weight
+  edgeW <- (5-1)*((edgeWidth1-min(edgeWidth1))/(max(edgeWidth1)-min(edgeWidth1)))+1 # scale between 1-5
   }
+
 
   # Also delete nodes if thresholding
   #if(thresholdValue > 0){
@@ -146,7 +161,7 @@ plotNet <- function(dinteraction,
   #net.sp <- igraph::delete.vertices(net.sp, Isolated)
   #}
 
-
+  l <- layout
   # min/max legend values:
   if(is.null(maxInt)){
     maxInt <- maximumInt
@@ -162,18 +177,17 @@ plotNet <- function(dinteraction,
 
   # Whether to show edge label
   if(label == T){
-    edgeWidth1 <- edgeWidth1
-  }else{edgeWidth1 <- NULL}
+    edgeL <- edgeL
+  }else{edgeL <- NULL}
 
 
   intMatrix <- round(dinteraction, 3)
 
+
+  # PLOTTING ----------------------------------------------------------------
+  #-----------------------------------------------------------------------
+
   if(cluster){
-
-    # V(net.bg)$label <- nam
-    # E(net.bg)$arrow.mode <- 0
-    # E(net.bg)$label.cex <- 1
-
     l_1 <- layout_with_fr(net.sp)
     com <- cluster_optimal(net.sp)
     V(net.sp)$color <- com$membership
@@ -187,8 +201,8 @@ plotNet <- function(dinteraction,
     pp <- ggnet2(g,
                  mode = l_1,
                  size = 0,
-                 edge.size = edgeWidth2,
-                 edge.label = edgeWidth1,
+                 edge.size = edgeW,
+                 edge.label = edgeL,
                  edge.color = edgeCols) +
       theme(legend.text = element_text(size = 10)) +
       geom_label(aes(label = nam),nudge_y = labelNudge) +
@@ -209,15 +223,15 @@ plotNet <- function(dinteraction,
     colCluster <- fillCols[group]
     colCluster <- as.vector(colCluster)
     pp <- pp + geom_encircle(aes(group = groupV),
-                                    alpha = 0.2,
-                                    fill = colCluster)
+                             alpha = 0.2,
+                             fill = colCluster)
 
     return(pp)
   }else{
     p <- ggnet2(net.sp, mode = l,
                 size = 0,
-                edge.size = edgeWidth2,
-                edge.label = edgeWidth1,
+                edge.size = edgeW,
+                edge.label = edgeL,
                 edge.color = edgeCols) +
       theme(legend.text = element_text(size = 10)) +
       geom_label(aes(label = nam),nudge_y = labelNudge) +
@@ -229,6 +243,7 @@ plotNet <- function(dinteraction,
       scale_fill_continuous(name = "Interaction\nStrength",
                             limits=c(minInt, maximumInt),
                             low = "floralwhite" ,high = "dodgerblue4")
+
 
     return(p)
   }
