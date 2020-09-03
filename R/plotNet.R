@@ -60,6 +60,7 @@ plotNet <- function(dinteraction,
                     cluster = F,...){
 
 
+  # Get importance values
   Imp <- diag(dinteraction)
   Imp1 <-  Imp
   impWarn <- Imp
@@ -69,15 +70,12 @@ plotNet <- function(dinteraction,
   impLegend <- max(impLegend)+0.5
   minimumImp <- min(Imp)
 
-
+  # Sort interaction values
   sortInt = t(dinteraction)[lower.tri(t(dinteraction), diag=FALSE)]  # get upper triangle of the matrix by row order
   sorted_Int <- sort(sortInt, index.return=TRUE)                     # Sort values whilst preserving the index
   Int <- sorted_Int$x
   maximumInt <- max(Int)+0.01
   nam <- colnames(dinteraction)                     # Get feature names
-
-
-
 
   # Set path direction of graph:
   to <- NULL
@@ -145,8 +143,6 @@ plotNet <- function(dinteraction,
     # Thresholded network
     `%notin%` <- Negate(`%in%`)
     net.sp  <- delete_edges(net.bg, E(net.bg)[E(net.bg)$weight %notin% cut.off])
-    #Isolated <- which(igraph::degree(net.sp)==0)
-    #igraph::delete.vertices(net.sp, Isolated)
   }else{net.sp <- net.bg
   weightDF <- get.data.frame(net.sp) # get df of graph attributes
   weightDF[weightDF<=1e-5] <- 0.01
@@ -154,12 +150,6 @@ plotNet <- function(dinteraction,
   edgeW <- (5-1)*((edgeWidth1-min(edgeWidth1))/(max(edgeWidth1)-min(edgeWidth1)))+1 # scale between 1-5
   }
 
-
-  # Also delete nodes if thresholding
-  #if(thresholdValue > 0){
-  #Isolated <- which(igraph::degree(net.sp)==0)
-  #net.sp <- igraph::delete.vertices(net.sp, Isolated)
-  #}
 
   l <- layout
   # min/max legend values:
