@@ -74,7 +74,8 @@ plotNet <- function(dinteraction,
   sortInt = t(dinteraction)[lower.tri(t(dinteraction), diag=FALSE)]  # get upper triangle of the matrix by row order
   sorted_Int <- sort(sortInt, index.return=TRUE)                     # Sort values whilst preserving the index
   Int <- sorted_Int$x
-  maximumInt <- max(Int)+0.01
+  maximumInt <- max(Int)
+  #maximumInt <- max(Int)+0.01
   nam <- colnames(dinteraction)                     # Get feature names
 
   # Set path direction of graph:
@@ -89,8 +90,8 @@ plotNet <- function(dinteraction,
   net.bg <- make_graph(matched_gDFL, length(nam))
 
   # Scale and round values:
-  Int <- round(Int,2)
-  Int[Int<=1e-5] <-0.01
+  #Int <- round(Int,5)
+  #Int[Int<=1e-5] <-0.01
   E(net.bg)$weight <- Int
   Imp <- (5-1)*((Imp-min(Imp))/(max(Imp)-min(Imp)))+1 # scale between 1-5
   Imp  <- round(Imp,2)
@@ -103,12 +104,15 @@ plotNet <- function(dinteraction,
   colfunction <- colorRampPalette(c("floralwhite", "dodgerblue4"))
   edgeColour <- (E(net.bg)$weight)
   cut_int <- cut(edgeColour, 9)
+  if(is.null(maxInt)){
   npal <- colfunction(9)
+  }else{colVal <- 9 * (maxInt/0.1)
+    npal <- colfunction(colVal)}
   edgeCols <- npal[cut_int]
 
   # Get edge weights
   weightDF <- get.data.frame(net.bg) # get df of graph attributes
-  weightDF[weightDF<=1e-5] <- 0.01
+  #weightDF[weightDF<=1e-5] <- 0.01
   edgeWidth1 <- weightDF$weight  # select edge weight
   edgeWidthScaled <- (5-1)*((edgeWidth1-min(edgeWidth1))/(max(edgeWidth1)-min(edgeWidth1)))+1 # scale between 1-5
 
@@ -143,12 +147,30 @@ plotNet <- function(dinteraction,
     # Thresholded network
     `%notin%` <- Negate(`%in%`)
     net.sp  <- delete_edges(net.bg, E(net.bg)[E(net.bg)$weight %notin% cut.off])
+
+    # Delete vertex that have no edges (if thresholding)
+    Isolated <- which(igraph::degree(net.sp)==0)
+    if(length(Isolated) == 0){
+      net.sp <- net.sp
+    }else{
+      net.sp <- igraph::delete.vertices(net.sp, Isolated)
+      Imp1 <- Imp1[-c(Isolated)]
+      Imp <- Imp[-c(Isolated)]
+      nam <- nam[-c(Isolated)]
+    }
+
+
   }else{net.sp <- net.bg
   weightDF <- get.data.frame(net.sp) # get df of graph attributes
-  weightDF[weightDF<=1e-5] <- 0.01
+  #weightDF[weightDF<=1e-5] <- 0.01
   edgeL <- weightDF$weight  # select edge weight
   edgeW <- (5-1)*((edgeWidth1-min(edgeWidth1))/(max(edgeWidth1)-min(edgeWidth1)))+1 # scale between 1-5
   }
+
+
+
+
+
 
 
   l <- layout
@@ -227,13 +249,13 @@ plotNet <- function(dinteraction,
       geom_label(aes(label = nam),nudge_y = labelNudge) +
       geom_point(aes(fill = Imp1), size = Imp*2, colour = "transparent", shape = 21) +
       scale_fill_continuous(name = "Variable\nImportance",
+                            limits=c(minImp, maxImp),
                             low = "floralwhite" ,high = "firebrick1") +
       new_scale_fill() +
       geom_point(aes(fill = 0), size = -1) +
       scale_fill_continuous(name = "Interaction\nStrength",
-                            limits=c(minInt, maximumInt),
+                            limits=c(minInt, maxInt),
                             low = "floralwhite" ,high = "dodgerblue4")
-
 
     return(p)
   }
