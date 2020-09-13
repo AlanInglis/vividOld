@@ -159,7 +159,7 @@ vividMatrix <- function(task, model, remove = FALSE, percentRemove = 0.5,
   dinteraction <- (dinteraction+t(dinteraction))/2   # avg over values to make symmetrical
   dinteraction1 <- data.frame(interaction=as.vector(dinteraction))
   diag(dinteraction) <- Imp
-
+  dinteraction[is.nan(dinteraction)] <- 0
   #class(dinteraction) = 'vivid'
   class(dinteraction) <- c("vivid", class(dinteraction))
 
