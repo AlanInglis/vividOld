@@ -179,6 +179,6 @@ plot.vivid <- function(x,
 }else if('importance'%in%type){
 
     mat <- x
-    plotImportance(mat, plotType = plotType, minImp = minImp, maxImp = maxImp, label, ...)
+    plotImportance(mat, plotType = plotType, minImp = minImp, maxImp = maxImp, top = top, label, ...)
   }
 }
