@@ -14,6 +14,7 @@
 #' @param maxInt Maximum interaction strength to be displayed on the legend.
 #' @param minImp Minimum importance value to be displayed on the legend.
 #' @param maxImp Maximum importance value to be displayed on the legend.
+#' @param dodge Used to dodge overlapping x-axis text.
 #' @param ... Not currently implemented.
 #'
 #' @importFrom ggplot2 "ggplot"
@@ -56,7 +57,8 @@ plotHeat <- function(dinteraction,
                      plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
                      impLow = "white", impHigh = "firebrick1", top = NULL ,
                      title="",
-                     minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL,...){
+                     minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL,
+                     dodge = 1,...){
 
 
 # -------------------------------------------------------------------------
@@ -87,7 +89,7 @@ plotHeat <- function(dinteraction,
 
   p <- ggplot(data = var_int,
               mapping = aes(x = var_num1, y = var_num2)) +
-    scale_x_continuous(breaks = index, labels = labelNames, position = "top") +
+    scale_x_continuous(breaks = index, labels = labelNames, position = "top", guide = guide_axis(n.dodge = dodge)) +
     scale_y_reverse(breaks = index, labels = labelNames) +
     geom_raster(aes(fill = `Interaction\nStrength`),
                 alpha = var_int$alpha_int) +
@@ -163,7 +165,9 @@ plotlyPlot <- function(dinteraction,
     ylab('') +
     theme_light() +
     theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank())
+          panel.grid.minor = element_blank(),
+          axis.text.x = element_text(angle = 45))
+
 
   #Interactive plot using plotly
   ppp <- ggplotly(pp)
