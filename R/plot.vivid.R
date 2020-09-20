@@ -6,6 +6,7 @@
 #' @param x An object of class \code{vivid} created via vividMatrix.
 #' @param type Type of plot required.
 #' @param plotly If TRUE then an interactive plotly heatMap plot is displayed.
+#' @param dodge Used to dodge overlapping x-axis text on heatMap.
 #' @param intLow Colour, set by the user, to display low interaction strengths.
 #' @param intHigh Colour, set by the user, to display high interaction strengths.
 #' @param impLow Colour, set by the user, to display low importance values.
@@ -25,6 +26,7 @@
 #' A higher value will postion the label farther above the nodes. For use with \code{"network"}.
 #' @param layout Determines the shape, or layout, of the plotted network graph.
 #' @param cluster If cluster = TRUE, then the data is clustered in groups.
+#' @param clusterType = Network-based clustering. Any of the appropriate cluster types from the igraph package are allowed.
 #' @param plotType The type of interaction/importance plot to display, either "lollipop", "barplot", or "circleBar".
 #' For use with \code{"allInteractions"}, and \code{"importance"}
 #' @param ... Not currently implemented.
@@ -60,12 +62,13 @@ plot.vivid <- function(x,
                        # for heatmap
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
                        impLow = "white", impHigh = "firebrick1", top = NULL, reorder=TRUE,
-                       minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL,
+                       minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL, dodge = 1,
                        #for network
                        thresholdValue = 0,
                        label = FALSE,
                        labelNudge = 0.05, layout = "circle",
                        cluster = F,
+                       clusterType = cluster_optimal,
                        # for all interactions
                        plotType = "lollipop",
                        type = c("heatMap",
@@ -146,7 +149,7 @@ plot.vivid <- function(x,
     plotlyPlot(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh,...)
 
   }else{plotHeat(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh,
-                 minImp=minImp, maxImp=maxImp, minInt=minInt, maxInt=maxInt,...)
+                 minImp=minImp, maxImp=maxImp, minInt=minInt, maxInt=maxInt, dodge = dodge,...)
   }
 
 }else if ('network'%in%type) {
@@ -167,7 +170,7 @@ plot.vivid <- function(x,
     netPrep <- netPrep[o,o]
   }else{netPrep <- x}
     plotNet(netPrep, model, reorder = T, thresholdValue, label, layout = layout,
-            minInt, maxInt, minImp , maxImp, cluster = cluster,...)
+            minInt, maxInt, minImp , maxImp, cluster = cluster, clusterType = clusterType,...)
 }else if('allInteractions'%in%type){
 
   dinteraction <- x
