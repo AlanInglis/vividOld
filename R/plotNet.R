@@ -13,6 +13,7 @@
 #' @param labelNudge A value, set by the user, to determine the y_postioning of the variables names. A higher value will postion the label farther above the nodes.
 #' @param layout Determines the shape, or layout, of the plotted graph.
 #' @param cluster If cluster = TRUE, then the data is clustered in groups.
+#' @param clusterType = Network-based clustering. Any of the appropriate cluster types from the igraph package are allowed.
 #' @param ... Not currently implemented.
 #'
 #' @return A newtwork style plot displaying interaction strength between variables on the edges and variable importance on the nodes.
@@ -57,7 +58,7 @@ plotNet <- function(dinteraction,
                     thresholdValue = 0,
                     label, minInt = 0, maxInt = NULL, minImp = NULL, maxImp = NULL,
                     labelNudge = 0.05, layout = "circle",
-                    cluster = F,...){
+                    cluster = F, clusterType = cluster_optimal, ...){
 
 
   # Get importance values
@@ -200,8 +201,9 @@ plotNet <- function(dinteraction,
   #-----------------------------------------------------------------------
 
   if(cluster){
+
     l_1 <- layout_with_fr(net.sp)
-    com <- cluster_optimal(net.sp)
+    com <- clusterType(net.sp)
     V(net.sp)$color <- com$membership
     group <- V(net.sp)$color
     group <- factor(group)
