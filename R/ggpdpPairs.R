@@ -94,7 +94,7 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
 
   # Create progress bar
   pb <- progress_bar$new(
-    format = "  Calculating pdp + ice...[:bar]:percent. Est::eta ",
+    format = "  Calculating ICE curves...[:bar]:percent. Est::eta ",
     total = nrow(xvarn),
     clear = FALSE)
 
@@ -205,8 +205,10 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
       # Assemble data frame
       df <- data.frame(x = x, y = y)
 
+
+
       # Set colour for label
-      colFn <- colorRampPalette(c("darkblue", "floralwhite", "green"), interpolate ='spline')
+      colFn <- colorRampPalette(c("blue", "white", "red"), interpolate ='spline')
       fill <- colFn(100)[findInterval(corr, seq(-1, 1, length=100))]
 
       # Prepare plot
@@ -220,7 +222,8 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
             lab = round(corr, digits = 3)),
           mapping = ggplot2::aes(x = xlabel,
                                  y = ylabel,
-                                 label = lab),
+                                 label = lab,
+                                 alpha = 0.5),
           fill = fill,
           hjust = 0, vjust = 1,
           size = 3, fontface = "bold",
@@ -235,8 +238,11 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
                  legend=w,
                  cardinality_threshold = cardinality) +
       theme_bw() +
-      theme(panel.border=element_blank(), axis.line=element_line(),
-            axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+      theme(panel.border = element_rect(colour = "black", fill=NA, size=1),
+            axis.line=element_line(),
+            axis.ticks = element_blank(),
+            axis.text.x = element_text(angle = 45, hjust = 1, size = 0),
+            axis.text.y = element_text(size = 0),
             strip.text = element_text(face ="bold", colour ="red", size = 5))
     p
   }else{
@@ -264,12 +270,16 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
                  # lower=list(continuous=wrap("points", size = 0.5)),
                  legend=w,
                  cardinality_threshold = cardinality) +
-      theme_bw() + theme(panel.border=element_blank(), axis.line=element_line(),
-                         axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+      theme_bw() + theme(panel.border = element_rect(colour = "black", fill=NA, size=1),
+                         axis.line=element_line(),
+                         axis.ticks = element_blank(),
+                         axis.text.x = element_text(angle = 45, hjust = 1, size = 0),
+                         axis.text.y = element_text(size = 0),
                          strip.text = element_text(face ="bold", colour ="red", size = 5))
 
 
     p
+
   }
 
   if(parallel){
