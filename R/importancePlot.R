@@ -3,7 +3,7 @@
 #' @description This function is used to plot just the variable importance.
 #'
 #' @param mat A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.
-#' @param type The type of plot to display, either "lollipop" (default), "barplot", or "circleBar".
+#' @param type The type of plot to display, either "lollipop" (default), or "barplot".
 #' @param minImp Minimum importance value to be displayed on the legend.
 #' @param maxImp Maximum importance value to be displayed on the legend.
 #' @param top A value set by the user to only display the top x amount variables.
@@ -79,9 +79,16 @@ plotImportance <- function(mat, plotType = "lollipop", minImp = NULL, maxImp = N
 
   # Show only top X results
   if(top > 0){
-    yDF <- head(yDF,top)
-    yImp <- head(yImp,top)
+    yDF <-  yDF[tail(order(yDF$yDF), top), ]
+    yDF <- as.data.frame(yDF)
+    yImp <- sort(yImp, decreasing = T)
+    yImp <- head(yImp, top)
+    yImp <- sort(yImp)
+    if(label == T){
+      yImpRound <- round(yImp, 2)
+    }else{yImpRound <- " "}
   }
+
   # Barplot
   if(plotType == "barplot"){
 
@@ -111,26 +118,7 @@ plotImportance <- function(mat, plotType = "lollipop", minImp = NULL, maxImp = N
       coord_flip()
     p <- p + labs(fill = "Variable\nImportance")
     return(p)
-  }else if(plotType == "circleBar"){
-    # Circular barplot
-
-    pp <- ggplot(yDF, aes(x=yDF, y=yImp)) +
-      geom_col(aes(fill = yImp)) +
-      scale_fill_gradient2(low = "white",
-                           high = "firebrick1") +
-      ylim(-1,max(yImp)) +
-      theme_minimal() +
-      theme(
-        axis.text = element_blank(),
-        axis.title = element_blank(),
-        panel.grid = element_blank(),
-        legend.position = c(0.9,0.5), #"none",
-        plot.margin=unit(c(0,-2,0,0), "cm")) + # remove the margin and centre plot
-      coord_polar(start = 0) + # This makes the coordinate polar instead of cartesian.
-      geom_text(aes(label = nam), vjust = 1.6, color = "black", size = 3.5) +
-      geom_text(aes(label = yImpRound),vjust = 4, color = "black", size = 3)
-    pp <- pp + labs(fill = "Variable\nImportance") #+ ggtitle(label = "Variable Importance")
-    return(pp)}else if(plotType == "lollipop"){
+  }else if(plotType == "lollipop"){
 
       # lollipop plot
       ppp <- ggplot( yDF, aes(x=yDF, y=yImp)) +
