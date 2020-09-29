@@ -91,6 +91,11 @@ plotAllInteractions <- function(mat, plotType = NULL, top = NULL, ...){
   # -------------------------------------------------------------------------
 
 
+
+if(plotType != "barplot" && plotType != "lollipop"){
+  stop("plotType must be of type barplot or lollipop")
+}
+
   # Plotting
   if(plotType == "barplot"){
     # barplot
@@ -104,26 +109,6 @@ plotAllInteractions <- function(mat, plotType = NULL, top = NULL, ...){
       theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) +
       coord_flip()
     return(pp)
-  }else if(plotType == "circleBar"){
-    # Circle barplot
-    ppp <- ggplot(df, aes(x = reorder(xy, value), y = value)) +
-      geom_col(aes(fill = value)) +
-      scale_fill_gradient2(low = "floralwhite",
-                           high = "dodgerblue4") +
-      # Limits of the plot. The negative value controls the size of the inner circle,
-      # the positive is to add size over each bar
-      ylim(-0.5,0.3) +
-      theme_minimal() +
-      theme(
-        axis.text = element_blank(),
-        axis.title = element_blank(),
-        panel.grid = element_blank(),
-        legend.position = "none",
-        plot.margin = unit(rep(-2,4), "cm")) +    # This remove unnecessary margin around plot
-      coord_polar(start = 0) + # This makes the coordinate polar instead of cartesian.
-      geom_text(aes(label = round(value,3)), vjust = 2, color = "black", size = 3.5)
-    #geom_text(aes(label = intRound),vjust = 0, color = "black", size = 3)
-    return(ppp)
   }else if(plotType == "lollipop"){
     # lollipop plot
     p <- ggplot(df, aes(x = reorder(xy, value), y = value)) +
