@@ -4,7 +4,15 @@
 \alias{importancePlot}
 \title{importancePlot}
 \usage{
-importancePlot(mat, plotType = "lollipop", minImp = NULL, maxImp = NULL, ...)
+importancePlot(
+  mat,
+  plotType = "lollipop",
+  minImp = NULL,
+  maxImp = NULL,
+  top = NULL,
+  label,
+  ...
+)
 }
 \arguments{
 \item{mat}{A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.}
@@ -13,9 +21,13 @@ importancePlot(mat, plotType = "lollipop", minImp = NULL, maxImp = NULL, ...)
 
 \item{maxImp}{Maximum importance value to be displayed on the legend.}
 
+\item{top}{A value set by the user to only display the top x amount variables.}
+
+\item{label}{Only compatible with plotType = "barplot". If TRUE then the importance value is displayed at the end of each bar.}
+
 \item{...}{Not currently implemented}
 
-\item{type}{The type of plot to display, either "lollipop" (default), "barplot", or "circleBar".}
+\item{type}{The type of plot to display, either "lollipop" (default), or "barplot".}
 }
 \description{
 This function is used to plot just the variable importance.
