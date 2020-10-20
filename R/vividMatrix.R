@@ -1,7 +1,7 @@
 # Prep Function -----------------------------------------------------------
 # -------------------------------------------------------------------------
 
-#' vividMatrix
+#' vividMatrixOLD
 #'
 #' @description Creates a matrix displaying Variable importance on the diagonal
 #'  and Variable Interaction on the off-diagonal.
@@ -12,6 +12,7 @@
 #' @param remove If TRUE then remove the variables with low interaction strength.
 #' @param percentRemove The percentage of variables with low interaction strength to remove from the interaction calculation.
 #' @param parallel If TRUE then the method is executed in parallel.
+#' @param gridSize The size of the grid for evaluating the predictions.
 #'
 #' @return A matrix of values
 #'
@@ -45,8 +46,8 @@
 
 
 
-vividMatrix <- function(task, model, remove = FALSE, percentRemove = 0.5,
-                        parallel = FALSE,...){
+vividMatrixOLD <- function(task, model, remove = FALSE, percentRemove = 0.5,
+                        parallel = FALSE, gridSize = 10, ...){
   message(" Calculating variable importance...")
 
 
@@ -126,7 +127,7 @@ vividMatrix <- function(task, model, remove = FALSE, percentRemove = 0.5,
     res  <- NULL
     for (i in 1:length(ovars1)){
       suppressMessages({
-        res <- rbind(res, Interaction$new(mod, grid.size = 10, feature=ovars1[i])$results)
+        res <- rbind(res, Interaction$new(mod, grid.size = gridSize, feature=ovars1[i])$results)
       })
       pb$tick()
     }
@@ -143,7 +144,7 @@ vividMatrix <- function(task, model, remove = FALSE, percentRemove = 0.5,
     res  <- NULL
     for (i in 1:length(ovars)){
       suppressMessages({
-        res <- rbind(res, Interaction$new(mod, grid.size = 10, feature=ovars[i])$results)
+        res <- rbind(res, Interaction$new(mod, grid.size = gridSize, feature=ovars[i])$results)
       })
       pb$tick()
     }
