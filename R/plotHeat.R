@@ -15,6 +15,7 @@
 #' @param minImp Minimum importance value to be displayed on the legend.
 #' @param maxImp Maximum importance value to be displayed on the legend.
 #' @param dodge Used to dodge overlapping x-axis text.
+#' @param title Adds title to the plot
 #' @param ... Not currently implemented.
 #'
 #' @importFrom ggplot2 "ggplot"
@@ -58,7 +59,7 @@ plotHeat <- function(dinteraction,
                      impLow = "white", impHigh = "firebrick1", top = NULL ,
                      title="",
                      minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL,
-                     dodge = 1,...){
+                     dodge = 1, ...){
 
 
 # -------------------------------------------------------------------------
@@ -94,6 +95,7 @@ plotHeat <- function(dinteraction,
     geom_raster(aes(fill = `Interaction\nStrength`),
                 alpha = var_int$alpha_int) +
     scale_fill_gradient(low = intLow, high = intHigh, limits=c(minInt, maxInt)) +
+    labs(title = title) +
     new_scale_fill() +
     geom_raster(aes(fill = `Variable\nImportance`),
                 alpha = var_int$alpha_imp) +
