@@ -16,6 +16,7 @@ plotNet(
   labelNudge = 0.05,
   layout = "circle",
   cluster = F,
+  clusterType = cluster_optimal,
   ...
 )
 }
@@ -37,6 +38,8 @@ plotNet(
 \item{layout}{Determines the shape, or layout, of the plotted graph.}
 
 \item{cluster}{If cluster = TRUE, then the data is clustered in groups.}
+
+\item{clusterType}{= Network-based clustering. Any of the appropriate cluster types from the igraph package are allowed.}
 
 \item{...}{Not currently implemented.}
 

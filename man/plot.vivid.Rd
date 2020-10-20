@@ -17,11 +17,13 @@
   maxImp = NULL,
   minInt = 0,
   maxInt = NULL,
+  dodge = 1,
   thresholdValue = 0,
   label = FALSE,
   labelNudge = 0.05,
   layout = "circle",
   cluster = F,
+  clusterType = cluster_optimal,
   plotType = "lollipop",
   type = c("heatMap", "network", "allInteractions", "importance"),
   ...
@@ -53,6 +55,8 @@ For use with \code{"heatMap"} and \code{"allInteractions"}.}
 
 \item{maxInt}{Maximum interaction strength to be displayed on the legend.}
 
+\item{dodge}{Used to dodge overlapping x-axis text on heatMap.}
+
 \item{thresholdValue}{A value chosen by the user which will show all the edges with weights (i.e., the interacions) above that value.
 For example, if thresholdValue = 0.2, then only the the interacions greater than 0.2 will be displayed.
 For use with \code{"network"}.}
@@ -65,6 +69,8 @@ A higher value will postion the label farther above the nodes. For use with \cod
 \item{layout}{Determines the shape, or layout, of the plotted network graph.}
 
 \item{cluster}{If cluster = TRUE, then the data is clustered in groups.}
+
+\item{clusterType}{= Network-based clustering. Any of the appropriate cluster types from the igraph package are allowed.}
 
 \item{plotType}{The type of interaction/importance plot to display, either "lollipop", "barplot", or "circleBar".
 For use with \code{"allInteractions"}, and \code{"importance"}}
