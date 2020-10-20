@@ -4,14 +4,34 @@
 \alias{interactionPlot}
 \title{interactionPlot}
 \usage{
-interactionPlot(task, model, type = "lollipop")
+interactionPlot(
+  model,
+  data,
+  interactionType = "ice",
+  gridSize = 10,
+  normalize = FALSE,
+  n_max = 1000,
+  seed = NULL,
+  sqrt = FALSE,
+  type = "lollipop"
+)
 }
 \arguments{
-\item{task}{Task created from the mlr package, either regression or classification.}
-
 \item{model}{Any machine learning model.}
 
-\item{type}{The type of plot to display, either "lollipop" (default), "barplot", or "circleBar"}
+\item{interactionType}{Are measures based on Friedman's H statistic ("H") or on "ice" curves?}
+
+\item{gridSize}{The size of the grid for evaluating the predictions.}
+
+\item{normalize}{Should the variances explained be normalized? Default is FALSE.}
+
+\item{n_max}{Maximum number of data rows to consider.}
+
+\item{seed}{An integer random seed used for subsampling.}
+
+\item{sqrt}{In order to reproduce Friedman's H statistic, resulting values are root transformed. Set to FALSE if squared values should be returned.}
+
+\item{type}{The type of plot to display, either "lollipop" (default) or "barplot".}
 }
 \description{
 Plots a selected variable against all other variables in a model
