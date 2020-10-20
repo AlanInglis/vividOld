@@ -65,10 +65,10 @@ vividMatrix <- function(model, data, gridSize = 10, normalize = FALSE, n_max = 1
 # -------------------------------------------------------------------------
 # Create flashlight
 flash <- function(model, data){
-  message("START FLASH")
+
   response <- model$state$train_task$target_names
   fl <- flashlight(model = model, data = data, y = response, label = "")
-  message("END FLASH")
+
   return(fl)
 }
 
@@ -113,7 +113,7 @@ varImportanceFL <- function(fl, model){
 FLfunc <- function(fl, model, data, gridSize = gridSize, normalize = normalize, n_max = n_max,
                    seed = seed, sqrt = sqrt){
 
-    message("working...")
+    message("Calculating interactions...")
 
   if (!is.null(seed)) {
     set.seed(seed)
