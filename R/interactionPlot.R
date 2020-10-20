@@ -2,13 +2,18 @@
 #'
 #' @description Plots a selected variable against all other variables in a model
 #'
-#' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
-#' @param type The type of plot to display, either "lollipop" (default), "barplot", or "circleBar"
+#' @param type The type of plot to display, either "lollipop" (default) or "barplot".
+#' @param interactionType Are measures based on Friedman's H statistic ("H") or on "ice" curves?
+#' @param gridSize The size of the grid for evaluating the predictions.
+#' @param normalize Should the variances explained be normalized? Default is FALSE.
+#' @param n_max Maximum number of data rows to consider.
+#' @param seed An integer random seed used for subsampling.
+#' @param sqrt In order to reproduce Friedman's H statistic, resulting values are root transformed. Set to FALSE if squared values should be returned.
 #'
 #'
-#' @importFrom iml "Predictor"
-#' @importFrom iml "Interaction"
+#' @importFrom flashlight "flashlight"
+#' @importFrom flashlight "light_interaction"
 #' @importFrom ggplot2 "ggplot"
 #'
 #'@examples
@@ -32,21 +37,25 @@
 
 
 # Function ----------------------------------------------------------------
-interactionPlot <- function(task, model, type = "lollipop"){
+interactionPlot <- function(model, data, interactionType = 'ice', gridSize = 10, normalize = FALSE, n_max = 1000,
+                            seed = NULL, sqrt = FALSE, type = "lollipop"){
 
   # Get data
   # get data:
-  data <-  task$data()
+  data <-  data
   data <- as.data.frame(data)
-  target <- task$target_names
-  nam <- task$feature_names
+  nam <- model$state$train_task$feature_names
 
-  # Get values
-  preMod  <- Predictor$new(model, data = data, y = target)
-  suppressMessages({
-  intValues <- Interaction$new(preMod)
-  })
-  intVal <- intValues$results$.interaction
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }else{seed = NULL}
+
+  response <- model$state$train_task$target_names
+  fl <- flashlight(model = model, data = data, y = response, label = "")
+  res <- light_interaction(fl, pairwise = F, type = interactionType, grid_size = gridSize,
+                           normalize = normalize, n_max = n_max,
+                           seed = seed, sqrt = sqrt)$data
+  intVal <- res$value
   intRound <- round(intVal, 3)
   intDF <- reorder(nam, intVal)
   intDF <- data.frame(intDF)
@@ -54,7 +63,7 @@ interactionPlot <- function(task, model, type = "lollipop"){
 
   # Barplot
   if (type == "barplot"){
-  p <-  ggplot(intDF, aes(x = intDF, y = intVal)) +
+  p <-  ggplot(intDF, aes(x = intDF, y = intDF)) +
     geom_col(aes(fill = intVal)) +
     scale_fill_gradient2(low = "floralwhite",
                          high = "dodgerblue4") +
@@ -67,28 +76,13 @@ interactionPlot <- function(task, model, type = "lollipop"){
     coord_flip()
   p <- p + labs(fill = "Interaction\nStrength")
   return(p)
-  }else if(type == "circleBar"){
-  # Circular barplot
-    pp <- ggplot(intDF, aes(x = intDF, y = intVal)) +
-      geom_col(aes(fill = intVal)) +
-      scale_fill_gradient2(low = "floralwhite",
-                           high = "dodgerblue4") +
-      ylim(-0.5,max(intVal)) +
-      theme_minimal() +
-      theme(
-        axis.text = element_blank(),
-        axis.title = element_blank(),
-        panel.grid = element_blank(),
-        legend.position = "none",
-        plot.margin = unit(rep(-2,4), "cm")) +
-      coord_polar(start = 0) +
-      geom_text(aes(label = nam), vjust = -2, color = "black", size = 3.5) +
-      geom_text(aes(label = intRound),vjust = 0, color = "black", size = 3)
-    pp <- pp + labs(fill = "Interaction\nStrength")
-    return(pp)
-   }else if(type == "lollipop"){# Lollipop
-  ppp  <- plot(Interaction$new(preMod)) +
-    theme_bw()
+  }else if(type == "lollipop"){
+  ppp <- ggplot(intDF, aes(x=intDF, y=intDF)) +
+    geom_linerange(ymin=0, aes(ymax=intDF)) + geom_point()+
+    xlab('Features') +
+    ylab("Importance Value") +
+    theme_bw() +
+    coord_flip()
   return(ppp)}
 }
 
