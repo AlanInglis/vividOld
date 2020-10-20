@@ -208,10 +208,12 @@ plotNet <- function(dinteraction,
     group <- V(net.sp)$color
     group <- factor(group)
 
+
     g <- set_graph_attr(net.sp, "layout", layout_with_fr(net.sp))
     colrs <- adjustcolor( c("yellow", "red", "blue", "black","purple",
                             "orange", "pink", "green", "red" , "blue"))
     colorC <- colrs[group]
+
     pp <- ggnet2(g,
                  mode = l_1,
                  size = 0,
