@@ -28,7 +28,8 @@ Imports:
     DendSer,
     progress,
     future,
-    ggalt
+    ggalt,
+    flashlight
 Suggests: 
     knitr,
     rmarkdown,
