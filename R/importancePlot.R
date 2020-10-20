@@ -119,7 +119,6 @@ plotImportance <- function(mat, plotType = "lollipop", minImp = NULL, maxImp = N
     p <- p + labs(fill = "Variable\nImportance")
     return(p)
   }else if(plotType == "lollipop"){
-
       # lollipop plot
       ppp <- ggplot( yDF, aes(x=yDF, y=yImp)) +
         geom_linerange(ymin=0, aes(ymax=yImp)) + geom_point()+
