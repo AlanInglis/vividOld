@@ -101,7 +101,7 @@ plot.vivid <- function(x,
     minInteraction <- min(intVals)
 
     # give equal weight to both interaction and varimp
-    o <- dser( -as.dist(vimp/maxvimp+ dint/maxinteraction), cost=costLPL)
+    o <- dser( -as.dist(vimp/maxvimp + dint/maxinteraction), cost=costLPL)
     dint <- dint[o,o]
   }
 
