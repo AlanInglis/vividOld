@@ -114,7 +114,7 @@ plotImportance <- function(mat, plotType = "lollipop", minImp = NULL, maxImp = N
       theme_minimal() +
       xlab('Features') +
       ylab("Importance Value") +
-      theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) +
+      theme(axis.title.y = element_text(angle = 90, vjust = 0.5)) +
       coord_flip()
     p <- p + labs(fill = "Variable\nImportance")
     return(p)
