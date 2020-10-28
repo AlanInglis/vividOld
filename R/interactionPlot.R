@@ -10,7 +10,9 @@
 #' @param n_max Maximum number of data rows to consider.
 #' @param seed An integer random seed used for subsampling.
 #' @param sqrt In order to reproduce Friedman's H statistic, resulting values are root transformed. Set to FALSE if squared values should be returned.
-#'
+#' @param title A title to be placed on the plot
+#' @param label Only compatible with plotType = "barplot". If TRUE then the interaction value is displayed at the end of each bar.
+
 #'
 #' @importFrom flashlight "flashlight"
 #' @importFrom flashlight "light_interaction"
@@ -38,13 +40,19 @@
 
 # Function ----------------------------------------------------------------
 interactionPlot <- function(model, data, interactionType = 'ice', gridSize = 10, normalize = FALSE, n_max = 1000,
-                            seed = NULL, sqrt = FALSE, type = "lollipop"){
+                            seed = NULL, sqrt = FALSE, type = "lollipop", title = NULL, label = FALSE){
 
   # Get data
   # get data:
   data <-  data
   data <- as.data.frame(data)
   nam <- model$state$train_task$feature_names
+
+  # reordering mlr3 data order to match OG dataset
+  # originalOrder <- task$backend$colnames
+  # OG <- originalOrder[1:(length(originalOrder)-1)]
+  # OG <- setdiff(OG, task$target_names)
+  # data <- data[OG]
 
   if (!is.null(seed)) {
     set.seed(seed)
@@ -55,10 +63,21 @@ interactionPlot <- function(model, data, interactionType = 'ice', gridSize = 10,
   res <- light_interaction(fl, pairwise = F, type = interactionType, grid_size = gridSize,
                            normalize = normalize, n_max = n_max,
                            seed = seed, sqrt = sqrt)$data
+
+  # reorder for plot
   intVal <- res$value
   intRound <- round(intVal, 3)
-  intDF <- reorder(nam, intVal)
+  intName <- res$variable
+  intDF <- reorder(intName, intVal)
   intDF <- data.frame(intDF)
+
+  if(is.null(title)){
+    title = "Overall Interaction Strength"
+  }else{title = title}
+
+  if(label == T){
+    intRound <- intRound
+  }else{intRound <- " "}
 
 
   # Barplot
@@ -67,12 +86,12 @@ interactionPlot <- function(model, data, interactionType = 'ice', gridSize = 10,
     geom_col(aes(fill = intVal)) +
     scale_fill_gradient2(low = "floralwhite",
                          high = "dodgerblue4") +
-    ggtitle(label = "Overall Interaction Strength") +
+    ggtitle(label = title) +
     geom_text(aes(label = intRound), vjust = 1.6, color = "black", size = 3.5) +
     theme_minimal() +
     xlab('Feature') +
     ylab("Interaction\nStrength") +
-    theme(axis.title.y = element_text(angle = 0, vjust = 0.5))+
+    theme(axis.title.y = element_text(angle = 90, vjust = 0.5))+
     coord_flip()
   p <- p + labs(fill = "Interaction\nStrength")
   return(p)
