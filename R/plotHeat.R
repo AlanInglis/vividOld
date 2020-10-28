@@ -29,6 +29,8 @@
 #' @importFrom stats "as.dist"
 #' @importFrom utils "globalVariables"
 #' @import DendSer
+#' @importFrom cowplot "get_legend"
+#' @importFrom cowplot "plot_grid"
 #'
 #' @examples
 #' # Load in the data:
@@ -88,24 +90,61 @@ plotHeat <- function(dinteraction,
 
   # Create Plot: ------------------------------------------------------------
 
+
   p <- ggplot(data = var_int,
               mapping = aes(x = var_num1, y = var_num2)) +
     scale_x_continuous(breaks = index, labels = labelNames, position = "top", guide = guide_axis(n.dodge = dodge)) +
     scale_y_reverse(breaks = index, labels = labelNames) +
-    geom_raster(aes(fill = `Interaction\nStrength`),
-                alpha = var_int$alpha_int) +
+    geom_tile(aes(fill = `Interaction\nStrength`),
+              alpha = var_int$alpha_int) +
     scale_fill_gradient(low = intLow, high = intHigh, limits=c(minInt, maxInt)) +
     labs(title = title) +
     new_scale_fill() +
-    geom_raster(aes(fill = `Variable\nImportance`),
-                alpha = var_int$alpha_imp) +
+    geom_tile(aes(fill = `Variable\nImportance`),
+              alpha = var_int$alpha_imp) +
     scale_fill_gradient(low = impLow ,high = impHigh, limits=c(minImp, maxImp)) +
     xlab('') +
     ylab('') +
     theme_light() +
     theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank())
-  p
+          panel.grid.minor = element_blank()) +
+    theme(axis.text.x  = element_text(angle=45, hjust = 0)) +
+    theme(legend.position = "none")
+
+  pp <- ggplot(data = var_int,
+              mapping = aes(x = var_num1, y = var_num2)) +
+    guides(fill = guide_colorbar(frame.colour = "black", frame.linewidth = 1.5)) +
+    scale_x_continuous(breaks = index, labels = labelNames, position = "top", guide = guide_axis(n.dodge = dodge)) +
+    scale_y_reverse(breaks = index, labels = labelNames) +
+    geom_tile(aes(fill = `Interaction\nStrength`),
+                alpha = var_int$alpha_int) +
+    scale_fill_gradient(low = intLow, high = intHigh, limits=c(minInt, maxInt)) +
+    labs(title = title)
+
+
+  ppp <- ggplot(data = var_int,
+               mapping = aes(x = var_num1, y = var_num2)) +
+    guides(fill = guide_colorbar(frame.colour = "black", frame.linewidth = 1.5)) +
+     geom_tile(aes(fill = `Variable\nImportance`),
+                 alpha = var_int$alpha_imp) +
+  scale_fill_gradient(low = impLow ,high = impHigh, limits=c(minImp, maxImp)) +
+  xlab('') +
+  ylab('') +
+  theme_light() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+  # Grab the legends using cowplot::get_legend()
+  p2_legend <- get_legend(pp)
+  p3_legend <- get_legend(ppp)
+
+  # Combine the legends one on top of the other
+  legends <- plot_grid(p2_legend, p3_legend, ncol = 1, nrow = 2)
+
+  # Combine the heatmap with the legends
+  endPlot <- plot_grid(p, legends, ncol = 2, align = "h",
+                       scale = c(1, 0.8), rel_widths = c(0.9, 0.1))
+  endPlot
 }
 
 
