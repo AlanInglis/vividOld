@@ -6,9 +6,8 @@
 #' @description Creates a matrix displaying Variable importance on the diagonal
 #'  and Variable Interaction on the off-diagonal.
 #'
-#'
+#' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
-#' @param data A data.frame to be supplied
 #' @param gridSize The size of the grid for evaluating the predictions.
 #' @param normalize Should the variances explained be normalized? Default is FALSE.
 #' @param n_max Maximum number of data rows to consider.
@@ -44,15 +43,15 @@
 
 
 
-vividMatrix <- function(model, data, gridSize = 10, normalize = FALSE, n_max = 1000,
+vividMatrix <- function(task, model, gridSize = 10, normalize = FALSE, n_max = 1000,
                         seed = NULL, sqrt = FALSE,...){
 
-    FLobject <- flash(model, data)
+    FLobject <- flash(task, model)
     fl <- FLobject
 
     vImp <- varImportanceFL(fl, model)
 
-    flInt <- FLfunc(fl, model, data, gridSize = gridSize,  normalize = normalize, n_max = n_max,
+    flInt <- FLfunc(fl, task, model, gridSize = gridSize,  normalize = normalize, n_max = n_max,
                     seed = seed, sqrt = sqrt)
 
     diag(flInt) <- vImp
@@ -64,10 +63,13 @@ vividMatrix <- function(model, data, gridSize = 10, normalize = FALSE, n_max = 1
 
 # -------------------------------------------------------------------------
 # Create flashlight
-flash <- function(model, data){
+flash <- function(task, model){
 
-  response <- model$state$train_task$target_names
-  fl <- flashlight(model = model, data = data, y = response, label = "")
+  data <-  task$data()
+  data <- as.data.frame(data)
+  target <- task$target_names
+
+  fl <- flashlight(model = model, data = data, y = target, label = "")
 
   return(fl)
 }
@@ -96,6 +98,7 @@ varImportanceFL <- function(fl, model){
         Importance <- reshape2::melt(impReorder)
       })
       imp <-  Importance$value
+      print("Embedded variable importance method used.")
     }else{
       # Importance Values:
       imp <- light_importance(fl, m_repetitions = 4)
@@ -110,7 +113,7 @@ varImportanceFL <- function(fl, model){
 # -------------------------------------------------------------------------
 # Flashlight Interactions
 
-FLfunc <- function(fl, model, data, gridSize = gridSize, normalize = normalize, n_max = n_max,
+FLfunc <- function(fl, task, model, gridSize = gridSize, normalize = normalize, n_max = n_max,
                    seed = seed, sqrt = sqrt){
 
     message("Calculating interactions...")
@@ -123,9 +126,15 @@ FLfunc <- function(fl, model, data, gridSize = gridSize, normalize = normalize, 
     res  <- NULL
     ovars <- model$state$train_task$feature_names
 
-    res <- light_interaction(fl, pairwise = TRUE, type = "H", grid_size = gridSize,
-                             normalize = normalize, n_max = n_max,
-                             seed = seed, sqrt = sqrt)$data
+
+
+        res <- c(res, light_interaction(fl, pairwise = TRUE, type = "H", grid_size = gridSize,
+                                        normalize = normalize, n_max = n_max,
+                                        seed = seed, sqrt = sqrt)$data)
+
+
+
+
 
     res[["variable"]]<- reorder(res[["variable"]], res[["value"]])
 
@@ -134,8 +143,8 @@ FLfunc <- function(fl, model, data, gridSize = gridSize, normalize = normalize, 
     rownames(dinteraction) <- colnames(dinteraction) <- ovars                 # set names
     dinteraction[vars2] <- res[["value"]]                                     # set values
     dinteraction[lower.tri(dinteraction)] = t(dinteraction)[lower.tri(dinteraction)]
-    dinteraction[is.nan(dinteraction)] <- 0.000000001
-    dinteraction[(dinteraction <= 0)] <- 0.000000001
+    #dinteraction[is.nan(dinteraction)] <- 0.000000001
+    #dinteraction[(dinteraction <= 0)] <- 0.000000001
     dinteraction
 }
 
