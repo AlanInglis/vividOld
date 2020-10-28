@@ -17,7 +17,6 @@
   maxImp = NULL,
   minInt = 0,
   maxInt = NULL,
-  dodge = 1,
   thresholdValue = 0,
   label = FALSE,
   labelNudge = 0.05,
@@ -54,8 +53,6 @@ For use with \code{"heatMap"} and \code{"allInteractions"}.}
 \item{minInt}{Minimum interaction strength to be displayed on the legend.}
 
 \item{maxInt}{Maximum interaction strength to be displayed on the legend.}
-
-\item{dodge}{Used to dodge overlapping x-axis text on heatMap.}
 
 \item{thresholdValue}{A value chosen by the user which will show all the edges with weights (i.e., the interacions) above that value.
 For example, if thresholdValue = 0.2, then only the the interacions greater than 0.2 will be displayed.

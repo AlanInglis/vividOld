@@ -14,7 +14,6 @@
 #' @param maxInt Maximum interaction strength to be displayed on the legend.
 #' @param minImp Minimum importance value to be displayed on the legend.
 #' @param maxImp Maximum importance value to be displayed on the legend.
-#' @param dodge Used to dodge overlapping x-axis text.
 #' @param title Adds title to the plot
 #' @param ... Not currently implemented.
 #'
@@ -61,7 +60,7 @@ plotHeat <- function(dinteraction,
                      impLow = "white", impHigh = "firebrick1", top = NULL ,
                      title="",
                      minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL,
-                     dodge = 1, ...){
+                      ...){
 
 
 # -------------------------------------------------------------------------
@@ -93,7 +92,7 @@ plotHeat <- function(dinteraction,
 
   p <- ggplot(data = var_int,
               mapping = aes(x = var_num1, y = var_num2)) +
-    scale_x_continuous(breaks = index, labels = labelNames, position = "top", guide = guide_axis(n.dodge = dodge)) +
+    scale_x_continuous(breaks = index, labels = labelNames, position = "top") +
     scale_y_reverse(breaks = index, labels = labelNames) +
     geom_tile(aes(fill = `Interaction\nStrength`),
               alpha = var_int$alpha_int) +
@@ -114,7 +113,7 @@ plotHeat <- function(dinteraction,
   pp <- ggplot(data = var_int,
               mapping = aes(x = var_num1, y = var_num2)) +
     guides(fill = guide_colorbar(frame.colour = "black", frame.linewidth = 1.5)) +
-    scale_x_continuous(breaks = index, labels = labelNames, position = "top", guide = guide_axis(n.dodge = dodge)) +
+    scale_x_continuous(breaks = index, labels = labelNames, position = "top") +
     scale_y_reverse(breaks = index, labels = labelNames) +
     geom_tile(aes(fill = `Interaction\nStrength`),
                 alpha = var_int$alpha_int) +

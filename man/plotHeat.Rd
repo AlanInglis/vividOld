@@ -17,7 +17,6 @@ plotHeat(
   maxImp = NULL,
   minInt = 0,
   maxInt = NULL,
-  dodge = 1,
   ...
 )
 }
@@ -43,8 +42,6 @@ plotHeat(
 \item{minInt}{Minimum interaction strength to be displayed on the legend.}
 
 \item{maxInt}{Maximum interaction strength to be displayed on the legend.}
-
-\item{dodge}{Used to dodge overlapping x-axis text.}
 
 \item{...}{Not currently implemented.}
 

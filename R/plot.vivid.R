@@ -6,7 +6,6 @@
 #' @param x An object of class \code{vivid} created via vividMatrix.
 #' @param type Type of plot required.
 #' @param plotly If TRUE then an interactive plotly heatMap plot is displayed.
-#' @param dodge Used to dodge overlapping x-axis text on heatMap.
 #' @param intLow Colour, set by the user, to display low interaction strengths.
 #' @param intHigh Colour, set by the user, to display high interaction strengths.
 #' @param impLow Colour, set by the user, to display low importance values.
@@ -62,7 +61,7 @@ plot.vivid <- function(x,
                        # for heatmap
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
                        impLow = "white", impHigh = "firebrick1", top = NULL, reorder=TRUE,
-                       minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL, dodge = 1,
+                       minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL,
                        #for network
                        thresholdValue = 0,
                        label = FALSE,
@@ -149,7 +148,7 @@ plot.vivid <- function(x,
     plotlyPlot(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh,...)
 
   }else{plotHeat(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh,
-                 minImp=minImp, maxImp=maxImp, minInt=minInt, maxInt=maxInt, dodge = dodge,...)
+                 minImp=minImp, maxImp=maxImp, minInt=minInt, maxInt=maxInt,...)
   }
 
 }else if ('network'%in%type) {
