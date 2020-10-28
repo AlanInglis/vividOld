@@ -64,12 +64,11 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
     plan(future::cluster)
   }
 
-  #prob <- model$learner$type == "classif"
   prob <- model$task_type == "classif"
   data <-  task$data()
   data <- as.data.frame(data)
   target <- task$target_names
-  #data <- getTaskData(task)
+
 
   # make iml model
   if (prob){
@@ -81,6 +80,14 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
 
   # Get data for individual variables
   xdata <- pred.data$data$get.x()
+
+  # reordering mlr3 data order to match OG dataset
+  originalOrder <- task$backend$colnames
+  OG <- originalOrder[1:(length(originalOrder)-1)]
+  OG <- setdiff(OG, task$target_names)
+  xdata <- xdata[OG]
+
+
   if (!is.null(vars) & all(vars %in% names(xdata)))
     xdata <- xdata[,vars]
   xvar1 <- expand.grid(1:ncol(xdata), 1:ncol(xdata))[,2:1]
@@ -108,8 +115,15 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
 
   # Get data for pairs of variables
   xdata <- pred.data$data$get.x()
+  # reordering mlr3 data order to match OG dataset
+  originalOrder <- task$backend$colnames
+  OG <- originalOrder[1:(length(originalOrder)-1)]
+  OG <- setdiff(OG, task$target_names)
+  xdata <- xdata[OG]
+
+
   if (!is.null(vars) & all(vars %in% names(xdata)))
-    xdata <- xdata[,vars]
+  xdata <- xdata[,vars]
   xyvar <- expand.grid(1:ncol(xdata), 1:ncol(xdata))[,2:1]
   xyvar <- as.matrix(xyvar[xyvar[,1]<xyvar[,2],])
   xyvarn <- cbind(names(xdata)[xyvar[,1]], names(xdata)[xyvar[,2]])
@@ -191,7 +205,8 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
   yData <- pred.data$data$y
   yData <- as.numeric(unlist(yData))
   ggTitle <- model$id
-  #ggTitle <- model$learner$id
+
+
 
   if(corrVal == TRUE){
     GGscatterPlot <- function(data, mapping,method = corrMethod)
@@ -248,7 +263,7 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
   }else{
     default_fn <-  function(data, mapping)
       {
-        #Get correlation coefficient
+
         x <- eval_data_col(data, mapping$x)
         y <- eval_data_col(data, mapping$y)
 
@@ -279,6 +294,7 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
 
 
     p
+
 
   }
 
