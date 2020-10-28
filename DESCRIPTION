@@ -29,7 +29,8 @@ Imports:
     progress,
     future,
     ggalt,
-    flashlight
+    flashlight,
+    cowplot
 Suggests: 
     knitr,
     rmarkdown,

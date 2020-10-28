@@ -5,8 +5,8 @@
 \title{vividMatrix}
 \usage{
 vividMatrix(
+  task,
   model,
-  data,
   gridSize = 10,
   normalize = FALSE,
   n_max = 1000,
@@ -16,9 +16,9 @@ vividMatrix(
 )
 }
 \arguments{
-\item{model}{Any machine learning model.}
+\item{task}{Task created from the mlr package, either regression or classification.}
 
-\item{data}{A data.frame to be supplied}
+\item{model}{Any machine learning model.}
 
 \item{gridSize}{The size of the grid for evaluating the predictions.}
 

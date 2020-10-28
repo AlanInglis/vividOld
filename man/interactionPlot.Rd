@@ -13,7 +13,9 @@ interactionPlot(
   n_max = 1000,
   seed = NULL,
   sqrt = FALSE,
-  type = "lollipop"
+  type = "lollipop",
+  title = NULL,
+  label = FALSE
 )
 }
 \arguments{
@@ -32,6 +34,10 @@ interactionPlot(
 \item{sqrt}{In order to reproduce Friedman's H statistic, resulting values are root transformed. Set to FALSE if squared values should be returned.}
 
 \item{type}{The type of plot to display, either "lollipop" (default) or "barplot".}
+
+\item{title}{A title to be placed on the plot}
+
+\item{label}{Only compatible with plotType = "barplot". If TRUE then the interaction value is displayed at the end of each bar.}
 }
 \description{
 Plots a selected variable against all other variables in a model
