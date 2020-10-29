@@ -14,7 +14,8 @@
 #' @param maxInt Maximum interaction strength to be displayed on the legend.
 #' @param minImp Minimum importance value to be displayed on the legend.
 #' @param maxImp Maximum importance value to be displayed on the legend.
-#' @param title Adds title to the plot
+#' @param title Adds title to the plot.
+#' @param angle The angle to display the x-axis labels.
 #' @param ... Not currently implemented.
 #'
 #' @importFrom ggplot2 "ggplot"
@@ -60,6 +61,7 @@ plotHeat <- function(dinteraction,
                      impLow = "white", impHigh = "firebrick1", top = NULL ,
                      title="",
                      minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL,
+                     angle = NULL,
                       ...){
 
 
@@ -73,6 +75,11 @@ plotHeat <- function(dinteraction,
   dinteraction[dinteraction < 1.0e-5] <- 0
   nvar <- nrow(dinteraction)
   index <- 1:nvar
+
+  # set x-axis text angle
+  if(is.null(angle)){
+    angle <- 0
+  }else{angle = angle}
 
   # Set up plot -------------------------------------------------------
 
@@ -107,7 +114,7 @@ plotHeat <- function(dinteraction,
     theme_light() +
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank()) +
-    theme(axis.text.x  = element_text(angle=45, hjust = 0)) +
+    theme(axis.text.x  = element_text(angle = angle, hjust = 0)) +
     theme(legend.position = "none")
 
   pp <- ggplot(data = var_int,

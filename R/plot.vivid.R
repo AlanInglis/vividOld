@@ -10,6 +10,7 @@
 #' @param intHigh Colour, set by the user, to display high interaction strengths.
 #' @param impLow Colour, set by the user, to display low importance values.
 #' @param impHigh Colour, set by the user, to display high importance values.
+#' @param angle The angle to display the x-axis labels.
 #' @param top Returns the first part of the interaction matrix and resulting plot. Similar to head() function.
 #' For use with \code{"heatMap"} and \code{"allInteractions"}.
 #' @param reorder If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances.
@@ -61,7 +62,7 @@ plot.vivid <- function(x,
                        # for heatmap
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
                        impLow = "white", impHigh = "firebrick1", top = NULL, reorder=TRUE,
-                       minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL,
+                       minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL, angle = NULL,
                        #for network
                        thresholdValue = 0,
                        label = FALSE,
@@ -148,7 +149,7 @@ plot.vivid <- function(x,
     plotlyPlot(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh,...)
 
   }else{plotHeat(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh,
-                 minImp=minImp, maxImp=maxImp, minInt=minInt, maxInt=maxInt,...)
+                 minImp=minImp, maxImp=maxImp, minInt=minInt, maxInt=maxInt,angle = angle,...)
   }
 
 }else if ('network'%in%type) {
