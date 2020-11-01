@@ -119,7 +119,7 @@ plotHeat <- function(dinteraction,
 
   pp <- ggplot(data = var_int,
               mapping = aes(x = var_num1, y = var_num2)) +
-    guides(fill = guide_colorbar(frame.colour = "black", frame.linewidth = 1.5)) +
+    guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5)) +
     scale_x_continuous(breaks = index, labels = labelNames, position = "top") +
     scale_y_reverse(breaks = index, labels = labelNames) +
     geom_tile(aes(fill = `Interaction\nStrength`),
@@ -130,7 +130,7 @@ plotHeat <- function(dinteraction,
 
   ppp <- ggplot(data = var_int,
                mapping = aes(x = var_num1, y = var_num2)) +
-    guides(fill = guide_colorbar(frame.colour = "black", frame.linewidth = 1.5)) +
+    guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5)) +
      geom_tile(aes(fill = `Variable\nImportance`),
                  alpha = var_int$alpha_imp) +
   scale_fill_gradient(low = impLow ,high = impHigh, limits=c(minImp, maxImp)) +

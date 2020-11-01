@@ -30,6 +30,8 @@
 #' @importFrom grDevices "blues9"
 #' @importFrom reshape "melt"
 #' @importFrom ggalt "geom_encircle"
+#' @importFrom cowplot "get_legend"
+#' @importFrom cowplot "plot_grid"
 #'
 #' @examples
 #' # Load in the data:
@@ -202,19 +204,19 @@ plotNet <- function(dinteraction,
 
   if(cluster){
 
-    l_1 <- layout_with_fr(net.sp)
+    l_1 <- layout_in_circle(net.sp)
     com <- clusterType(net.sp)
     V(net.sp)$color <- com$membership
     group <- V(net.sp)$color
     group <- factor(group)
 
 
-    g <- set_graph_attr(net.sp, "layout", layout_with_fr(net.sp))
+    g <- set_graph_attr(net.sp, "layout", layout_in_circle(net.sp))
     colrs <- adjustcolor( c("yellow", "red", "blue", "black","purple",
                             "orange", "pink", "green", "red" , "blue"))
     colorC <- colrs[group]
 
-    pp <- ggnet2(g,
+    pcl <- ggnet2(g,
                  mode = l_1,
                  size = 0,
                  edge.size = edgeW,
@@ -230,7 +232,37 @@ plotNet <- function(dinteraction,
       geom_point(aes(fill = 0), size = -1) +
       scale_fill_continuous( name = "Interaction\nStrength",
                              limits=c(minInt, maxInt),
-                             low = "floralwhite" ,high = "dodgerblue4")
+                             low = "floralwhite" ,high = "dodgerblue4") +
+      theme(legend.position = "none")
+
+
+    ppcl <- ggnet2(g,
+                  mode = l_1,
+                  size = 0,
+                  edge.size = edgeW,
+                  edge.label = edgeL,
+                  edge.color = edgeCols) +
+      theme(legend.text = element_text(size = 10)) +
+      geom_label(aes(label = nam),nudge_y = labelNudge) +
+      geom_point(aes(fill = Imp1), size = Imp*2, col = "transparent", shape = 21) +
+      scale_fill_continuous(name = "Variable\nImportance",
+                            limits=c(minImp, maxImp),
+                            low = "floralwhite" ,high = "firebrick1") +
+      guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5))
+
+
+           pppcl <- ggnet2(g,
+                           mode = l_1,
+                           size = 0,
+                           edge.size = edgeW,
+                           edge.label = edgeL,
+                           edge.color = edgeCols) +
+      geom_point(aes(fill = 0), size = -1) +
+      scale_fill_continuous( name = "Interaction\nStrength",
+                             limits=c(minInt, maxInt),
+                             low = "floralwhite" ,high = "dodgerblue4")+
+      guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5))
+
 
 
     groupV <- as.vector(group)
@@ -238,11 +270,23 @@ plotNet <- function(dinteraction,
                   "orange", "pink", "green", "red" , "blue")
     colCluster <- fillCols[group]
     colCluster <- as.vector(colCluster)
-    pp <- pp + geom_encircle(aes(group = groupV),
+    pcl <- pcl + geom_encircle(aes(group = groupV),
                              alpha = 0.2,
+                             expand = 0,
                              fill = colCluster)
 
-    return(pp)
+    # Grab the legends using cowplot::get_legend()
+    pcl2_legend <- get_legend(ppcl)
+    pcl3_legend <- get_legend(pppcl)
+
+    # Combine the legends one on top of the other
+    legendsCl <- plot_grid(pcl2_legend, pcl3_legend, ncol = 1, nrow = 2)
+
+    # Combine the heatmap with the legends
+    endPlotCl <- plot_grid(pcl, legendsCl, ncol = 2, align = "h",
+                           scale = c(1, 0.8), rel_widths = c(0.9, 0.1))
+
+    return(endPlotCl)
   }else{
     p <- ggnet2(net.sp, mode = l,
                 size = 0,
@@ -259,9 +303,48 @@ plotNet <- function(dinteraction,
       geom_point(aes(fill = 0), size = -1) +
       scale_fill_continuous(name = "Interaction\nStrength",
                             limits=c(minInt, maxInt),
-                            low = "floralwhite" ,high = "dodgerblue4")
+                            low = "floralwhite" ,high = "dodgerblue4") +
+      theme(legend.position = "none")
 
-    return(p)
+
+
+
+     pp <-  ggnet2(net.sp, mode = l,
+                       size = 0,
+                       edge.size = edgeW,
+                       edge.label = edgeL,
+                       edge.color = edgeCols) +
+       theme(legend.text = element_text(size = 10)) +
+       geom_label(aes(label = nam),nudge_y = labelNudge) +
+       geom_point(aes(fill = Imp1), size = Imp*2, colour = "transparent", shape = 21) +
+       scale_fill_continuous(name = "Variable\nImportance",
+                             limits=c(minImp, maxImp),
+                             low = "floralwhite" ,high = "firebrick1") +
+       guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5))
+
+     ppp <- ggnet2(net.sp, mode = l,
+                         size = 0,
+                         edge.size = edgeW,
+                         edge.label = edgeL,
+                         edge.color = edgeCols) +
+       geom_point(aes(fill = 0), size = -1) +
+       scale_fill_continuous(name = "Interaction\nStrength",
+                             limits=c(minInt, maxInt),
+                             low = "floralwhite" ,high = "dodgerblue4") +
+       guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5))
+
+     # Grab the legends using cowplot::get_legend()
+     p2_legend <- get_legend(pp)
+     p3_legend <- get_legend(ppp)
+
+     # Combine the legends one on top of the other
+     legends <- plot_grid(p2_legend, p3_legend, ncol = 1, nrow = 2)
+
+     # Combine the heatmap with the legends
+     endPlot <- plot_grid(p, legends, ncol = 2, align = "h",
+                          scale = c(1, 0.8), rel_widths = c(0.9, 0.1))
+
+    return(endPlot)
   }
 }
 
