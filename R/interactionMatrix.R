@@ -44,7 +44,9 @@
 
 
 vividMatrix <- function(task, model, gridSize = 10, normalize = FALSE, n_max = 1000,
-                        seed = NULL, sqrt = FALSE,...){
+                        seed = NULL, sqrt = FALSE, reorder = TRUE, ...){
+
+
 
     FLobject <- flash(task, model)
     fl <- FLobject
@@ -55,6 +57,21 @@ vividMatrix <- function(task, model, gridSize = 10, normalize = FALSE, n_max = 1
                     seed = seed, sqrt = sqrt)
 
     diag(flInt) <- vImp
+
+    if (reorder){
+      vimp <- diag(flInt)
+      vimp <- (vimp-min(vimp))/max(vimp) # scale to 0-1 for consistency with interactions
+      vimp <- sqrt(outer(vimp, vimp)) # make a matrix
+
+      maxinteraction <- max(as.dist(flInt))
+      maxvimp <- max(as.dist(vimp))
+      intVals <- lower.tri(flInt)
+      minInteraction <- min(intVals)
+
+      # give equal weight to both interaction and varimp
+      o <- dser( -as.dist(vimp/maxvimp + flInt/maxinteraction), cost=costLPL)
+      flInt <- flInt[o,o]
+    }
 
     class(flInt) <- c("vivid", class(flInt))
     return(flInt)
