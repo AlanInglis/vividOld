@@ -17,6 +17,7 @@
 #' @param gridsize for the pdp/ale plots, defaults to 10.
 #' @param class For a classification model, show the probability of this class. Defaults to 1.
 #' @param cardinality Manually set the cardinality.
+#' @param mat If passed a matrix of class 'vivid' then the ggPDPpairs plot will be reordered to match the order of the matrix.
 #' @param ... Not currently implemented.
 #'
 #' @return A ggpairs style plot displaying the partial dependence.
@@ -55,9 +56,12 @@
 #'
 #' @export
 
-ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = "p",
-                       parallel = FALSE, vars=NULL, colLow = "#D7191C", colMid = "#FFFFBF", colHigh = "#2B83BA",
-                       fitlims = NULL,gridsize = 10,class=1,cardinality = 20, ...){
+ggpdpPairs <- function(task, model, method = "pdp",
+                       corrVal = FALSE, corrMethod = "p",
+                       parallel = FALSE, vars = NULL,
+                       colLow = "#D7191C", colMid = "#FFFFBF", colHigh = "#2B83BA",
+                       fitlims = NULL, gridsize = 10, class = 1, cardinality = 20,
+                       mat = NULL, ...){
 
   # Set up registered cluster for parallel
   if(parallel){
@@ -81,11 +85,17 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
   # Get data for individual variables
   xdata <- pred.data$data$get.x()
 
+
+
+  if(is.null(mat)){
   # reordering mlr3 data order to match OG dataset
   originalOrder <- task$backend$colnames
   OG <- originalOrder[1:(length(originalOrder)-1)]
   OG <- setdiff(OG, task$target_names)
   xdata <- xdata[OG]
+  }else{newOrder <- colnames(mat)
+  xdata <- xdata[newOrder]}
+
 
 
   if (!is.null(vars) & all(vars %in% names(xdata)))
@@ -116,10 +126,14 @@ ggpdpPairs <- function(task, model, method="pdp", corrVal = FALSE, corrMethod = 
   # Get data for pairs of variables
   xdata <- pred.data$data$get.x()
   # reordering mlr3 data order to match OG dataset
-  originalOrder <- task$backend$colnames
-  OG <- originalOrder[1:(length(originalOrder)-1)]
-  OG <- setdiff(OG, task$target_names)
-  xdata <- xdata[OG]
+  if(is.null(mat)){
+    # reordering mlr3 data order to match OG dataset
+    originalOrder <- task$backend$colnames
+    OG <- originalOrder[1:(length(originalOrder)-1)]
+    OG <- setdiff(OG, task$target_names)
+    xdata <- xdata[OG]
+  }else{newOrder <- colnames(mat)
+  xdata <- xdata[newOrder]}
 
 
   if (!is.null(vars) & all(vars %in% names(xdata)))
