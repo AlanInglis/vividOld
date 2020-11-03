@@ -101,7 +101,8 @@ if(plotType != "barplot" && plotType != "lollipop"){
     # barplot
     pp <-  ggplot(df, aes(x = reorder(xy, value), y = value)) +
       geom_col(aes(fill = value)) +
-      scale_fill_gradient(low = "floralwhite",
+      scale_fill_gradient(name = "Interaction\nStrength",
+                          low = "floralwhite",
                           high = "dodgerblue4") +
       theme_minimal() +
       xlab('Features ') +

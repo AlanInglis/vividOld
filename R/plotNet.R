@@ -272,7 +272,7 @@ plotNet <- function(dinteraction,
     colCluster <- as.vector(colCluster)
     pcl <- pcl + geom_encircle(aes(group = groupV),
                              alpha = 0.2,
-                             expand = 0,
+                             expand = 0.03,
                              fill = colCluster)
 
     # Grab the legends using cowplot::get_legend()
