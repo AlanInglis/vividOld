@@ -19,6 +19,7 @@ ggpdpPairs(
   gridsize = 10,
   class = 1,
   cardinality = 20,
+  mat = NULL,
   ...
 )
 }
@@ -51,6 +52,8 @@ One of "pearson" (default), "kendall", or "spearman".}
 \item{class}{For a classification model, show the probability of this class. Defaults to 1.}
 
 \item{cardinality}{Manually set the cardinality.}
+
+\item{mat}{If passed a matrix then the ggPDPpairs plot will be reordered to match the order of the matrix.}
 
 \item{...}{Not currently implemented.}
 }

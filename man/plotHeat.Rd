@@ -17,6 +17,7 @@ plotHeat(
   maxImp = NULL,
   minInt = 0,
   maxInt = NULL,
+  angle = NULL,
   ...
 )
 }
@@ -33,7 +34,7 @@ plotHeat(
 
 \item{top}{Returns the first part of the interaction matrix and resulting plot. Similar to head() function.}
 
-\item{title}{Adds title to the plot}
+\item{title}{Adds title to the plot.}
 
 \item{minImp}{Minimum importance value to be displayed on the legend.}
 
@@ -42,6 +43,8 @@ plotHeat(
 \item{minInt}{Minimum interaction strength to be displayed on the legend.}
 
 \item{maxInt}{Maximum interaction strength to be displayed on the legend.}
+
+\item{angle}{The angle to display the x-axis labels.}
 
 \item{...}{Not currently implemented.}
 

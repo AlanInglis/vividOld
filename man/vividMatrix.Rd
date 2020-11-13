@@ -12,6 +12,7 @@ vividMatrix(
   n_max = 1000,
   seed = NULL,
   sqrt = FALSE,
+  reorder = TRUE,
   ...
 )
 }

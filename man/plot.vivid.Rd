@@ -17,6 +17,7 @@
   maxImp = NULL,
   minInt = 0,
   maxInt = NULL,
+  angle = NULL,
   thresholdValue = 0,
   label = FALSE,
   labelNudge = 0.05,
@@ -53,6 +54,8 @@ For use with \code{"heatMap"} and \code{"allInteractions"}.}
 \item{minInt}{Minimum interaction strength to be displayed on the legend.}
 
 \item{maxInt}{Maximum interaction strength to be displayed on the legend.}
+
+\item{angle}{The angle to display the x-axis labels.}
 
 \item{thresholdValue}{A value chosen by the user which will show all the edges with weights (i.e., the interacions) above that value.
 For example, if thresholdValue = 0.2, then only the the interacions greater than 0.2 will be displayed.
