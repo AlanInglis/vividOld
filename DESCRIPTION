@@ -30,7 +30,8 @@ Imports:
     future,
     ggalt,
     flashlight,
-    cowplot
+    cowplot, 
+    zenplots
 Suggests: 
     knitr,
     rmarkdown,
