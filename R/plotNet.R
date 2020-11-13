@@ -193,6 +193,7 @@ plotNet <- function(dinteraction,
   # Whether to show edge label
   if(label == T){
     edgeL <- edgeL
+    edgeL <- round(edgeL, 3)
   }else{edgeL <- NULL}
 
 
@@ -264,16 +265,18 @@ plotNet <- function(dinteraction,
       guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5))
 
 
-
+    # Group clusters
     groupV <- as.vector(group)
     fillCols <- c("yellow", "red", "blue", "black","purple",
                   "orange", "pink", "green", "red" , "blue")
     colCluster <- fillCols[group]
     colCluster <- as.vector(colCluster)
     pcl <- pcl + geom_encircle(aes(group = groupV),
+                             spread=0.01,
                              alpha = 0.2,
                              expand = 0.03,
                              fill = colCluster)
+
 
     # Grab the legends using cowplot::get_legend()
     pcl2_legend <- get_legend(ppcl)
@@ -286,7 +289,8 @@ plotNet <- function(dinteraction,
     endPlotCl <- plot_grid(pcl, legendsCl, ncol = 2, align = "h",
                            scale = c(1, 0.8), rel_widths = c(0.9, 0.1))
 
-    return(endPlotCl)
+    myList <- list(endPlotCl, groupV)
+    return(myList)
   }else{
     p <- ggnet2(net.sp, mode = l,
                 size = 0,
@@ -340,7 +344,7 @@ plotNet <- function(dinteraction,
      # Combine the legends one on top of the other
      legends <- plot_grid(p2_legend, p3_legend, ncol = 1, nrow = 2)
 
-     # Combine the heatmap with the legends
+     # Combine the network with the legends
      endPlot <- plot_grid(p, legends, ncol = 2, align = "h",
                           scale = c(1, 0.8), rel_widths = c(0.9, 0.1))
 
