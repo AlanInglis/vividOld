@@ -17,7 +17,7 @@
 #' @param gridsize for the pdp/ale plots, defaults to 10.
 #' @param class For a classification model, show the probability of this class. Defaults to 1.
 #' @param cardinality Manually set the cardinality.
-#' @param mat If passed a matrix of class 'vivid' then the ggPDPpairs plot will be reordered to match the order of the matrix.
+#' @param mat If passed a matrix then the ggPDPpairs plot will be reordered to match the order of the matrix.
 #' @param ... Not currently implemented.
 #'
 #' @return A ggpairs style plot displaying the partial dependence.
@@ -94,7 +94,8 @@ ggpdpPairs <- function(task, model, method = "pdp",
   OG <- setdiff(OG, task$target_names)
   xdata <- xdata[OG]
   }else{newOrder <- colnames(mat)
-  xdata <- xdata[newOrder]}
+  xdata <- xdata[newOrder]
+  }
 
 
 
