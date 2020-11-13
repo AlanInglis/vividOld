@@ -26,32 +26,30 @@ library(vivid)
 
 ## Step 2: Create an `mlr3` model:
 
-For example, using the Abalone data from the `AppliedPredictiveModeling` package, 
-we create a 'mlr3' model that utilizes the `ranger` package. First we load the required libraries:
+For example, using simulated data from the Friedman benchmark problem 1, 
+we create a `mlr3` model and fit a  `ranger` random forest First we load the required libraries:
 
 ```{r}
 library(mlr3)  # To create a model
 library(mlr3learners)
-library(AppliedPredictiveModeling) # To get the abalone data
 library(ranger)
 ```
 
 Then load the data:
 
 ```{r, messages = FALSE}
-data(abalone)
-ab <- data.frame(abalone)
-ab <- na.omit(ab)
-ab <- ab[1:500,]
+myData <- genFriedman(noFeatures = 10, noSamples = 250, sigma = 1, bins = NULL, seed = NULL)
 ```
 
-Then create the `mlr3` model, using `Rings` as the response:
+Then create the `mlr3` model, using `y` as the response:
 
 ```{r}
 set.seed(1701)
-ab_task  <- TaskRegr$new(id = "abalone", backend = ab, target = "Rings")
-ab_lrn <- lrn("regr.ranger", importance = "permutation")
-ab_mod <- ab_lrn$train(ab_task)
+fr_task  <- TaskRegr$new(id = "Friedman", backend = myData, target = "y")
+set.seed(1701)
+fr_lrn <- lrn("regr.ranger", importance = "permutation")
+set.seed(1701)
+fr_mod <- fr_lrn$train(fr_task)
 ```
 
 
@@ -59,9 +57,8 @@ Create a matrix of interaction/importance values using the `vivid` package:
 
 ```{r, message = F, warning = F}
 set.seed(1701)
-myMatrix <- vividMatrix(task = ab_task,  model = ab_mod, 
-                     remove = FALSE, percentRemove = 0, parallel = F)
-
+myMatrix <- vividMatrix(task = fr_task, model = fr_mod, gridSize = 30,                                normalize = FALSE, seed = NULL,
+                         sqrt = FALSE, reorder = TRUE)
 ```
 
 Create a HeatMap style plot displaying the importance on the diagonal and interactions on the off-diagonal:
@@ -86,7 +83,7 @@ Create a partial dependence pair style plot:
 
 ```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
-ggpdpPairs(task = ab_task, model =  ab_mod)
+ggpdpPairs(task = fr_task, model = fr_mod, gridsize = 10, mat = myMatrix)
 ```
 
 Create a plot displaying all interactions:
@@ -98,7 +95,7 @@ plot(myMatrix, type = "allInteractions", top = 0)
 Create a plot displaying the overall interaction strength:
 
 ```{r, fig.width = 8, fig.height = 7, message=F, warning=F}
-interactionPlot(task = ab_task, model = ab_mod, type = "barplot")
+interactionPlot(model =  fr_mod, data = myData, type = "barplot")
 ```
 
 Create a plot displaying just the variable importance:
