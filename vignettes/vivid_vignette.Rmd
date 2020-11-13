@@ -46,19 +46,19 @@ library(mlr3learners)
 
 ## Data used in this vignette:
 
-The data used in the following examples is simulated from the Friedman benchmark problem 1^[Friedman, Jerome H. (1991) Multivariate adaptive regression splines. The Annals of Statistics 19 (1), pages 1-67.] using thw `genFriedman()` function. This benchmark problem is commonly used for testing purposes. The output is created according to the equation:
+The data used in the following examples is simulated from the Friedman benchmark problem 1^[Friedman, Jerome H. (1991) Multivariate adaptive regression splines. The Annals of Statistics 19 (1), pages 1-67.] using the `genFriedman()` function. This benchmark problem is commonly used for testing purposes. The output is created according to the equation:
 
 
 <center>
 $$y = 10 sin(π x1 x2) + 20 (x3 - 0.5)^2 + 10 x4 + 5 x5 + e$$
 </center>
 
-For the following examples we set the number of features to equal 10 and the number of samples is set to 200 and fit an `mlr3` `ranger` random forest model with $y$ as the response. As the features $x_1$ to $x_5$ are the only variables in the model, $x_6$ to $x_{10}$ are noise variables. As can be seen by the above equation, the only interaction is between $x_1$ and $x_2$
+For the following examples we set the number of features to equal 10 and the number of samples is set to 250 and fit an `mlr3` `ranger` random forest model with $y$ as the response. As the features $x_1$ to $x_5$ are the only variables in the model, therefore $x_6$ to $x_{10}$ are noise variables. As can be seen by the above equation, the only interaction is between $x_1$ and $x_2$
   
 
 Create  the data:
 ```{r, messages = FALSE}
-myData <- genFriedman(noFeatures = 10, noSamples = 200, sigma = 1, bins = NULL, seed = NULL)
+myData <- genFriedman(noFeatures = 10, noSamples = 250, sigma = 1, bins = NULL, seed = NULL)
 ```
 
 Create an `mlr3` `ranger` random forest model:
@@ -79,7 +79,7 @@ Create a matrix to be supplied to the plotting functions.
 
 ```{r, message = F, warning = F}
 set.seed(1701)
-myMatrix <- vividMatrix(task = fr_task, model = fr_mod, gridSize = 20,                                normalize = FALSE, seed = NULL,
+myMatrix <- vividMatrix(task = fr_task, model = fr_mod, gridSize = 30,                                normalize = FALSE, seed = NULL,
                          sqrt = FALSE, reorder = TRUE)
 
 ```
