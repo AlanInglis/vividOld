@@ -56,9 +56,17 @@ vividMatrix <- function(task, model, gridSize = 10, normalize = FALSE, n_max = 1
     flInt <- FLfunc(fl, task, model, gridSize = gridSize,  normalize = normalize, n_max = n_max,
                     seed = seed, sqrt = sqrt)
 
+    if(length(colnames(flInt)) == length(vImp)){
     diag(flInt) <- vImp
+    }else{vImp <- vImp[1:length(colnames(flInt))]
+    diag(flInt) <- vImp}
+
+    flInt[is.nan(flInt)] <- 0
+    flInt[is.na(flInt)] <- 0
+    flInt[(flInt <= 0)] <- 0
 
     if (reorder){
+      flInt[(flInt == 0)] <- 0.000001
       vimp <- diag(flInt)
       vimp <- (vimp-min(vimp))/max(vimp) # scale to 0-1 for consistency with interactions
       vimp <- sqrt(outer(vimp, vimp)) # make a matrix
@@ -145,9 +153,9 @@ FLfunc <- function(fl, task, model, gridSize = gridSize, normalize = normalize, 
 
 
 
-        res <- c(res, light_interaction(fl, pairwise = TRUE, type = "H", grid_size = gridSize,
+        res <- light_interaction(fl, pairwise = TRUE, type = "H", grid_size = gridSize,
                                         normalize = normalize, n_max = n_max,
-                                        seed = seed, sqrt = sqrt)$data)
+                                        seed = seed, sqrt = sqrt)$data
 
 
 
@@ -160,8 +168,6 @@ FLfunc <- function(fl, task, model, gridSize = gridSize, normalize = normalize, 
     rownames(dinteraction) <- colnames(dinteraction) <- ovars                 # set names
     dinteraction[vars2] <- res[["value"]]                                     # set values
     dinteraction[lower.tri(dinteraction)] = t(dinteraction)[lower.tri(dinteraction)]
-    #dinteraction[is.nan(dinteraction)] <- 0.000000001
-    #dinteraction[(dinteraction <= 0)] <- 0.000000001
     dinteraction
 }
 
