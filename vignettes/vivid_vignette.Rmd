@@ -42,7 +42,6 @@ To begin, we load the required packages. `mlr3` and `mlr3learners` will be used 
 library(vivid)
 library(mlr3)  # To create a model
 library(mlr3learners)
-library(AppliedPredictiveModeling) # To get the abalone data
 ```
 
 ## Data used in this vignette:
@@ -54,12 +53,12 @@ The data used in the following examples is simulated from the Friedman benchmark
 $$y = 10 sin(π x1 x2) + 20 (x3 - 0.5)^2 + 10 x4 + 5 x5 + e$$
 </center>
 
-For the following examples we set the number of features to equal 10 and the number of samples is set to 1000 and fit an `mlr3` `ranger` random forest model with $y$ as the response. As the features $x_1$ to $x_5$ are the only variables in the model, $x_6$ to $x_{10}$ are noise variables. As can be seen by the above equation, the only interaction is between $x_1$ and $x_2$
+For the following examples we set the number of features to equal 10 and the number of samples is set to 200 and fit an `mlr3` `ranger` random forest model with $y$ as the response. As the features $x_1$ to $x_5$ are the only variables in the model, $x_6$ to $x_{10}$ are noise variables. As can be seen by the above equation, the only interaction is between $x_1$ and $x_2$
   
 
 Create  the data:
 ```{r, messages = FALSE}
-myData <- genFriedman(noFeatures = 10, noSamples = 1000, sigma = 1, bins = NULL, seed = NULL)
+myData <- genFriedman(noFeatures = 10, noSamples = 200, sigma = 1, bins = NULL, seed = NULL)
 ```
 
 Create an `mlr3` `ranger` random forest model:
@@ -80,7 +79,7 @@ Create a matrix to be supplied to the plotting functions.
 
 ```{r, message = F, warning = F}
 set.seed(1701)
-myMatrix <- vividMatrix(task = fr_task, model = fr_mod, gridSize = 100,                                normalize = FALSE, seed = NULL,
+myMatrix <- vividMatrix(task = fr_task, model = fr_mod, gridSize = 20,                                normalize = FALSE, seed = NULL,
                          sqrt = FALSE, reorder = TRUE)
 
 ```
@@ -158,7 +157,7 @@ The PD pairs plot can also be passed the `vivid` matrix by way of a function arg
 
 
 To call the pdp pairs plot we use:
-```{r, fig.width = 8, fig.height = 7, eval = F}
+```{r, fig.width = 8, fig.height = 7}
 set.seed(1701)
 ggpdpPairs(task = fr_task, model = fr_mod, gridsize = 10, mat = myMatrix)
 ```
@@ -193,9 +192,9 @@ The `interactionPlot()` function creates a plot, displaying the overall interact
 **Example**
 
 To call the interaction plot we use:
-```{r, fig.width = 8, fig.height = 7, message=F, warning=F, eval = F}
+```{r, fig.width = 8, fig.height = 7, message=F, warning=F}
 set.seed(1701)
-interactionPlot(model =  ab_mod, data = ab, type = "barplot")
+interactionPlot(model =  fr_mod, data = myData, type = "barplot")
 ```
 <center>
 Fig 5.0: *A plot displaying the overall interaction strength for each variable in a model.*
