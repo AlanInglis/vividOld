@@ -36,7 +36,7 @@ size of a node represents variable importance (the bigger the node, the
 more important the variable) and the edge weight represents the 2-way
 interaction strength. Also included is a partial dependence pairs-style plot that displays 2D partial dependence plots, individual ice curves and a scatter-plot, in the one display. The interaction is calculated using *Friedman’s H-Statistic*^[Friedman, H. and Popescu, B.E. Predictive learning via rule ensemble. The Annals of Applied Statistics. 2008. 916-954]
 
-To begin, we load the required packages. `mlr3` and `mlr3learners` will be used to create a `ranger` regression model and the `AppliedPredictiveModeling` package is used to obtain the data. 
+To begin, we load the required packages. `vivid` to create the vusualisations and `mlr3` and `mlr3learners` will be used to create a `ranger` regression model. 
 
 ```{r, message=FALSE, warnings = F}
 library(vivid)
