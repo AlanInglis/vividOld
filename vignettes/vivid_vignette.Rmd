@@ -47,57 +47,45 @@ library(AppliedPredictiveModeling) # To get the abalone data
 
 ## Data used in this vignette:
 
-The data used in the following examples is the *abalone* data from the `AppliedPredictiveModeling` package^[AppliedPredictiveModeling: Functions and Data Sets for 'Applied Predictive Modeling'. M. Kuhn and K. Johnson. 2018. https://CRAN.R-project.org/package=AppliedPredictiveModeling] which contains measurements obtained from 4177 abalones. The data contains measurements of the type (male, female and infant), the longest shell measurement, the diameter, height and whole, shucked, viscera and shell weights. The response variable is rings. The age of the abalone can be determined by counting the rings plus 1.5.
-The variables are described as follows:
+The data used in the following examples is simulated from the Friedman benchmark problem 1^[Friedman, Jerome H. (1991) Multivariate adaptive regression splines. The Annals of Statistics 19 (1), pages 1-67.] using thw `genFriedman()` function. This benchmark problem is commonly used for testing purposes. The output is created according to the equation:
 
-  - Rings: +1.5 gives the age in years.
 
-  - Longest shell: Longest shell measurement (mm).
+<center>
+$$y = 10 sin(π x1 x2) + 20 (x3 - 0.5)^2 + 10 x4 + 5 x5 + e$$
+</center>
 
-  - Diameter: Perpendicular to length (mm).
-
-  - Height: With meat in shell (mm).
-
-  - Whole weight: Whole abalone (gm).
-
-  - Shucked weight: Weight of meat (gm).
+For the following examples we set the number of features to equal 10 and the number of samples is set to 1000 and fit an `mlr3` `ranger` random forest model with $y$ as the response. As the features $x_1$ to $x_5$ are the only variables in the model, $x_6$ to $x_{10}$ are noise variables. As can be seen by the above equation, the only interaction is between $x_1$ and $x_2$
   
-  - Viscera weight: Gut weight (after bleeding) (gm).
-  
-  - Shell weight: After being dried (gm).
 
-In all the following examples, a subset of the data is used and *Rings* is used as the response variable.
-
-Load in the data:
+Create  the data:
 ```{r, messages = FALSE}
-data(abalone)
-ab <- data.frame(abalone)
-ab <- na.omit(ab)
-ab <- ab[1:500,]
+myData <- genFriedman(noFeatures = 10, noSamples = 1000, sigma = 1, bins = NULL, seed = NULL)
 ```
 
-Create an `mlr3` `ranger` model:
+Create an `mlr3` `ranger` random forest model:
 
 ```{r}
 set.seed(1701)
-ab_task  <- TaskRegr$new(id = "abalone", backend = ab, target = "Rings")
-ab_lrn <- lrn("regr.ranger", importance = "permutation")
-ab_mod <- ab_lrn$train(ab_task)
+fr_task  <- TaskRegr$new(id = "Friedman", backend = myData, target = "y")
+set.seed(1701)
+fr_lrn <- lrn("regr.ranger", importance = "permutation")
+set.seed(1701)
+fr_mod <- fr_lrn$train(fr_task)
 ```
 
-To begin, we use the `vividMatrix` function from `vivid` to create a symmetrical matrix filled with pair-wise interaction strengths and variable importance on the diagonal. 
-The `vividMatrix` uses Friedman's H-Statistic to calculate the pair-wise interaction strength and uses embedded feature selection methods to determine the variable importance. If the supplied learner does not support an embedded variable importance measure, an agnostic approach will be applied to generate the importance values. This function takes in any task, learner and model created from the `mlr3` package and results in a matrix which can be supplied to the plotting functions in the `vivid` package. However, if the user wishes, they can supply their own matrix to plot. The `parallel` argument (default is FALSE) allows the user to run the interaction calculation in parallel.
+To begin, we use the `vividMatrix` function to create a symmetrical matrix filled with pair-wise interaction strengths and variable importance on the diagonal. 
+The `vividMatrix` uses Friedman's unnormalized H-Statistic to calculate the pair-wise interaction strength and uses embedded feature selection methods to determine the variable importance. If the supplied learner does not support an embedded variable importance measure, an agnostic approach will be applied automatically to generate the importance values. This function takes in any task, learner and model created from the `mlr3` package and results in a matrix of class `vivid` which can be supplied to the plotting functions. 
 
 Create a matrix to be supplied to the plotting functions.
 
 ```{r, message = F, warning = F}
 set.seed(1701)
-myMatrix <- vividMatrix(task = ab_task, model = ab_mod, remove = FALSE, 
-                     percentRemove = 0, parallel = F)
+myMatrix <- vividMatrix(task = fr_task, model = fr_mod, gridSize = 100,                                normalize = FALSE, seed = NULL,
+                         sqrt = FALSE, reorder = TRUE)
 
 ```
 
-As calculating the H-statistic can be a computationally expensive process, the `vividMatrix()` function has the ability to be calculated in parallel (default is `FALSE`). Also, the `remove` argument (default is `FALSE`) will perform a feature selection method and will remove a certain percentage of variables (defined by the user by the `percentRemove` argument) with the lowest interaction strength, and will vastly improve the calculation speed.
+The unnormalized version of the H-statistic was chosen to have a more direct comparison of interaction effects across pairs of variables and the results of H are onthe scale of the response. 
 
 Taking a quick look at the created matrix, we can see that it shows the pair-wise interaction strengths for each of the variables, with variable importance on the diagonal.
 
@@ -125,7 +113,7 @@ plot(myMatrix, type = "heatMap", plotly = F,
 Fig 1.0: *Heat-map style plot displaying 2-way interaction strength in blue and individual variable importance on the diagonal in red.*
 </center>
 
-In Figure 1.0, variable importance is placed on the diagonal and is displayed using a gradient of white to red, representing the low to high values of importance. In a similar manner, variable interaction is displayed using a gradient of white to dark blue, representing the low to high values of interaction strength. Plotting both the importance and the interactions from the `vivid` package can save time and minimize complications for a researcher. From the above plot we can see that `Diameter:VisceraWeight` weight has the strongest interaction and `Dianmeter` is the most important variable for predicting `rings`. Traditional visualization techniques are commonly drawn with the order of variables appearing as how they are listed in the data. It has been shown^[ E.Friendly, F. Kwan.   Effect ordering for data displays. Computational Statistics Data Analysis, 43:509–539, 2003.] that reordering the data can help improve visualizations by making them more easily interpreted. The plot in Figure 1.0 also utilizes the `DendSer`^[Catherine B. Hurley and Denise Earle.DendSer: Dendrogram seriation: ordering for visualisation, 2013. R package version 1.0.1] package to _push_ all the relevant values to the top left of the plot. This is done to enable models to be plotted neatly and to allow the user to quickly see which variables are influential in a model.  This is particularly useful for large datasets. 
+In Figure 1.0, variable importance is placed on the diagonal and is displayed using a gradient of white to red, representing the low to high values of importance. In a similar manner, variable interaction is displayed using a gradient of white to dark blue, representing the low to high values of interaction strength. Plotting both the importance and the interactions from the `vivid` package can save time and minimize complications for a researcher. From the above plot we can see that `x_1:x_2`  has the strongest interaction and `x_4` is the most important variable for predicting `y`. Traditional visualization techniques are commonly drawn with the order of variables appearing as how they are listed in the data. It has been shown^[ E.Friendly, F. Kwan.   Effect ordering for data displays. Computational Statistics Data Analysis, 43:509–539, 2003.] that reordering the data can help improve visualizations by making them more easily interpreted. The plot in Figure 1.0 also utilizes the `DendSer`^[Catherine B. Hurley and Denise Earle.DendSer: Dendrogram seriation: ordering for visualisation, 2013. R package version 1.0.1] package to _push_ all the relevant values to the top left of the plot. This is done to enable models to be plotted neatly and to allow the user to quickly see which variables are influential in a model.  This is particularly useful for large datasets. 
 
 
 ### Network style plot
@@ -145,14 +133,14 @@ plot(myMatrix, type = "network", thresholdValue = 0, label = FALSE,
 Fig 2.0: *Network style plot displaying 2-way interaction strength between each of the variables and individual variable importance*
 </center>
 
-From the above plot we can see that `Diameter:VisceraWeight` weight has the strongest interaction and `Diameter` is the most important variable for predicting `rings`. 
+From the above plot we can see that `x_1:x_2` weight has the strongest interaction and `X-4` is the most important variable for predicting `y`. 
 
 The network plot offers multiple possibilities when it comes to displaying the network style plot through use of the `layout` argument. The default layout is a circle but any of the layouts included in the `igraph`/`sna` package are accepted. 
 
 The user can control which interaction values to display by using the `thresholdValue` argument. In the following example, `thresholdValue = 0.2` means that only the the edges with weights (i.e., the interactions) above 0.2 are displayed:
 
 ```{r, fig.width = 8, fig.height = 7}
-plot(myMatrix, type = "network", thresholdValue = 0.2)
+plot(myMatrix, type = "network", thresholdValue = 0)
 ```
 <center>
 Fig 2.1: *Network style plot displaying thresholded 2-way interaction strengths between each of the variables and individual variable importance. In this plot only the interactions greater than 0.2 are shown.*
@@ -163,21 +151,22 @@ The preceding plots also include options to allow the user to scale the importan
 
 ### Partial dependence pairs style plot
 
-This function creates a pairs plot style matrix plot of the 2D partial dependence of each of the variables in the upper diagonal, the individual pdp and ice curves on the diagonal and a scatter-plot of the data on the lower diagonal. The partial dependence plot shows the marginal effect one or two features have on the predicted outcome of a machine learning model^[Friedman, Jerome H. “Greedy function approximation: A gradient boosting machine.” Annals of statistics (2001): 1189-1232.]. A partial dependence plot is used to show whether the relationship between the response variable and a feature is linear or more complex.
+This function creates a pairs plot style matrix plot of the 2D partial dependence of each of the variables in the upper diagonal, the individual pdp and ice curves on the diagonal and a scatter-plot of the data on the lower diagonal. The partial dependence plot shows the marginal effect one or two features have on the predicted outcome of a machine learning model^[Friedman, Jerome H. “Greedy function approximation: A gradient boosting machine.” Annals of statistics (2001): 1189-1232.]. A partial dependence plot is used to show whether the relationship between the response variable and a feature is linear or more complex. 
+The PD pairs plot can also be passed the `vivid` matrix by way of a function argument. This will reorder the PD pairs plot to match the serieated order of the `vivid` matrix. 
 
 **Example**
 
 
 To call the pdp pairs plot we use:
-```{r, fig.width = 8, fig.height = 7}
+```{r, fig.width = 8, fig.height = 7, eval = F}
 set.seed(1701)
-ggpdpPairs(task = ab_task, model =  ab_mod)
+ggpdpPairs(task = fr_task, model = fr_mod, gridsize = 10, mat = myMatrix)
 ```
 <center>
 Fig 3.0: *A pairs style matrix plot displaying the partial dependence between each of the variables in the upper diagonal, the individual pdp and ice curves on the diagonal and a scatter-plot on the lower diagonal*
 </center>
 
-From the above plot, we see the 2D pdp plots on the upper diagonal. The individual pdp and ice curves on the diagonal (with the aggregate pdp curve in black) and scatter-plots on the lower diagonal. As `type` is a factor variable with 3 levels, a barplot displaying the frequency is displayed on the diagonal and the individual pdp curves are shown on the upper diagonal for this variable. 
+From the above plot, we see the 2D pdp plots on the upper diagonal. The individual pdp and ice curves on the diagonal (with the aggregate pdp curve in black) and scatter-plots on the lower diagonal. From the plot we can see an interaction between $x_1$ and $x_2$ and it seems that $x_4$ has some dependence on all the variables.
 
 
 
@@ -195,7 +184,7 @@ plot(myMatrix, type = "allInteractions", top = 0)
 Fig 4.0: *A plot displaying all 2-way interaction in a model.*
 </center>
 
-From the above plot we can see that `Diameter:VisceraWeight` has the strongest interaction.
+From the above plot we can see that `x_1:x_2` has the strongest interaction.
 
 ### Display the overall interaction strength
 
@@ -204,14 +193,15 @@ The `interactionPlot()` function creates a plot, displaying the overall interact
 **Example**
 
 To call the interaction plot we use:
-```{r, fig.width = 8, fig.height = 7, message=F, warning=F}
-interactionPlot(task = ab_task, model =  ab_mod, type = "barplot")
+```{r, fig.width = 8, fig.height = 7, message=F, warning=F, eval = F}
+set.seed(1701)
+interactionPlot(model =  ab_mod, data = ab, type = "barplot")
 ```
 <center>
 Fig 5.0: *A plot displaying the overall interaction strength for each variable in a model.*
 </center>
 
-From the above plot we can see that the variable with the strongest overall interaction strength is `Shell Weight`
+From the above plot we can see that the variable with the strongest overall interaction strength is `x_2`
 
 ## Display the overall variable importance
 
@@ -227,7 +217,7 @@ plot(myMatrix, type = "importance", plotType = "barplot")
 Fig 6.0: *A plot displaying the variable importance for each variable in a model.*
 </center>
 
-From the above plot, we can see that the most important variable, when predicting `rings` is `Diameter`.
+From the above plot, we can see that the most important variable, when predicting `y` is `x_4`.
 
 
 ### Generate data from the Friedman benchmark problem 1 
