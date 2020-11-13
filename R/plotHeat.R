@@ -114,6 +114,7 @@ plotHeat <- function(dinteraction,
     theme_light() +
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank()) +
+    theme(axis.text  = element_text(size = 10)) +
     theme(axis.text.x  = element_text(angle = angle, hjust = 0)) +
     theme(legend.position = "none")
 
@@ -167,6 +168,8 @@ plotlyPlot <- function(dinteraction,
 
 
   maximumImp <- max(diag(dinteraction))+1
+  ImpVal <- diag(dinteraction)
+  minimumImp <- min(ImpVal)
   labelNames <- colnames(dinteraction)
   #set values below zero to = zero:
   dinteraction[dinteraction<0] <- 0
@@ -174,7 +177,7 @@ plotlyPlot <- function(dinteraction,
   index <- 1:nvar
 
   if(is.null(minImp)){
-        minImp <- 0
+        minImp <- minimumImp
       }else{minImp <- minImp}
 
       if(is.null(maxInt)){
