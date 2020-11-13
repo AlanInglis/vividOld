@@ -90,21 +90,6 @@ plot.vivid <- function(x,
     top <- max(top)
   }
 
-  if (reorder){
-    vimp <- diag(dint)
-    vimp <- (vimp-min(vimp))/max(vimp) # scale to 0-1 for consistency with interactions
-    vimp <- sqrt(outer(vimp, vimp)) # make a matrix
-
-    maxinteraction <- max(as.dist(dint))
-    maxvimp <- max(as.dist(vimp))
-    intVals <- lower.tri(dint)
-    minInteraction <- min(intVals)
-
-    # give equal weight to both interaction and varimp
-    o <- dser( -as.dist(vimp/maxvimp + dint/maxinteraction), cost=costLPL)
-    dint <- dint[o,o]
-  }
-
 
   intValues <- lower.tri(dint)
   minInteraction <- min(intValues)
@@ -132,6 +117,23 @@ plot.vivid <- function(x,
   }else{maxImp <- maxImp}
 
   dint <- dint[1:top,1:top]
+
+  if (reorder){
+    vimp <- diag(dint)
+    vimp <- (vimp-min(vimp))/max(vimp) # scale to 0-1 for consistency with interactions
+    vimp <- sqrt(outer(vimp, vimp)) # make a matrix
+
+    maxinteraction <- max(as.dist(dint))
+    maxvimp <- max(as.dist(vimp))
+    intVals <- lower.tri(dint)
+    minInteraction <- min(intVals)
+
+    # give equal weight to both interaction and varimp
+    o <- dser( -as.dist(vimp/maxvimp + dint/maxinteraction), cost=costLPL)
+    dint <- dint[o,o]
+  }
+
+
 
   ## Warning messages:
   if(minInt > minInteraction){
@@ -170,7 +172,7 @@ plot.vivid <- function(x,
     netPrep <- netPrep[o,o]
   }else{netPrep <- x}
     plotNet(netPrep, model, reorder = T, thresholdValue, label, layout = layout,
-            minInt, maxInt, minImp , maxImp, cluster = cluster, clusterType = clusterType,...)
+            minInt, maxInt, minImp , maxImp, labelNudge = labelNudge, cluster = cluster, clusterType = clusterType,...)
 }else if('allInteractions'%in%type){
 
   dinteraction <- x
