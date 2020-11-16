@@ -65,19 +65,30 @@ vividMatrix <- function(task, model, gridSize = 10, normalize = FALSE, n_max = 1
     flInt[is.na(flInt)] <- 0
     flInt[(flInt <= 0)] <- 0
 
-    if (reorder){
-      flInt[(flInt == 0)] <- 0.000001
+    # if (reorder){
+    #   flInt[(flInt == 0)] <- 0.000001
+    #   vimp <- diag(flInt)
+    #   vimp <- (vimp-min(vimp))/max(vimp) # scale to 0-1 for consistency with interactions
+    #   vimp <- sqrt(outer(vimp, vimp)) # make a matrix
+    #
+    #   maxinteraction <- max(as.dist(flInt))
+    #   maxvimp <- max(as.dist(vimp))
+    #   intVals <- lower.tri(flInt)
+    #   minInteraction <- min(intVals)
+    #
+    #   # give equal weight to both interaction and varimp
+    #   o <- dser( -as.dist(vimp/maxvimp + flInt/maxinteraction), cost=costLPL)
+    #   flInt <- flInt[o,o]
+    # }
+
+    if (reorder){ # updated by ch
       vimp <- diag(flInt)
-      vimp <- (vimp-min(vimp))/max(vimp) # scale to 0-1 for consistency with interactions
-      vimp <- sqrt(outer(vimp, vimp)) # make a matrix
+      vimp <- as.dist(sqrt(outer(vimp, vimp)))
+      svimp <- diff(range(vimp))
 
-      maxinteraction <- max(as.dist(flInt))
-      maxvimp <- max(as.dist(vimp))
-      intVals <- lower.tri(flInt)
-      minInteraction <- min(intVals)
-
-      # give equal weight to both interaction and varimp
-      o <- dser( -as.dist(vimp/maxvimp + flInt/maxinteraction), cost=costLPL)
+      vint <- as.dist(flInt)
+      svint <- diff(range(vint))
+       o <- dser( -(vimp/svimp + vint/svint ), cost=costLPL)
       flInt <- flInt[o,o]
     }
 
