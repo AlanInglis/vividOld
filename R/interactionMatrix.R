@@ -82,20 +82,24 @@ vividMatrix <- function(task, model, gridSize = 10, normalize = FALSE, n_max = 1
     # }
 
     if (reorder){ # updated by ch
-      vimp <- diag(flInt)
-      vimp <- as.dist(sqrt(outer(vimp, vimp)))
-      svimp <- diff(range(vimp))
-
-      vint <- as.dist(flInt)
-      svint <- diff(range(vint))
-       o <- dser( -(vimp/svimp + vint/svint ), cost=costLPL)
-      flInt <- flInt[o,o]
+      flInt <- dserOrder(flInt)
     }
 
     class(flInt) <- c("vivid", class(flInt))
     return(flInt)
 }
 
+
+dserOrder <- function(flInt){
+  vimp <- diag(flInt)
+  vimp <- as.dist(sqrt(outer(vimp, vimp)))
+  svimp <- diff(range(vimp))
+
+  vint <- as.dist(flInt)
+  svint <- diff(range(vint))
+  o <- dser( -(vimp/svimp + vint/svint ), cost=costLPL)
+  flInt <- flInt[o,o]
+}
 
 # -------------------------------------------------------------------------
 # Create flashlight
