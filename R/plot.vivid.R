@@ -13,7 +13,6 @@
 #' @param angle The angle to display the x-axis labels.
 #' @param top Returns the first part of the interaction matrix and resulting plot. Similar to head() function.
 #' For use with \code{"heatMap"} and \code{"allInteractions"}.
-#' @param reorder If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances.
 #' @param minInt Minimum interaction strength to be displayed on the legend.
 #' @param maxInt Maximum interaction strength to be displayed on the legend.
 #' @param minImp Minimum importance value to be displayed on the legend.
@@ -118,23 +117,6 @@ plot.vivid <- function(x,
 
   dint <- dint[1:top,1:top]
 
-  if (reorder){
-    vimp <- diag(dint)
-    vimp <- (vimp-min(vimp))/max(vimp) # scale to 0-1 for consistency with interactions
-    vimp <- sqrt(outer(vimp, vimp)) # make a matrix
-
-    maxinteraction <- max(as.dist(dint))
-    maxvimp <- max(as.dist(vimp))
-    intVals <- lower.tri(dint)
-    minInteraction <- min(intVals)
-
-    # give equal weight to both interaction and varimp
-    o <- dser( -as.dist(vimp/maxvimp + dint/maxinteraction), cost=costLPL)
-    dint <- dint[o,o]
-  }
-
-
-
   ## Warning messages:
   if(minInt > minInteraction){
     message(" Warning: Minimum chosen interaction value is larger than
@@ -155,22 +137,8 @@ plot.vivid <- function(x,
   }
 
 }else if ('network'%in%type) {
-  if (reorder){
+
     netPrep <- x
-    vimp <- diag(netPrep)
-    vimp <- (vimp-min(vimp))/max(vimp) # scale to 0-1 for consistency with interactions
-    vimp <- sqrt(outer(vimp, vimp)) # make a matrix
-
-    maxinteraction <- max(as.dist(netPrep))
-    maxvimp <- max(as.dist(vimp))
-    intVals <- lower.tri(netPrep)
-    minInteraction <- min(intVals)
-    minImportance <-  min(vimp)
-
-    # give equal weight to both interaction and varimp
-    o <- dser( -as.dist(vimp/maxvimp+ netPrep/maxinteraction), cost=costLPL)
-    netPrep <- netPrep[o,o]
-  }else{netPrep <- x}
     plotNet(netPrep, model, reorder = T, thresholdValue, label, layout = layout,
             minInt, maxInt, minImp , maxImp, labelNudge = labelNudge, cluster = cluster, clusterType = clusterType,...)
 }else if('allInteractions'%in%type){
