@@ -13,6 +13,7 @@
 #' @param n_max Maximum number of data rows to consider.
 #' @param seed An integer random seed used for subsampling.
 #' @param sqrt In order to reproduce Friedman's H statistic, resulting values are root transformed. Set to FALSE if squared values should be returned.
+#' @param reorder If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances.
 #'
 #' @return A matrix of values
 #'
@@ -34,7 +35,7 @@
 #' aq_Mod <- aq_lrn$train(aq_Task)
 #'
 #' # Create matrix
-#' myMat <- vividMatrix(model = aq_Mod)
+#' myMat <- vividMatrix(task = aq_Task, model = aq_Mod)
 #'
 #' # Create graph:
 #' plot(myMat, type = "heatMap")
@@ -47,6 +48,10 @@ vividMatrix <- function(task, model, gridSize = 10, normalize = FALSE, n_max = 1
                         seed = NULL, sqrt = FALSE, reorder = TRUE, ...){
 
 
+    # if classif
+     if(model$task_type == "classif"){
+       stop("Currently only models with numeric or binary response are supported.")
+     }
 
     FLobject <- flash(task, model)
     fl <- FLobject
@@ -60,6 +65,7 @@ vividMatrix <- function(task, model, gridSize = 10, normalize = FALSE, n_max = 1
     diag(flInt) <- vImp
     }else{vImp <- vImp[1:length(colnames(flInt))]
     diag(flInt) <- vImp}
+
 
     flInt[is.nan(flInt)] <- 0
     flInt[is.na(flInt)] <- 0
@@ -81,7 +87,7 @@ vividMatrix <- function(task, model, gridSize = 10, normalize = FALSE, n_max = 1
     #   flInt <- flInt[o,o]
     # }
 
-    if (reorder){ # updated by ch
+    if (reorder){
       flInt <- dserOrder(flInt)
     }
 
@@ -185,5 +191,75 @@ FLfunc <- function(fl, task, model, gridSize = gridSize, normalize = normalize, 
     dinteraction[lower.tri(dinteraction)] = t(dinteraction)[lower.tri(dinteraction)]
     dinteraction
 }
-
-
+#
+# vividClassif <- function(task, model, gridSize = gridSize, seed = seed){
+#   message(" Calculating variable importance...")
+#
+#   if (!is.null(seed)) {
+#     set.seed(seed)
+#   }else{seed = NULL}
+#
+#   # get data and target
+#
+#   data <-  task$data()
+#   data <- as.data.frame(data)
+#   target <- task$target_names
+#
+#   mod <- Predictor$new(model, data = data, y = target)
+#
+#   ## Get Variable Importance:
+#   lrnID <- model$properties
+#   testString <- "importance"
+#
+#   logID <- logical(length(lrnID))
+#   for(i in seq_along(lrnID)){
+#     logID[i] <- grepl(lrnID[i], testString, fixed = TRUE)
+#   }
+#
+#   # If (embedded learner) - else(agnostic varimp calc)
+#   if(any(logID) == TRUE){
+#     ovars <- task$feature_names
+#     Importance <- model$importance()
+#     impReorder <- Importance[order(factor(names(Importance), levels = ovars))]
+#     suppressMessages({
+#       Importance <- melt(impReorder)
+#     })
+#     Imp <-  Importance$value
+#   }else{
+#     imp <- FeatureImp$new(mod, loss = "mse")
+#     Imp <- imp$results$importance
+#     ovars <- imp$results$feature
+#     print("Agnostic variable importance method used.")
+#   }
+#
+#   ovars <- task$feature_names
+#   # Create progress bar
+#   pb <- progress_bar$new(
+#     format = "  Calculating variable interactions...[:bar]:percent. ETA::eta ",
+#     total = length(ovars),
+#     clear = FALSE)
+#
+#   res  <- NULL
+#   for (i in 1:length(ovars)){
+#     suppressMessages({
+#       res <- rbind(res, Interaction$new(mod, grid.size = gridSize, feature=ovars[i])$results)
+#     })
+#     pb$tick()
+#   }
+#
+#   res[[".feature"]]<- reorder(res[[".feature"]], res[[".interaction"]])
+#
+#
+#   vars2 <- t(simplify2array(strsplit(as.character(res[[".feature"]]),":"))) # split/get feature names
+#   dinteraction <- matrix(0, length(ovars), length(ovars))                   # create matrix
+#   rownames(dinteraction) <- colnames(dinteraction) <- ovars                 # set names
+#   dinteraction[vars2] <- res[[".interaction"]]                              # set values
+#   dinteraction <- (dinteraction+t(dinteraction))/2   # avg over values to make symmetrical
+#   dinteraction1 <- data.frame(interaction=as.vector(dinteraction))
+#   diag(dinteraction) <- Imp
+#   dinteraction[is.nan(dinteraction)] <- 0
+#   #class(dinteraction) = 'vivid'
+#   class(dinteraction) <- c("vivid", class(dinteraction))
+#
+#   dinteraction
+# }
