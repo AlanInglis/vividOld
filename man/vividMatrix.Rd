@@ -30,6 +30,8 @@ vividMatrix(
 \item{seed}{An integer random seed used for subsampling.}
 
 \item{sqrt}{In order to reproduce Friedman's H statistic, resulting values are root transformed. Set to FALSE if squared values should be returned.}
+
+\item{reorder}{If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances.}
 }
 \value{
 A matrix of values
@@ -52,7 +54,7 @@ aq_lrn = lrn("regr.ranger", importance = "permutation")
 aq_Mod <- aq_lrn$train(aq_Task)
 
 # Create matrix
-myMat <- vividMatrix(model = aq_Mod)
+myMat <- vividMatrix(task = aq_Task, model = aq_Mod)
 
 # Create graph:
 plot(myMat, type = "heatMap")

@@ -45,8 +45,6 @@
 \item{top}{Returns the first part of the interaction matrix and resulting plot. Similar to head() function.
 For use with \code{"heatMap"} and \code{"allInteractions"}.}
 
-\item{reorder}{If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances.}
-
 \item{minImp}{Minimum importance value to be displayed on the legend.}
 
 \item{maxImp}{Maximum importance value to be displayed on the legend.}
