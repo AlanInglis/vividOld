@@ -31,7 +31,6 @@ Imports:
     ggalt,
     flashlight,
     cowplot, 
-    zenplots
 Suggests: 
     knitr,
     rmarkdown,
