@@ -11,7 +11,7 @@ vividMatrix(
   normalize = FALSE,
   n_max = 1000,
   seed = NULL,
-  sqrt = FALSE,
+  sqrt = TRUE,
   reorder = TRUE,
   ...
 )
