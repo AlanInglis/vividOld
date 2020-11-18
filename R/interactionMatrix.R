@@ -45,7 +45,7 @@
 
 
 vividMatrix <- function(task, model, gridSize = 10, normalize = FALSE, n_max = 1000,
-                        seed = NULL, sqrt = FALSE, reorder = TRUE, ...){
+                        seed = NULL, sqrt = TRUE, reorder = TRUE, ...){
 
 
     # if classif
