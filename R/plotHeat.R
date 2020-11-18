@@ -58,9 +58,9 @@
 
 plotHeat <- function(dinteraction,
                      plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
-                     impLow = "white", impHigh = "firebrick1", top = NULL ,
+                     impLow = "floralwhite", impHigh = "firebrick1", top = NULL ,
                      title="",
-                     minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL,
+                     minImp = NULL, maxImp = NULL, minInt = NULL, maxInt = NULL,
                      angle = NULL,
                       ...){
 
@@ -103,11 +103,13 @@ plotHeat <- function(dinteraction,
     scale_y_reverse(breaks = index, labels = labelNames) +
     geom_tile(aes(fill = `Interaction\nStrength`),
               alpha = var_int$alpha_int) +
+    #scale_fill_continuous_sequential(palette = "Blues 3", begin = 0, end = 1) +
     scale_fill_gradient(low = intLow, high = intHigh, limits=c(minInt, maxInt)) +
     labs(title = title) +
     new_scale_fill() +
     geom_tile(aes(fill = `Variable\nImportance`),
               alpha = var_int$alpha_imp) +
+    #scale_fill_continuous_sequential(palette = "Heat 2", begin = 0, end = 1) +
     scale_fill_gradient(low = impLow ,high = impHigh, limits=c(minImp, maxImp)) +
     xlab('') +
     ylab('') +
@@ -125,6 +127,7 @@ plotHeat <- function(dinteraction,
     scale_y_reverse(breaks = index, labels = labelNames) +
     geom_tile(aes(fill = `Interaction\nStrength`),
                 alpha = var_int$alpha_int) +
+    #scale_fill_continuous_sequential(palette = "Blues 3", begin = 0, end = 1) +
     scale_fill_gradient(low = intLow, high = intHigh, limits=c(minInt, maxInt)) +
     labs(title = title)
 
@@ -134,6 +137,7 @@ plotHeat <- function(dinteraction,
     guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5)) +
      geom_tile(aes(fill = `Variable\nImportance`),
                  alpha = var_int$alpha_imp) +
+    #scale_fill_continuous_sequential(palette = "Heat 2", begin = 0, end = 1)+
   scale_fill_gradient(low = impLow ,high = impHigh, limits=c(minImp, maxImp)) +
   xlab('') +
   ylab('') +
@@ -152,6 +156,7 @@ plotHeat <- function(dinteraction,
   endPlot <- plot_grid(p, legends, ncol = 2, align = "h",
                        scale = c(1, 0.8), rel_widths = c(0.9, 0.1))
   endPlot
+
 }
 
 
@@ -160,7 +165,7 @@ plotHeat <- function(dinteraction,
 
 plotlyPlot <- function(dinteraction,
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
-                       impLow = "white", impHigh = "firebrick1", top = NULL, title="",
+                       impLow = "floralwhite", impHigh = "firebrick1", top = NULL, title="",
                        minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL,...){
 
   maximumInt <- max(as.dist(dinteraction))+0.01
