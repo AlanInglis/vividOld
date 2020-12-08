@@ -216,6 +216,7 @@ pdpZenplot(bostont, bostonf, zpath=zpath)
 
 # version with gaps
 zpath<-calcZpath(vivb, .2, connect=FALSE)
+zpath
 pdpZenplot(bostont, bostonf, zpath=zpath)
 # removes the two uninteresting plots from previous display, but you don't get nice compact plot
 
