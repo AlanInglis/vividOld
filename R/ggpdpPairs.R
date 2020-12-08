@@ -16,7 +16,7 @@
 #' @param fitlims If supplied, should be a numeric vector of length 2, specifying the fit range.
 #' @param gridsize for the pdp/ale plots, defaults to 10.
 #' @param class For a classification model, show the probability of this class. Defaults to 1.
-#' @param cardinality Manually set the cardinality.
+#' @param cardinality Manually set the cardinality for ggpairs.
 #' @param mat If passed a matrix then the ggPDPpairs plot will be reordered to match the order of the matrix.
 #' @param ... Not currently implemented.
 #'
