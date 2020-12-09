@@ -7,19 +7,21 @@
 vividMatrix(
   task,
   model,
+  filter = NULL,
   gridSize = 10,
   normalize = FALSE,
   n_max = 1000,
   seed = NULL,
   sqrt = TRUE,
   reorder = TRUE,
+  main = NULL,
   ...
 )
 }
 \arguments{
-\item{task}{Task created from the mlr package, either regression or classification.}
+\item{task}{Task created from the mlr3 package, either regression or classification.}
 
-\item{model}{Any machine learning model.}
+\item{model}{A machine learning model created from mlr3 task and learner.}
 
 \item{gridSize}{The size of the grid for evaluating the predictions.}
 
@@ -32,6 +34,8 @@ vividMatrix(
 \item{sqrt}{In order to reproduce Friedman's H statistic, resulting values are root transformed. Set to FALSE if squared values should be returned.}
 
 \item{reorder}{If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances.}
+
+\item{main}{Define main category for classification.}
 }
 \value{
 A matrix of values

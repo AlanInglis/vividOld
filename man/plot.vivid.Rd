@@ -15,7 +15,7 @@
   reorder = TRUE,
   minImp = NULL,
   maxImp = NULL,
-  minInt = NULL,
+  minInt = 0,
   maxInt = NULL,
   angle = NULL,
   thresholdValue = 0,

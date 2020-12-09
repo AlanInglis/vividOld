@@ -19,7 +19,7 @@ interactionPlot(
 )
 }
 \arguments{
-\item{model}{Any machine learning model.}
+\item{model}{A machine learning model created from mlr3 task and learner.}
 
 \item{interactionType}{Are measures based on Friedman's H statistic ("H") or on "ice" curves?}
 
