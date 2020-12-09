@@ -23,6 +23,7 @@
 #' @return A zenplot of partial dependence values.
 #'
 #' @importFrom zenplots "zenplot"
+#' @importFrom zenplots "indexData"
 #' @importFrom iml "FeatureEffect"
 #' @importFrom iml "Predictor"
 #'
