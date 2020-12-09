@@ -53,12 +53,13 @@ The data used in the following examples is simulated from the Friedman benchmark
 $$y = 10 sin(π x1 x2) + 20 (x3 - 0.5)^2 + 10 x4 + 5 x5 + e$$
 </center>
 
-For the following examples we set the number of features to equal 10 and the number of samples is set to 250 and fit an `mlr3` `ranger` random forest model with $y$ as the response. As the features $x_1$ to $x_5$ are the only variables in the model, therefore $x_6$ to $x_{10}$ are noise variables. As can be seen by the above equation, the only interaction is between $x_1$ and $x_2$
+For the following examples we set the number of features to equal 9 and the number of samples is set to 250 and fit an `mlr3` `ranger` random forest model with $y$ as the response. As the features $x_1$ to $x_5$ are the only variables in the model, therefore $x_6$ to $x_{9}$ are noise variables. As can be seen by the above equation, the only interaction is between $x_1$ and $x_2$
   
 
 Create  the data:
 ```{r, messages = FALSE}
-myData <- genFriedman(noFeatures = 10, noSamples = 250, sigma = 1, bins = NULL, seed = NULL)
+set.seed(1701)
+myData <- genFriedman(noFeatures = 9, noSamples = 250, sigma = 1, bins = NULL, seed = NULL)
 ```
 
 Create an `mlr3` `ranger` random forest model:
@@ -136,19 +137,19 @@ From the above plot we can see that `x_1:x_2` weight has the strongest interacti
 
 The network plot offers multiple possibilities when it comes to displaying the network style plot through use of the `layout` argument. The default layout is a circle but any of the layouts included in the `igraph`/`sna` package are accepted. 
 
-The user can control which interaction values to display by using the `thresholdValue` argument. In the following example, `thresholdValue = 0.2` means that only the the edges with weights (i.e., the interactions) above 0.2 are displayed:
+The user can control which interaction values to display by using the `thresholdValue` argument. In the following example, `thresholdValue = 0.1` means that only the the edges with weights (i.e., the interactions) above 0.1 are displayed:
 
 ```{r, fig.width = 8, fig.height = 7}
-plot(myMatrix, type = "network", thresholdValue = 0)
+plot(myMatrix, type = "network", thresholdValue = 0.1)
 ```
 <center>
-Fig 2.1: *Network style plot displaying thresholded 2-way interaction strengths between each of the variables and individual variable importance. In this plot only the interactions greater than 0.2 are shown.*
+Fig 2.1: *Network style plot displaying thresholded 2-way interaction strengths between each of the variables and individual variable importance. In this plot only the interactions greater than 0.1 are shown.*
 </center>
 
 The preceding plots also include options to allow the user to scale the importance/interaction values, through the `minInt, maxInt, minImp, maxImp` arguments. This is particularly useful if one is comparing different fits using the visualizations, as it keeps the values on the same scale. 
 
 
-### Partial dependence pairs style plot
+### Partial dependence pairs style plot, PDPP
 
 This function creates a pairs plot style matrix plot of the 2D partial dependence of each of the variables in the upper diagonal, the individual pdp and ice curves on the diagonal and a scatter-plot of the data on the lower diagonal. The partial dependence plot shows the marginal effect one or two features have on the predicted outcome of a machine learning model^[Friedman, Jerome H. “Greedy function approximation: A gradient boosting machine.” Annals of statistics (2001): 1189-1232.]. A partial dependence plot is used to show whether the relationship between the response variable and a feature is linear or more complex. 
 The PD pairs plot can also be passed the `vivid` matrix by way of a function argument. This will reorder the PD pairs plot to match the serieated order of the `vivid` matrix. 
@@ -167,6 +168,32 @@ Fig 3.0: *A pairs style matrix plot displaying the partial dependence between ea
 
 From the above plot, we see the 2D pdp plots on the upper diagonal. The individual pdp and ice curves on the diagonal (with the aggregate pdp curve in black) and scatter-plots on the lower diagonal. From the plot we can see an interaction between $x_1$ and $x_2$ and it seems that $x_4$ has some dependence on all the variables.
 
+### Zenplot partial dependence plot, ZPDP
+
+Here we create a zigzag expanded navigation plot (zenplot) of the partial dependence values. This results in an alternating sequence of two-dimensional plots laid out in a zigzag structure. 
+
+
+To create the ZPDP, we use:
+```{r, fig.width = 8, fig.height = 7}
+set.seed(1701)
+pdpZenplot(task = fr_task, model = fr_mod, gridsize = 10)
+```
+<center>
+Fig 4.0: *A plot of the partial dependence in a zenplot style layout*
+</center>
+
+If we want to construct a path of indices to order the variables in terms of importance, we can use `calcZpath` as follows:
+
+```{r, fig.width = 8, fig.height = 7}
+set.seed(1701)
+zpath <- calcZpath(myMatrix, cutoff = 0.1)
+pdpZenplot(task = fr_task, model = fr_mod, gridsize = 10)
+```
+<center>
+Fig 4.1: *A plot of the partial dependence in a zenplot style layout following a zenpath*
+</center>
+
+In Fig 4.1, we have only selected the variables with values above 0.1 using the `cutoff` argument. `calcZpath` constructs a path for connecting and displaying pairs of variables. It orders the plots in terms of importance starting from the top left and descending. 
 
 
 In addition to displaying both the variable importance and interactions together, the `vivid` package also allows to display only the variable importance _or_ the interaction strength via the following functions. 
