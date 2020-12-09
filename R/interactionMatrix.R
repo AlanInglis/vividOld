@@ -6,14 +6,15 @@
 #' @description Creates a matrix displaying Variable importance on the diagonal
 #'  and Variable Interaction on the off-diagonal.
 #'
-#' @param task Task created from the mlr package, either regression or classification.
-#' @param model Any machine learning model.
+#' @param task Task created from the mlr3 package, either regression or classification.
+#' @param model A machine learning model created from mlr3 task and learner.
 #' @param gridSize The size of the grid for evaluating the predictions.
 #' @param normalize Should the variances explained be normalized? Default is FALSE.
 #' @param n_max Maximum number of data rows to consider.
 #' @param seed An integer random seed used for subsampling.
 #' @param sqrt In order to reproduce Friedman's H statistic, resulting values are root transformed. Set to FALSE if squared values should be returned.
 #' @param reorder If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances.
+#' @param main Define main category for classification.
 #'
 #' @return A matrix of values
 #'
@@ -44,72 +45,72 @@
 
 
 
-vividMatrix <- function(task, model, gridSize = 10, normalize = FALSE, n_max = 1000,
-                        seed = NULL, sqrt = TRUE, reorder = TRUE, ...){
+vividMatrix <- function(task, model, filter = NULL, gridSize = 10, normalize = FALSE, n_max = 1000,
+                        seed = NULL, sqrt = TRUE, reorder = TRUE, main = NULL, ...){
+
+  # if classif
+  if(model$task_type == "classif"){
+    # stop("Currently only models with numeric or binary response are supported.")
+
+    fl <- flashClassif(task, model, main)
 
 
-    # if classif
-     if(model$task_type == "classif"){
-       stop("Currently only models with numeric or binary response are supported.")
-     }
+    vImp <- varImportanceFL(fl, task, model, filter)
 
-    FLobject <- flash(task, model)
-    fl <- FLobject
+    flInt <- FLfuncClassif(fl, task, model, gridSize = gridSize,  normalize = normalize, n_max = n_max,
+                           seed = seed, sqrt = sqrt)
+    message("NOTE: The measured variable importance for
+               prediciting ", task$target_names, " is using all variables. Not
+               just ", main)
+  }else{
+    fl <- flashRegr(task, model)
 
-    vImp <- varImportanceFL(fl, model)
+    vImp <- varImportanceFL(fl, task, model, filter)
 
     flInt <- FLfunc(fl, task, model, gridSize = gridSize,  normalize = normalize, n_max = n_max,
                     seed = seed, sqrt = sqrt)
 
-    if(length(colnames(flInt)) == length(vImp)){
+  }
+
+  flInt[is.nan(flInt)] <- 0
+  flInt[is.na(flInt)] <- 0
+  flInt[(flInt <= 0)] <- 0
+
+  # flInt[is.nan(flInt)] <- 0.000001
+  # flInt[is.na(flInt)] <- 0.000001
+  # flInt[(flInt <= 0)] <- 0.000001
+
+  if(length(colnames(flInt)) == length(vImp)){
     diag(flInt) <- vImp
-    }else{vImp <- vImp[1:length(colnames(flInt))]
-    diag(flInt) <- vImp}
+  }else{vImp <- vImp[1:length(colnames(flInt))]
+  diag(flInt) <- vImp}
 
+  if (reorder){
+    flInt <- dserOrder(flInt)
+  }
 
-    flInt[is.nan(flInt)] <- 0
-    flInt[is.na(flInt)] <- 0
-    flInt[(flInt <= 0)] <- 0
-
-    # if (reorder){
-    #   flInt[(flInt == 0)] <- 0.000001
-    #   vimp <- diag(flInt)
-    #   vimp <- (vimp-min(vimp))/max(vimp) # scale to 0-1 for consistency with interactions
-    #   vimp <- sqrt(outer(vimp, vimp)) # make a matrix
-    #
-    #   maxinteraction <- max(as.dist(flInt))
-    #   maxvimp <- max(as.dist(vimp))
-    #   intVals <- lower.tri(flInt)
-    #   minInteraction <- min(intVals)
-    #
-    #   # give equal weight to both interaction and varimp
-    #   o <- dser( -as.dist(vimp/maxvimp + flInt/maxinteraction), cost=costLPL)
-    #   flInt <- flInt[o,o]
-    # }
-
-    if (reorder){
-      flInt <- dserOrder(flInt)
-    }
-
-    class(flInt) <- c("vivid", class(flInt))
-    return(flInt)
+  class(flInt) <- c("vivid", class(flInt))
+  return(flInt)
 }
 
 
 dserOrder <- function(flInt){
+
   vimp <- diag(flInt)
+  vimp <- abs(vimp)
   vimp <- as.dist(sqrt(outer(vimp, vimp)))
   svimp <- diff(range(vimp))
 
   vint <- as.dist(flInt)
   svint <- diff(range(vint))
+  if(svint == 0){svint <- 1}
   o <- dser( -(vimp/svimp + vint/svint ), cost=costLPL)
   flInt <- flInt[o,o]
 }
 
 # -------------------------------------------------------------------------
 # Create flashlight
-flash <- function(task, model){
+flashRegr <- function(task, model){
 
   data <-  task$data()
   data <- as.data.frame(data)
@@ -120,21 +121,37 @@ flash <- function(task, model){
   return(fl)
 }
 
+flashClassif <- function(task, model, main){
+
+  data <-  task$data()
+  data <- as.data.frame(data)
+  target <- task$target_names
+
+  fl <- flashlight(
+    model = model,
+    data = data,
+    label = "",
+    predict_function = function(m, X) predict(m, X) == main)
+}
+
 
 # -------------------------------------------------------------------------
 # Variable importance
-varImportanceFL <- function(fl, model){
-    message(" Calculating variable importance...")
+varImportanceFL <- function(fl, task, model, filter){
+  message("Calculating variable importance...")
 
-    ## Get Variable Importance:
-    lrnID <- model$properties
-    testString <- "importance"
 
-    logID <- logical(length(lrnID))
-    for(i in seq_along(lrnID)){
-      logID[i] <- grepl(lrnID[i], testString, fixed = TRUE)
-    }
+  ## Get Variable Importance:
+  lrnID <- model$properties
+  testString <- "importance"
+  target <-  model$state$train_task$target_names
 
+  logID <- logical(length(lrnID))
+  for(i in seq_along(lrnID)){
+    logID[i] <- grepl(lrnID[i], testString, fixed = TRUE)
+  }
+
+  if(is.null(filter)){
     # If (embedded learner) - else(agnostic varimp calc)
     if(any(logID) == TRUE){
       ovars <- model$state$train_task$feature_names
@@ -144,14 +161,26 @@ varImportanceFL <- function(fl, model){
         Importance <- reshape2::melt(impReorder)
       })
       imp <-  Importance$value
-      print("Embedded variable importance method used.")
+      message("Embedded variable importance method used.")
     }else{
       # Importance Values:
       imp <- light_importance(fl, m_repetitions = 4)
       imp <- imp$data$value
-      print("Agnostic variable importance method used.")
+      message("Agnostic variable importance method used.")
     }
-    return(imp)
+  }else{
+    ovars <- model$state$train_task$feature_names
+
+    fltImp <- as.data.table(filter$calculate(task))
+
+    fltImp$feature = factor(fltImp$feature, levels = ovars)
+    fltImp <- fltImp[order(fltImp$feature), ]
+
+    imp <- fltImp$score
+    message("Filter variable importance method used.")
+  }
+
+  return(imp)
 }
 
 
@@ -162,35 +191,77 @@ varImportanceFL <- function(fl, model){
 FLfunc <- function(fl, task, model, gridSize = gridSize, normalize = normalize, n_max = n_max,
                    seed = seed, sqrt = sqrt){
 
-    message("Calculating interactions...")
+  message("Calculating interactions...")
 
   if (!is.null(seed)) {
     set.seed(seed)
   }else{seed = NULL}
 
-    # Interaction Matrix:
-    res  <- NULL
-    ovars <- model$state$train_task$feature_names
+  # Interaction Matrix:
+  res  <- NULL
+  ovars <- model$state$train_task$feature_names
 
 
 
-        res <- light_interaction(fl, pairwise = TRUE, type = "H", grid_size = gridSize,
-                                        normalize = normalize, n_max = n_max,
-                                        seed = seed, sqrt = sqrt)$data
+  res <- light_interaction(fl, pairwise = TRUE, type = "H", grid_size = gridSize,
+                           normalize = normalize, n_max = n_max,
+                           seed = seed, sqrt = sqrt)$data
 
 
 
 
 
-    res[["variable"]]<- reorder(res[["variable"]], res[["value"]])
+  res[["variable"]]<- reorder(res[["variable"]], res[["value"]])
 
-    vars2 <- t(simplify2array(strsplit(as.character(res[["variable"]]),":"))) # split/get feature names
-    dinteraction <- matrix(0, length(ovars), length(ovars))                   # create matrix
-    rownames(dinteraction) <- colnames(dinteraction) <- ovars                 # set names
-    dinteraction[vars2] <- res[["value"]]                                     # set values
-    dinteraction[lower.tri(dinteraction)] = t(dinteraction)[lower.tri(dinteraction)]
-    dinteraction
+  vars2 <- t(simplify2array(strsplit(as.character(res[["variable"]]),":"))) # split/get feature names
+  dinteraction <- matrix(0, length(ovars), length(ovars))                   # create matrix
+  rownames(dinteraction) <- colnames(dinteraction) <- ovars                 # set names
+  dinteraction[vars2] <- res[["value"]]                                     # set values
+  dinteraction[lower.tri(dinteraction)] = t(dinteraction)[lower.tri(dinteraction)]
+  dinteraction
 }
+
+FLfuncClassif <- function(fl, task, model, gridSize = gridSize, normalize = normalize, n_max = n_max,
+                          seed = seed, sqrt = sqrt){
+
+  message("Calculating interactions...")
+
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }else{seed = NULL}
+
+  # Interaction Matrix:
+  res  <- NULL
+  ovars <- model$state$train_task$feature_names
+  target <- task$target_names
+
+  res <- light_interaction(fl, pairwise = TRUE, type = "H", grid_size = gridSize,
+                           normalize = normalize, n_max = n_max,
+                           seed = seed, sqrt = sqrt)$data
+
+  ## Removing rows containing target and adding df back to FL object
+
+  # get data
+  res_edit <- res
+
+  # remove target
+  res_edit <- res_edit[!grepl(target, res_edit$variable),]
+
+  # add back into FL object
+  res <- res_edit
+
+  res[["variable"]]<- reorder(res[["variable"]], res[["value"]])
+
+  vars2 <- t(simplify2array(strsplit(as.character(res[["variable"]]),":"))) # split/get feature names
+  dinteraction <- matrix(0, length(ovars), length(ovars))                   # create matrix
+  rownames(dinteraction) <- colnames(dinteraction) <- ovars                 # set names
+  dinteraction[vars2] <- res[["value"]]                                     # set values
+  dinteraction[lower.tri(dinteraction)] = t(dinteraction)[lower.tri(dinteraction)]
+  dinteraction
+}
+
+
+
 #
 # vividClassif <- function(task, model, gridSize = gridSize, seed = seed){
 #   message(" Calculating variable importance...")
