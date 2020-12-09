@@ -16,6 +16,7 @@
 #'
 #' @importFrom zenplots "zenpath"
 #'
+#'
 #' @examples
 #' # Load in the data:
 #' aq <- na.omit(airquality)*1.0
