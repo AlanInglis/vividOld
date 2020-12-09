@@ -61,7 +61,7 @@ plot.vivid <- function(x,
                        # for heatmap
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
                        impLow = "floralwhite", impHigh = "firebrick1", top = NULL, reorder=TRUE,
-                       minImp = NULL, maxImp = NULL, minInt = NULL, maxInt = NULL, angle = NULL,
+                       minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL, angle = NULL,
                        #for network
                        thresholdValue = 0,
                        label = FALSE,
@@ -113,7 +113,7 @@ plot.vivid <- function(x,
 
   if(is.null(minInt)){
     minInt <- minInteraction
-  }else{maxImp <- maxImp}
+  }else{minInt <- minInt}
 
   dint <- dint[1:top,1:top]
 
