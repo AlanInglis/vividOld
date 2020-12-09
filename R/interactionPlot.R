@@ -2,7 +2,7 @@
 #'
 #' @description Plots a selected variable against all other variables in a model
 #'
-#' @param model Any machine learning model.
+#' @param model A machine learning model created from mlr3 task and learner.
 #' @param type The type of plot to display, either "lollipop" (default) or "barplot".
 #' @param interactionType Are measures based on Friedman's H statistic ("H") or on "ice" curves?
 #' @param gridSize The size of the grid for evaluating the predictions.
@@ -92,7 +92,8 @@ interactionPlot <- function(model, data, interactionType = 'ice', gridSize = 10,
     xlab('Feature') +
     ylab("Interaction\nStrength") +
     theme(axis.title.y = element_text(angle = 90, vjust = 0.5))+
-    coord_flip()
+    coord_flip() +
+    guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5))
   p <- p + labs(fill = "Interaction\nStrength")
   return(p)
   }else if(type == "lollipop"){
