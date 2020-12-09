@@ -70,8 +70,8 @@ plotNet <- function(dinteraction,
   impWarn <- max(impWarn)
   impLegend <- Imp
   impLegend <- round(impLegend, 2)
-  impLegend <- max(impLegend)+0.5
-  minimumImp <- min(Imp)
+  impLegend <- max(impLegend)+0.005
+  minimumImp <- floor(min(Imp))
 
   # Sort interaction values
   sortInt = t(dinteraction)[lower.tri(t(dinteraction), diag=FALSE)]  # get upper triangle of the matrix by row order
@@ -205,7 +205,7 @@ plotNet <- function(dinteraction,
 
   if(cluster){
 
-    l_1 <- layout_in_circle(net.sp)
+    l_1 <- layout_with_fr(net.sp)
     com <- clusterType(net.sp)
     V(net.sp)$color <- com$membership
     group <- V(net.sp)$color
@@ -214,7 +214,7 @@ plotNet <- function(dinteraction,
 
     g <- set_graph_attr(net.sp, "layout", layout_in_circle(net.sp))
     colrs <- adjustcolor( c("yellow", "red", "blue", "black","purple",
-                            "orange", "pink", "green", "red" , "blue"))
+                            "orange", "pink", "green", "red" , "blue", "yellow"))
     colorC <- colrs[group]
 
     pcl <- ggnet2(g,
