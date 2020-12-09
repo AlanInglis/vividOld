@@ -108,7 +108,8 @@ if(plotType != "barplot" && plotType != "lollipop"){
       xlab('Features ') +
       ylab("Interaction Strength") +
       theme(axis.title.y = element_text(angle = 90, vjust = 0.5)) +
-      coord_flip()
+      coord_flip() +
+      guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5))
     return(pp)
   }else if(plotType == "lollipop"){
     # lollipop plot

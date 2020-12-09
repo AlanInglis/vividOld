@@ -115,7 +115,8 @@ plotImportance <- function(mat, plotType = "lollipop", minImp = NULL, maxImp = N
       xlab('Features') +
       ylab("Importance Value") +
       theme(axis.title.y = element_text(angle = 90, vjust = 0.5)) +
-      coord_flip()
+      coord_flip() +
+      guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5))
     p <- p + labs(fill = "Variable\nImportance")
     return(p)
   }else if(plotType == "lollipop"){
