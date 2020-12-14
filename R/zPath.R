@@ -15,6 +15,7 @@
 #' @return Returns a zpath from viv showing pairs with viv entry over the cutoff
 #'
 #' @importFrom zenplots "zenpath"
+#' @importFrom zenplots "connect_pairs"
 #'
 #'
 #' @examples
