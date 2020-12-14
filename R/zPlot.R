@@ -24,6 +24,7 @@
 #'
 #' @importFrom zenplots "zenplot"
 #' @importFrom zenplots "indexData"
+#' @importFrom zenplots "groupData"
 #' @importFrom iml "FeatureEffect"
 #' @importFrom iml "Predictor"
 #'
