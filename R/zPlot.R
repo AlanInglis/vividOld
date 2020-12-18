@@ -4,7 +4,8 @@
 #'
 #' @param task Task created from the mlr3 package, either regression or classification.
 #' @param model A machine learning model created from mlr3 task and learner.
-#' @param zpath A zenpath created from calcZpath. see XXXX
+#' @param zpath A zenpath created from calcZpath. see \code{\link[zenplots]{zenpath}} from the
+#' \code{\link[zenplots]{zenplots}} package for more details.
 #' @param method "pdp" (default) or "ale"
 #' @param noCols  number of columns of 2d plots (>= 1) or one of "letter", "square", "A4", "golden" or "legal"
 #' in which case a similar layout is constructed. See ?zenplot
@@ -166,7 +167,7 @@ pdpZenplot <- function(task, model, zpath=NULL, method = "pdp",
               axis.text.y = element_blank(),
               axis.title.x = element_blank(),
               axis.title.y = element_blank(),
-              panel.border = element_rect(colour = "black", fill=NA, size = 2))}
+              panel.border = element_rect(colour = "gray", fill=NA, size = 1.5))}
     else p <- ggplot() +theme(panel.background = element_blank())
 
    ggplot_gtable(ggplot_build(p))
