@@ -25,7 +25,8 @@ pdpZenplot(
 
 \item{model}{A machine learning model created from mlr3 task and learner.}
 
-\item{zpath}{A zenpath created from calcZpath. see XXXX}
+\item{zpath}{A zenpath created from calcZpath. see \code{\link[zenplots]{zenpath}} from the
+\code{\link[zenplots]{zenplots}} package for more details.}
 
 \item{method}{"pdp" (default) or "ale"}
 

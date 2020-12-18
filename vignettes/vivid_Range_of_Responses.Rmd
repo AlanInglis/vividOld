@@ -1,0 +1,182 @@
+---
+title: "vivid_Range_of_Responses"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{vivid}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 7
+)
+```
+
+This vignette is intended to be used as a supplementary tools to the introduction to the `vivid` package vignette. The goal of this vignette is to show how `vivid` handles a range of different response variables and to show a brief guide on how to create visualisations from the package to display varible importance and variable interactions (VIVI). To begin we show a standard response from a random forest regression model. 
+
+First, we load the required packages. `vivid` to create the visualizations and `mlr3` and `mlr3learners` will be used to create our models. 
+
+```{r, message=FALSE, warnings = F}
+library(vivid)
+library(mlr3)  
+library(mlr3learners)
+```
+
+
+## Regression with a continuous response
+
+For this we will simulate some data from the Friedman benchmark problem 1 using the `genFriedman()` function from `vivid`, with 9 features and 300 observations. The output is created according to:
+
+<center>
+$$y = 10 sin(π x1 x2) + 20 (x3 - 0.5)^2 + 10 x4 + 5 x5 + e$$
+</center>
+
+
+Create  the data:
+```{r, messages = FALSE}
+set.seed(1701)
+myData <- genFriedman(noFeatures = 9, noSamples = 300, sigma = 1, bins = NULL, seed = NULL)
+```
+
+Create an `mlr3` `ranger` random forest model:
+
+```{r}
+set.seed(1701)
+taskCont  <- TaskRegr$new(id = "Friedman", backend = myData, target = "y")
+set.seed(1701)
+lrnCont <- lrn("regr.ranger", importance = "permutation")
+set.seed(1701)
+modCont <- lrnCont$train(taskCont)
+```
+
+Create a matrix to be supplied to the plotting functions.
+
+```{r, message = F, warning = F}
+set.seed(1701)
+myMatrix <- vividMatrix(task = taskCont, model = modCont, gridSize = 100)
+
+```
+
+Create a heatmap of the results
+
+```{r, fig.width = 7, fig.height = 7}
+plot(myMatrix, type = "heatMap")
+```
+<center>
+Fig 1.0: *Heat-map plot displaying 2-way interaction strength in blue and individual variable importance on the diagonal in red.*
+</center>
+
+Figure 1.0 shows a heatmap of VIVI values on the Friedman data. We can clearly see the variables $x_1$ to $x_5$ are the only important variables for predeicting $y$, with $x_4$ being the most important. We can also seee a strong interaction between $x_1$ and $x_2$ 
+Create a partial dependence pairs plot (GPDP)
+
+```{r}
+ggpdpPairs(taskCont, modCont, gridsize = 20)
+```
+
+Create a zenplot partial dependence plot (ZPDP)
+
+```{r}
+pdpZenplot(taskCont, modCont, gridsize = 20)
+```
+
+
+## Numerical Binary Response 
+
+Here we can use `genFriedman` again to create data with a binary response. To do this we set the number of bins to be equal to 2. This will create (roughly) equal sized bins to split the response into. Setting a value greater than 1 essentially turns this into a classification problem where bins determines the number of classes.
+
+
+Create  the data:
+```{r, messages = FALSE}
+set.seed(1701)
+myDataBin <- genFriedman(noFeatures = 9, noSamples = 300, sigma = 1, bins = 2, seed = NULL)
+myDataBin$y <- as.numeric(myDataBin$y)
+```
+
+Take a quick look at our data to see that the response has been split into 2 separate classes.
+
+```{r}
+head(myDataBin)
+```
+
+Create an `mlr3` `ranger` random forest model:
+
+```{r}
+set.seed(1701)
+taskBin  <- TaskRegr$new(id = "Friedman", backend = myDataBin, target = "y")
+set.seed(1701)
+lrnBin <- lrn("regr.ranger", importance = "impurity")
+set.seed(1701)
+modBin <- lrnCont$train(taskCont)
+```
+
+Create a matrix to be supplied to the plotting functions.
+
+```{r, message = F, warning = F}
+set.seed(1701)
+myMatrixBin <- vividMatrix(task = taskBin, model = modBin, gridSize = 100)
+
+```
+
+Create a heatmap of the results
+
+```{r, fig.width = 7, fig.height = 7}
+plot(myMatrixBin, type = "heatMap")
+```
+
+Create a partial dependence pairs plot (PDPP)
+
+```{r}
+ggpdpPairs(taskBin, modBin, gridsize = 20)
+```
+
+Create a zenplot partial dependence plot (ZPDP)
+
+```{r}
+pdpZenplot(taskBin, modBin, gridsize = 20)
+```
+
+
+## Multiclass Categorical Response
+
+For this we will use the iris dataset to show how to use `vivd` when there is a multiclass categorical response.
+
+To begin, we create our `mlr3` model.
+
+```{r}
+# mlr3 TASK
+set.seed(1701)
+ir_T <- TaskClassif$new(id = "iris", backend = iris, target = "Species")
+# learner
+set.seed(1701)
+lrn <- lrn("classif.ranger", importance = 'impurity')
+# model
+set.seed(1701)
+ir_M <- lrn$train(ir_T)
+```
+
+To create our vivid matrix of values, we have to specify the main variable of interest by use of the `main` argument. In the example below, we choose to look at the species "virginica".
+
+```{r}
+myMatrixMCR <- vividMatrix(ir_T, ir_M, gridsize = 100,  main = "virginica")
+```
+
+Plot the results:
+```{r, fig.width = 7, fig.height = 5}
+plot(myMatrixMCR, type = 'heatMap', title = "virginica")
+```
+
+Create a partial dependence pairs plot (PDPP)
+
+```{r}
+ggpdpPairs(ir_T, ir_M, gridsize = 20)
+```
+
+Create a zenplot partial dependence plot (ZPDP)
+
+```{r}
+pdpZenplot(ir_T, ir_M, gridsize = 20)
+```
