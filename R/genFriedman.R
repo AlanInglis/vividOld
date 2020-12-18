@@ -5,7 +5,7 @@
 #' @param noFeatures Integer specifying the number of features/variables to generate. Default is 10.
 #' @param noSamples Integer specifying the number of samples to generate. Default is 100
 #' @param sigma Numreic specifying standard deviation of the noise.
-#' @param bins Integer specifiying the number of bins to split responce variable into. Setting a value greater than 1 turns this into a classification problem whre bins determines the number of classes.
+#' @param bins Integer specifiying the number of bins to split responce variable into. Setting a value greater than 1 turns this into a classification problem where bins determines the number of classes.
 #' @param seed Integer specifying the random seed.
 #'
 #' @importFrom stats "quantile"
