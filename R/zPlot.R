@@ -154,11 +154,12 @@ pdpZenplot <- function(task, model, zpath=NULL, method = "pdp",
 
     pdp <- pdplist[[z2index]]$pdp
     if (!is.null(pdp)) {
-      p <- plot(pdp, rug=FALSE ) +
-        scale_fill_gradient2(name="\u0177",low = "#D7191C",
-                             mid = "#FFFFBF",
-                             high = "#2B83BA",
-                             midpoint = midLimit, limits=limits)+
+      p <- plot(pdp, rug=T ) +
+        do.call(scale_fill_continuous_sequential, list(palette = "BluYl", limits = limits)) +
+        # scale_fill_gradient2(name="\u0177",low = "#D7191C",
+        #                      mid = "#FFFFBF",
+        #                      high = "#2B83BA",
+        #                      midpoint = midLimit, limits=limits)+
         guides(fill=FALSE, color=FALSE) +
         theme_bw() +
         theme(axis.line = element_blank(),

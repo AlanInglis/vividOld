@@ -140,7 +140,7 @@ plot.vivid <- function(x,
 
     netPrep <- x
     plotNet(netPrep, model, reorder = T, thresholdValue, label, layout = layout,
-            minInt, maxInt, minImp , maxImp, labelNudge = labelNudge, cluster = cluster, clusterType = clusterType,...)
+            minInt = minInt, maxInt = maxInt, minImp = minImp , maxImp = maxImp, labelNudge = labelNudge, cluster = cluster, clusterType = clusterType,...)
 }else if('allInteractions'%in%type){
 
   dinteraction <- x

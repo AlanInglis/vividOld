@@ -32,6 +32,7 @@
 #' @importFrom ggalt "geom_encircle"
 #' @importFrom cowplot "get_legend"
 #' @importFrom cowplot "plot_grid"
+#' @importFrom colorspace "scale_fill_continuous_sequential"
 #'
 #' @examples
 #' # Load in the data:
@@ -67,6 +68,7 @@ plotNet <- function(dinteraction,
   Imp <- diag(dinteraction)
   Imp1 <-  Imp
   impWarn <- Imp
+  impy <- Imp
   impWarn <- max(impWarn)
   impLegend <- Imp
   impLegend <- round(impLegend, 2)
@@ -99,19 +101,21 @@ plotNet <- function(dinteraction,
   Imp <- (5-1)*((Imp-min(Imp))/(max(Imp)-min(Imp)))+1 # scale between 1-5
   Imp  <- round(Imp,2)
 
-  # Create dataframe to disply to user:
-  impDf <- Imp
-
-
   # Set the edge colours
-  colfunction <- colorRampPalette(c("floralwhite", "dodgerblue4"))
+  colfunction <- sequential_hcl(palette = "Blues 3", n = 10, rev = T) #colorRampPalette(c("floralwhite", "dodgerblue4"))
   edgeColour <- (E(net.bg)$weight)
-  cut_int <- cut(edgeColour, 9)
+  cut_int <- cut(edgeColour, 10)
   if(is.null(maxInt)){
-  npal <- colfunction(9)
-  }else{colVal <- 9 * (maxInt/0.1)
-    npal <- colfunction(colVal)}
+    #npal <- colfunction(9)
+  npal <- colfunction[1:length(edgeColour)]
+  }else{
+    #colVal <- 10 * (maxInt/0.1)
+    npal <- colfunction[1:length(edgeColour)]}
   edgeCols <- npal[cut_int]
+
+
+
+
 
   # Get edge weights
   weightDF <- get.data.frame(net.bg) # get df of graph attributes
@@ -173,9 +177,6 @@ plotNet <- function(dinteraction,
 
 
 
-
-
-
   l <- layout
   # min/max legend values:
   if(is.null(maxInt)){
@@ -189,6 +190,7 @@ plotNet <- function(dinteraction,
   if(is.null(minImp)){
     minImp <- minimumImp
   }else{minImp <- minImp}
+
 
   # Whether to show edge label
   if(label == T){
@@ -205,6 +207,7 @@ plotNet <- function(dinteraction,
 
   if(cluster){
 
+   # l_1 <- layout_in_circle(net.sp)
     l_1 <- layout_with_fr(net.sp)
     com <- clusterType(net.sp)
     V(net.sp)$color <- com$membership
@@ -226,14 +229,7 @@ plotNet <- function(dinteraction,
       theme(legend.text = element_text(size = 10)) +
       geom_label(aes(label = nam),nudge_y = labelNudge) +
       geom_point(aes(fill = Imp1), size = Imp*2, col = "transparent", shape = 21) +
-      scale_fill_continuous(name = "Variable\nImportance",
-                            limits=c(minImp, maxImp),
-                            low = "floralwhite" ,high = "firebrick1") +
-      new_scale_fill() +
-      geom_point(aes(fill = 0), size = -1) +
-      scale_fill_continuous( name = "Interaction\nStrength",
-                             limits=c(minInt, maxInt),
-                             low = "floralwhite" ,high = "dodgerblue4") +
+      do.call(scale_fill_continuous_sequential, list(name = "Variable\nImportance", palette = "Reds 3",  limits = c(minImp,maxImp)))+
       theme(legend.position = "none")
 
 
@@ -246,23 +242,14 @@ plotNet <- function(dinteraction,
       theme(legend.text = element_text(size = 10)) +
       geom_label(aes(label = nam),nudge_y = labelNudge) +
       geom_point(aes(fill = Imp1), size = Imp*2, col = "transparent", shape = 21) +
-      scale_fill_continuous(name = "Variable\nImportance",
-                            limits=c(minImp, maxImp),
-                            low = "floralwhite" ,high = "firebrick1") +
+      do.call(scale_fill_continuous_sequential, list(name = "Variable\nImportance", palette = "Reds 3",  limits = c(minImp,maxImp)))+
       guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5))
 
 
-           pppcl <- ggnet2(g,
-                           mode = l_1,
-                           size = 0,
-                           edge.size = edgeW,
-                           edge.label = edgeL,
-                           edge.color = edgeCols) +
-      geom_point(aes(fill = 0), size = -1) +
-      scale_fill_continuous( name = "Interaction\nStrength",
-                             limits=c(minInt, maxInt),
-                             low = "floralwhite" ,high = "dodgerblue4")+
-      guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5))
+      intDFcl <- as.data.frame(Int)
+      pppcl <- ggplot(intDFcl) + geom_tile(aes(x = 0, y = 0, fill = Int), size = -1) +
+             do.call(scale_fill_continuous_sequential, list(name = "Interaction\nStrength", palette = "Blues 3",  limits = c(minInt,maxInt))) +
+             guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5))
 
 
     # Group clusters
@@ -289,8 +276,8 @@ plotNet <- function(dinteraction,
     endPlotCl <- plot_grid(pcl, legendsCl, ncol = 2, align = "h",
                            scale = c(1, 0.8), rel_widths = c(0.9, 0.1))
 
-    myList <- list(endPlotCl, groupV)
-    return(myList)
+
+    return(endPlotCl)
   }else{
     p <- ggnet2(net.sp, mode = l,
                 size = 0,
@@ -300,42 +287,28 @@ plotNet <- function(dinteraction,
       theme(legend.text = element_text(size = 10)) +
       geom_label(aes(label = nam),nudge_y = labelNudge) +
       geom_point(aes(fill = Imp1), size = Imp*2, colour = "transparent", shape = 21) +
-      scale_fill_continuous(name = "Variable\nImportance",
-                            limits=c(minImp, maxImp),
-                            low = "floralwhite" ,high = "firebrick1") +
-      new_scale_fill() +
-      geom_point(aes(fill = 0), size = -1) +
-      scale_fill_continuous(name = "Interaction\nStrength",
-                            limits=c(minInt, maxInt),
-                            low = "floralwhite" ,high = "dodgerblue4") +
+      do.call(scale_fill_continuous_sequential, list(name = "Variable\nImportance", palette = "Reds 3",  limits = c(minImp,maxImp)))+
       theme(legend.position = "none")
 
 
 
 
-     pp <-  ggnet2(net.sp, mode = l,
-                       size = 0,
-                       edge.size = edgeW,
-                       edge.label = edgeL,
-                       edge.color = edgeCols) +
-       theme(legend.text = element_text(size = 10)) +
-       geom_label(aes(label = nam),nudge_y = labelNudge) +
-       geom_point(aes(fill = Imp1), size = Imp*2, colour = "transparent", shape = 21) +
-       scale_fill_continuous(name = "Variable\nImportance",
-                             limits=c(minImp, maxImp),
-                             low = "floralwhite" ,high = "firebrick1") +
+    pp <-  ggnet2(net.sp, mode = l,
+                  size = 0,
+                  edge.size = edgeW,
+                  edge.label = edgeL,
+                  edge.color = edgeCols) +
+      theme(legend.text = element_text(size = 10)) +
+      geom_label(aes(label = nam),nudge_y = labelNudge) +
+      geom_point(aes(fill = Imp1), size = Imp*2, colour = "transparent", shape = 21) +
+      do.call(scale_fill_continuous_sequential, list(name = "Variable\nImportance", palette = "Reds 3",  limits = c(minImp,maxImp)))+
+      guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5))
+
+     intDF <- as.data.frame(Int)
+     ppp <- ggplot(intDF) + geom_tile(aes(x = 0, y = 0, fill = Int), size = -1) +
+       do.call(scale_fill_continuous_sequential, list(name = "Interaction\nStrength", palette = "Blues 3", limits = c(minInt, maxInt))) +
        guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5))
 
-     ppp <- ggnet2(net.sp, mode = l,
-                         size = 0,
-                         edge.size = edgeW,
-                         edge.label = edgeL,
-                         edge.color = edgeCols) +
-       geom_point(aes(fill = 0), size = -1) +
-       scale_fill_continuous(name = "Interaction\nStrength",
-                             limits=c(minInt, maxInt),
-                             low = "floralwhite" ,high = "dodgerblue4") +
-       guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5))
 
      # Grab the legends using cowplot::get_legend()
      p2_legend <- get_legend(pp)
@@ -349,6 +322,7 @@ plotNet <- function(dinteraction,
                           scale = c(1, 0.8), rel_widths = c(0.9, 0.1))
 
     return(endPlot)
+
   }
 }
 

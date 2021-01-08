@@ -31,6 +31,8 @@
 #' @import DendSer
 #' @importFrom cowplot "get_legend"
 #' @importFrom cowplot "plot_grid"
+#' @importFrom colorspace "scale_fill_continuous_sequential"
+#'
 #'
 #' @examples
 #' # Load in the data:
@@ -103,14 +105,12 @@ plotHeat <- function(dinteraction,
     scale_y_reverse(breaks = index, labels = labelNames) +
     geom_tile(aes(fill = `Interaction\nStrength`),
               alpha = var_int$alpha_int) +
-    #scale_fill_continuous_sequential(palette = "Blues 3", begin = 0, end = 1) +
-    scale_fill_gradient(low = intLow, high = intHigh, limits=c(minInt, maxInt)) +
+    do.call(scale_fill_continuous_sequential,list(palette = "Blues 3",limits=c(minInt, maxInt))) +
     labs(title = title) +
     new_scale_fill() +
     geom_tile(aes(fill = `Variable\nImportance`),
               alpha = var_int$alpha_imp) +
-    #scale_fill_continuous_sequential(palette = "Heat 2", begin = 0, end = 1) +
-    scale_fill_gradient(low = impLow ,high = impHigh, limits=c(minImp, maxImp)) +
+    do.call(scale_fill_continuous_sequential,list(palette = "Reds 3", limits=c(minImp, maxImp))) +
     xlab('') +
     ylab('') +
     theme_light() +
@@ -127,8 +127,7 @@ plotHeat <- function(dinteraction,
     scale_y_reverse(breaks = index, labels = labelNames) +
     geom_tile(aes(fill = `Interaction\nStrength`),
                 alpha = var_int$alpha_int) +
-    #scale_fill_continuous_sequential(palette = "Blues 3", begin = 0, end = 1) +
-    scale_fill_gradient(low = intLow, high = intHigh, limits=c(minInt, maxInt)) +
+    do.call(scale_fill_continuous_sequential,list(palette = "Blues 3",limits=c(minInt, maxInt))) +
     labs(title = title)
 
 
@@ -137,8 +136,7 @@ plotHeat <- function(dinteraction,
     guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5)) +
      geom_tile(aes(fill = `Variable\nImportance`),
                  alpha = var_int$alpha_imp) +
-    #scale_fill_continuous_sequential(palette = "Heat 2", begin = 0, end = 1)+
-  scale_fill_gradient(low = impLow ,high = impHigh, limits=c(minImp, maxImp)) +
+    do.call(scale_fill_continuous_sequential,list(palette = "Reds 3", limits=c(minImp, maxImp))) +
   xlab('') +
   ylab('') +
   theme_light() +
