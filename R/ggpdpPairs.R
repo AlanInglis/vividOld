@@ -5,19 +5,13 @@
 #' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
 #' @param method "pdp" (default) or "ale"
-#' @param corrVal If TRUE, then display the correlation coefficient on top of scatterplot.
-#' @param corrMethod a character string indicating which correlation coefficient (or covariance) is to be computed.
-#'  One of "pearson" (default), "kendall", or "spearman".
 #' @param parallel If TRUE then the method is executed in parallel.
-#' @param vars Variables to plot. Defaults to all predictors.
-#' @param colLow Colour to be used for low values.
-#' @param colMid Colour to be used for mid values.
-#' @param colHigh Colour to be used for low values.
+#' @param vars Specify which variables and their order to plot. Defaults to all predictors.
+#' @param pal A vector of colors to show predictions, for use with scale_fill_gradientn
 #' @param fitlims If supplied, should be a numeric vector of length 2, specifying the fit range.
 #' @param gridsize for the pdp/ale plots, defaults to 10.
 #' @param class For a classification model, show the probability of this class. Defaults to 1.
-#' @param cardinality Manually set the cardinality for ggpairs.
-#' @param mat If passed a matrix then the ggPDPpairs plot will be reordered to match the order of the matrix.
+#' @param nIce Number of ice curves to be plotted, defaults to 30
 #' @param ... Not currently implemented.
 #'
 #' @return A ggpairs style plot displaying the partial dependence.
@@ -27,9 +21,6 @@
 #' @importFrom GGally "wrap"
 #' @importFrom GGally "eval_data_col"
 #' @importFrom future "plan"
-#' @importFrom stats "median"
-#' @importFrom stats "cor"
-#' @importFrom stats "loess"
 #'
 #' @import progress
 #'
@@ -42,26 +33,24 @@
 #' Boston1 <- Boston[,c(4:6,8,13:14)]
 #' Boston1$chas <- factor(Boston1$chas)
 #' task <- TaskRegr$new(id = "Boston1", backend = Boston1, target = "medv")
-#' learner = lrn("regr.ranger", importance = "permutation")
+#' learner <- lrn("regr.ranger", importance = "permutation")
 #' fit <- learner$train(task)
 #' ggpdpPairs(task , fit)
 #'
 #' Boston2 <- Boston1
 #' Boston2$medv <- ggplot2::cut_interval(Boston2$medv, 3)
 #' levels(Boston2$medv) <- c("lo","mid", "hi")
-#' task = TaskClassif$new(id = "Boston2", backend = Boston2, target = "medv")
-#' learner = lrn("classif.ranger", importance = "impurity")
+#' task <- TaskClassif$new(id = "Boston2", backend = Boston2, target = "medv")
+#' learner <- lrn("classif.ranger", importance = "impurity")
 #' fit <- learner$train(task)
 #' ggpdpPairs(task , fit, class="hi")
 #'
 #' @export
 
 ggpdpPairs <- function(task, model, method = "pdp",
-                       corrVal = FALSE, corrMethod = "p",
-                       parallel = FALSE, vars = NULL,
-                       colLow = "#D7191C", colMid = "#FFFFBF", colHigh = "#2B83BA",
-                       fitlims = NULL, gridsize = 10, class = 1, cardinality = 20,
-                       mat = NULL, ...){
+                      parallel = FALSE, vars = NULL, pal=rev(RColorBrewer::brewer.pal(11,"RdYlBu")),
+                       fitlims = NULL, gridsize = 10, class = 1,
+                       nIce=30,...){
 
   # Set up registered cluster for parallel
   if(parallel){
@@ -84,67 +73,38 @@ ggpdpPairs <- function(task, model, method = "pdp",
 
   # Get data for individual variables
   xdata <- pred.data$data$get.x()
-
-
-
-  if(is.null(mat)){
-  # reordering mlr3 data order to match OG dataset
-  originalOrder <- task$backend$colnames
-  OG <- originalOrder[1:(length(originalOrder)-1)]
-  OG <- setdiff(OG, task$target_names)
-  xdata <- xdata[OG]
-  }else{newOrder <- colnames(mat)
-  xdata <- xdata[newOrder]
-  }
-
-
-
   if (!is.null(vars) & all(vars %in% names(xdata)))
     xdata <- xdata[,vars]
-  xvar1 <- expand.grid(1:ncol(xdata), 1:ncol(xdata))[,2:1]
-  xvar <- xvar1$Var1
-  xvar <- as.matrix(xvar)
-  xvarn <- cbind(names(xdata)[xvar[,1]])
-  xvarn <- xvarn[1:length(unique(xvarn))]
-  xvarn <- as.matrix(xvarn)
 
 
+  xvarn <- names(xdata)
+
+  nIce <- min(nIce, nrow(xdata)) # ch, make this an argument for the function
+  sice <- c(NA, sample(nrow(xdata), nIce)) # ch
 
   # Create progress bar
   pb <- progress_bar$new(
     format = "  Calculating ICE curves...[:bar]:percent. Est::eta ",
-    total = nrow(xvarn),
+    total = length(xvarn),
     clear = FALSE)
 
   # loop through vars and create a list of pdps
-  pdplist1 <- vector("list", length=nrow(xvarn))
-  for (i in 1:nrow(xvarn)){
-    pdplist1[[i]] <-FeatureEffect$new(pred.data, xvarn[i,], method = "pdp+ice", grid.size=10)
+  pdplist1 <- vector("list", length=length(xvarn))
+  for (i in 1:length(xvarn)){
+    pdplist1[[i]] <-FeatureEffect$new(pred.data, xvarn[i], method = "pdp+ice", grid.size=gridsize)
     pb$tick()
-    names(pdplist1)  <- paste(xvarn[,1])
+    names(pdplist1)  <- xvarn
   }
 
   # Get data for pairs of variables
-  xdata <- pred.data$data$get.x()
-  # reordering mlr3 data order to match OG dataset
-  if(is.null(mat)){
-    # reordering mlr3 data order to match OG dataset
-    originalOrder <- task$backend$colnames
-    OG <- originalOrder[1:(length(originalOrder)-1)]
-    OG <- setdiff(OG, task$target_names)
-    xdata <- xdata[OG]
-  }else{newOrder <- colnames(mat)
-  xdata <- xdata[newOrder]}
-
 
   if (!is.null(vars) & all(vars %in% names(xdata)))
-  xdata <- xdata[,vars]
+    xdata <- xdata[,vars]
   xyvar <- expand.grid(1:ncol(xdata), 1:ncol(xdata))[,2:1]
   xyvar <- as.matrix(xyvar[xyvar[,1]<xyvar[,2],])
   xyvarn <- cbind(names(xdata)[xyvar[,1]], names(xdata)[xyvar[,2]])
 
-
-  # Create progress bar
+    # Create progress bar
   pb1 <- progress_bar$new(
     format = "  Calculating partial dependence...[:bar]:percent. Est::eta ",
     total = nrow(xyvarn),
@@ -153,60 +113,54 @@ ggpdpPairs <- function(task, model, method = "pdp",
   # loop through vars and create a list of pdps for each pair
   pdplist <- vector("list", length=nrow(xyvarn))
   for (i in 1:nrow(xyvarn)){
-    pdplist[[i]] <-FeatureEffect$new(pred.data, xyvarn[i,], method = method, grid.size=gridsize)
+    pdplist[[i]] <-FeatureEffect$new(pred.data, rev(xyvarn[i,]), method = method, grid.size=gridsize) # added rev, ch
     pb1$tick()
-    names(pdplist)  <- paste(xyvarn[,1], xyvarn[,2], sep="pp")
+    names(pdplist)  <- paste(xyvarn[,2], xyvarn[,1], sep="pp") # switch 1 and 2, ch
   }
-
-  # Set limits for pairs
-  if (is.null(fitlims)){
-    r <- sapply(pdplist, function(x) range(x$results[,3]))
-    r <- range(r)
-    limits <- range(labeling::rpretty(r[1],r[2]))
-  } else
-    limits <- fitlims
 
   # get predictions
   Pred <- pred.data$predict(data)
   colnames(Pred) <- "prd"
   Pred <- Pred$prd
-  midLimit <- floor(median(Pred))
- # midLimit <-  diff(range(Pred))/2
 
-  # Plot prep for pairs
+  # Set limits for pairs
+  if (is.null(fitlims)){
+    r <- sapply(pdplist, function(x) range(x$results[[".value"]]))
+    r1 <- sapply(pdplist1, function(x)  range(subset(x$results, .id %in% sice)[[".value"]]))
+    r <- range(c(r,r1,Pred))
+    limits <- range(labeling::rpretty(r[1],r[2]))
+  } else
+    limits <- fitlims
+
+
   ggpdp <- function(data, mapping, ...) {
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
-    pdp <- pdplist[[paste(vars[2], vars[1], sep="pp")]]
-    # pdp <-FeatureEffect$new(pred.data, vars, method = method, grid.size=gridsize)
-    plot(pdp, rug=FALSE ) +
-      scale_fill_gradient2(name="\u0177",low = colLow, mid = colMid, high = colHigh,
-                           midpoint = midLimit, limits=limits)
+    pdp <- pdplist[[paste(vars[1], vars[2], sep="pp")]]  # switch 1 and 2, ch
+    plot(pdp, rug=F) +scale_fill_gradientn(name = "\u0177",colors = pal, limits = limits)
+
   }
 
 
   # Plot prep for diag pdps
-  ovars <- task$feature_names
-  nice <- min(30, nrow(xdata)) # ch, make this an argument for the function
-  sice <- c(NA, sample(nrow(xdata), nice)) # ch
-  ggpdpDiag <- function(data, mapping, ...) {
-    vars <- c(quo_name(mapping$x), quo_name(mapping$y))
-    pdp <- pdplist1[[paste(vars[1])]]
-    pdp$results <- subset(pdp$results, .id %in% sice) # ch
-    aggr <- pdp$results[pdp$results$.type != "ice", ]
-    p <- plot(pdp, rug=FALSE)
-    p$layers[[2]] <- NULL # Dont draw yellow agg line
-    p + geom_line(aes(y = .value, group = .id, color = .value)) +
-        scale_colour_gradient2(low = colLow, mid = colMid, high = colHigh,
-                             midpoint = midLimit) +
-        geom_line(data = aggr, size = 1, color = "black", lineend = "round")
 
+  ggpdpDiag <- function(data, mapping, ...) {
+    var<- quo_name(mapping$x) # ch
+    pdp <- pdplist1[[var]]  # ch
+    pdpr <- pdp$results # ch
+    pdpr <- subset(pdpr, .id %in% sice) # ch
+    aggr <- pdpr[pdpr$.type != "ice", ] # ch
+
+
+     ggplot(data=pdpr, aes(x=.data[[var]], y=.value, color = .value))+
+      geom_line(aes(group=.id, color=.value)) +
+      scale_color_gradientn(name = "\u0177",colors = pal, limits = limits)+
+     geom_line(data = aggr, size = 1, color = "black", lineend = "round", group=1)
   }
 
   # plot prep for class.
   ggpdpc <- function(data, mapping, ...) {
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
-    pdp <- pdplist[[paste(vars[2], vars[1], sep="pp")]]
-    # pdp <-FeatureEffect$new(pred.data, vars, method = method, grid.size=gridsize)
+    pdp <- pdplist[[paste(vars[1], vars[2], sep="pp")]] # switch 1 and 2, ch
     plot(pdp, rug=FALSE) + ylim(limits)
   }
 
@@ -224,97 +178,56 @@ ggpdpPairs <- function(task, model, method = "pdp",
   yData <- as.numeric(unlist(yData))
   ggTitle <- model$id
 
+  lowerPlotc <-  function(data, mapping) {
+
+    x <- eval_data_col(data, mapping$x)
+    y <- eval_data_col(data, mapping$y)
+
+    # Assemble data frame
+    df <- data.frame(x = x, y = y)
 
 
-  if(corrVal == TRUE){
-    GGscatterPlot <- function(data, mapping,method = corrMethod)
-    {
-      #Get correlation coefficient
-      x <- eval_data_col(data, mapping$x)
-      y <- eval_data_col(data, mapping$y)
-
-      corr <- cor(x, y, method = method)
-
-      # Assemble data frame
-      df <- data.frame(x = x, y = y)
-
-
-
-      # Set colour for label
-      colFn <- colorRampPalette(c("blue", "white", "red"), interpolate ='spline')
-      fill <- colFn(100)[findInterval(corr, seq(-1, 1, length=100))]
-
-      # Prepare plot
-      ggplot(df, aes(x = x, y = y, color = Pred)) +
-        geom_point(shape = 16, size = 1, show.legend = FALSE) +
-        geom_smooth(method=loess, fill="red", color="red", ...) +
-        geom_label(
-          data = data.frame(
-            xlabel = min(x, na.rm = TRUE),
-            ylabel = max(y, na.rm = TRUE),
-            lab = round(corr, digits = 3)),
-          mapping = ggplot2::aes(x = xlabel,
-                                 y = ylabel,
-                                 label = lab,
-                                 alpha = 0.5),
-          fill = fill,
-          hjust = 0, vjust = 1,
-          size = 3, fontface = "bold",
-          inherit.aes = FALSE) +
-        theme_minimal()
-    }
-
-    p <- ggpairs(xdata, title = ggTitle,
-                 upper = list(continuous = ggpdp, combo = ggpdpc, discrete = ggpdp),
-                 diag  = list(continuous = ggpdpDiag),
-                 lower = list(continuous = GGscatterPlot),
-                 legend=w,
-                 cardinality_threshold = cardinality) +
-      theme_bw() +
-      theme(panel.border = element_rect(colour = "black", fill=NA, size=1),
-            axis.line=element_line(),
-            axis.ticks = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = 1, size = 0),
-            axis.text.y = element_text(size = 0),
-            strip.text = element_text(face ="bold", colour ="red", size = 5))
-    p
-  }else{
-    default_fn <-  function(data, mapping)
-      {
-
-        x <- eval_data_col(data, mapping$x)
-        y <- eval_data_col(data, mapping$y)
-
-        # Assemble data frame
-        df <- data.frame(x = x, y = y)
-
-
-        # Prepare plot
-        ggplot(df, aes(x = x, y = y, color = Pred)) +
-          geom_point(shape = 16, size = 1, show.legend = FALSE) +
-           scale_colour_gradient2(low = colLow, mid = colMid, high = colHigh, midpoint = midLimit)
-    }
-
-    p <- ggpairs(xdata, title = ggTitle,
-                 mapping=ggplot2::aes(colour = Pred),
-                 upper=list(continuous = ggpdp, combo = ggpdpc, discrete = ggpdp),
-                 diag = list(continuous = ggpdpDiag),
-                 lower = list(continuous = default_fn),
-                 # lower=list(continuous=wrap("points", size = 0.5)),
-                 legend=w,
-                 cardinality_threshold = cardinality) +
-      theme_bw() + theme(panel.border = element_rect(colour = "black", fill=NA, size=1),
-                         axis.line=element_line(),
-                         axis.ticks = element_blank(),
-                         axis.text.x = element_text(angle = 45, hjust = 1, size = 0),
-                         axis.text.y = element_text(size = 0),
-                         strip.text = element_text(face ="bold", colour ="red", size = 5))
-
-
-    p
-
-
+    # Prepare plot
+    ggplot(df, aes(x = x, y = y, color = Pred)) +
+      geom_point(shape = 16, size = 1, show.legend = FALSE) +
+      scale_colour_gradientn(name = "\u0177",colors = pal, limits = limits)
   }
+
+  lowerPlotm <-  function(data, mapping) {
+
+    x <- eval_data_col(data, mapping$x)
+    y <- eval_data_col(data, mapping$y)
+
+    # Assemble data frame
+    df <- data.frame(x = x, y = y)
+    jitterx <- if (is.factor(df$x)) .25 else 0
+    jittery <- if (is.factor(df$y)) .25 else 0
+
+    ggplot(df, aes(x = x, y = y, color = Pred)) +
+      geom_jitter(shape = 16, size = 1, show.legend = FALSE, width=jitterx, height=jittery) +
+      scale_colour_gradientn(name = "\u0177",colors = pal, limits = limits)
+  }
+
+  p <- ggpairs(xdata, title = ggTitle,
+               mapping=ggplot2::aes(colour = Pred),
+               upper=list(continuous = ggpdp, combo = ggpdpc, discrete = ggpdp),
+               diag = list(continuous = ggpdpDiag, discrete=ggpdpDiag), # added discrete, ch
+               lower = list(continuous = lowerPlotc, combo=lowerPlotm, discrete=lowerPlotm),
+               # lower=list(continuous=wrap("points", size = 0.5)),
+               legend=w,
+               cardinality_threshold = NULL) +
+    theme_bw() + theme(panel.border = element_rect(colour = "black", fill=NA, size=1),
+                       axis.line=element_line(),
+                       axis.ticks = element_blank(),
+                       axis.text.x = element_text(angle = 45, hjust = 1, size = 0),
+                       axis.text.y = element_text(size = 0),
+                       strip.text = element_text(face ="bold", colour ="red", size = 5))
+
+
+  p
+
+
+
 
   if(parallel){
     # Closing works by setting them to default
