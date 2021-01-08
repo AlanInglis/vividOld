@@ -30,6 +30,8 @@
 #' @importFrom stats "median"
 #' @importFrom stats "cor"
 #' @importFrom stats "loess"
+#' @importFrom colorspace "scale_fill_continuous_sequential"
+#' @importFrom colorspace "scale_color_continuous_sequential"
 #'
 #' @import progress
 #'
@@ -171,16 +173,16 @@ ggpdpPairs <- function(task, model, method = "pdp",
   colnames(Pred) <- "prd"
   Pred <- Pred$prd
   midLimit <- floor(median(Pred))
- # midLimit <-  diff(range(Pred))/2
+
 
   # Plot prep for pairs
   ggpdp <- function(data, mapping, ...) {
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
     pdp <- pdplist[[paste(vars[2], vars[1], sep="pp")]]
-    # pdp <-FeatureEffect$new(pred.data, vars, method = method, grid.size=gridsize)
-    plot(pdp, rug=FALSE ) +
-      scale_fill_gradient2(name="\u0177",low = colLow, mid = colMid, high = colHigh,
-                           midpoint = midLimit, limits=limits)
+    plot(pdp, rug=F) +
+      do.call(scale_fill_continuous_sequential, list(name = "\u0177",
+                                       palette = "BluYl", limits = limits))
+
   }
 
 
@@ -190,11 +192,10 @@ ggpdpPairs <- function(task, model, method = "pdp",
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
     pdp <- pdplist1[[paste(vars[1])]]
     aggr <- pdp$results[pdp$results$.type != "ice", ]
-    p <- plot(pdp, rug=FALSE)
+    p <- plot(pdp, rug=T)
     p$layers[[2]] <- NULL # Dont draw yellow agg line
     p + geom_line(aes(y = .value, group = .id, color = .value)) +
-        scale_colour_gradient2(low = colLow, mid = colMid, high = colHigh,
-                             midpoint = midLimit) +
+      do.call(scale_color_continuous_sequential, list(palette = "BluYl", limits = limits)) +
         geom_line(data = aggr, size = 1, color = "black", lineend = "round")
 
   }
@@ -203,8 +204,7 @@ ggpdpPairs <- function(task, model, method = "pdp",
   ggpdpc <- function(data, mapping, ...) {
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
     pdp <- pdplist[[paste(vars[2], vars[1], sep="pp")]]
-    # pdp <-FeatureEffect$new(pred.data, vars, method = method, grid.size=gridsize)
-    plot(pdp, rug=FALSE) + ylim(limits)
+    plot(pdp, rug=T) + ylim(limits)
   }
 
 
@@ -288,8 +288,8 @@ ggpdpPairs <- function(task, model, method = "pdp",
 
         # Prepare plot
         ggplot(df, aes(x = x, y = y, color = Pred)) +
-          geom_point(shape = 16, size = 1, show.legend = FALSE) +
-           scale_colour_gradient2(low = colLow, mid = colMid, high = colHigh, midpoint = midLimit)
+          geom_point(aes(fill = Pred), shape = 16, size = 1, show.legend = FALSE) +
+          do.call(scale_color_continuous_sequential, list(palette = "BluYl", limits = limits))
     }
 
     p <- ggpairs(xdata, title = ggTitle,
@@ -297,7 +297,6 @@ ggpdpPairs <- function(task, model, method = "pdp",
                  upper=list(continuous = ggpdp, combo = ggpdpc, discrete = ggpdp),
                  diag = list(continuous = ggpdpDiag),
                  lower = list(continuous = default_fn),
-                 # lower=list(continuous=wrap("points", size = 0.5)),
                  legend=w,
                  cardinality_threshold = cardinality) +
       theme_bw() + theme(panel.border = element_rect(colour = "black", fill=NA, size=1),
