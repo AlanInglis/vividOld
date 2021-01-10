@@ -76,10 +76,6 @@ vividMatrix <- function(task, model, filter = NULL, gridSize = 10, normalize = F
   flInt[is.na(flInt)] <- 0
   flInt[(flInt <= 0)] <- 0
 
-  # flInt[is.nan(flInt)] <- 0.000001
-  # flInt[is.na(flInt)] <- 0.000001
-  # flInt[(flInt <= 0)] <- 0.000001
-
   if(length(colnames(flInt)) == length(vImp)){
     diag(flInt) <- vImp
   }else{vImp <- vImp[1:length(colnames(flInt))]
@@ -209,6 +205,10 @@ FLfunc <- function(fl, task, model, gridSize = gridSize, normalize = normalize, 
   dinteraction
 }
 
+
+# -------------------------------------------------------------------------
+# For classification
+
 FLfuncClassif <- function(fl, task, model, gridSize = gridSize, normalize = normalize, n_max = n_max,
                           seed = seed, sqrt = sqrt){
 
@@ -248,77 +248,3 @@ FLfuncClassif <- function(fl, task, model, gridSize = gridSize, normalize = norm
   dinteraction
 }
 
-
-
-#
-# vividClassif <- function(task, model, gridSize = gridSize, seed = seed){
-#   message(" Calculating variable importance...")
-#
-#   if (!is.null(seed)) {
-#     set.seed(seed)
-#   }else{seed = NULL}
-#
-#   # get data and target
-#
-#   data <-  task$data()
-#   data <- as.data.frame(data)
-#   target <- task$target_names
-#
-#   mod <- Predictor$new(model, data = data, y = target)
-#
-#   ## Get Variable Importance:
-#   lrnID <- model$properties
-#   testString <- "importance"
-#
-#   logID <- logical(length(lrnID))
-#   for(i in seq_along(lrnID)){
-#     logID[i] <- grepl(lrnID[i], testString, fixed = TRUE)
-#   }
-#
-#   # If (embedded learner) - else(agnostic varimp calc)
-#   if(any(logID) == TRUE){
-#     ovars <- task$feature_names
-#     Importance <- model$importance()
-#     impReorder <- Importance[order(factor(names(Importance), levels = ovars))]
-#     suppressMessages({
-#       Importance <- melt(impReorder)
-#     })
-#     Imp <-  Importance$value
-#   }else{
-#     imp <- FeatureImp$new(mod, loss = "mse")
-#     Imp <- imp$results$importance
-#     ovars <- imp$results$feature
-#     print("Agnostic variable importance method used.")
-#   }
-#
-#   ovars <- task$feature_names
-#   # Create progress bar
-#   pb <- progress_bar$new(
-#     format = "  Calculating variable interactions...[:bar]:percent. ETA::eta ",
-#     total = length(ovars),
-#     clear = FALSE)
-#
-#   res  <- NULL
-#   for (i in 1:length(ovars)){
-#     suppressMessages({
-#       res <- rbind(res, Interaction$new(mod, grid.size = gridSize, feature=ovars[i])$results)
-#     })
-#     pb$tick()
-#   }
-#
-#   res[[".feature"]]<- reorder(res[[".feature"]], res[[".interaction"]])
-#
-#
-#   vars2 <- t(simplify2array(strsplit(as.character(res[[".feature"]]),":"))) # split/get feature names
-#   dinteraction <- matrix(0, length(ovars), length(ovars))                   # create matrix
-#   rownames(dinteraction) <- colnames(dinteraction) <- ovars                 # set names
-#   dinteraction[vars2] <- res[[".interaction"]]                              # set values
-#   dinteraction <- (dinteraction+t(dinteraction))/2   # avg over values to make symmetrical
-#   dinteraction1 <- data.frame(interaction=as.vector(dinteraction))
-#   diag(dinteraction) <- Imp
-#   dinteraction[is.nan(dinteraction)] <- 0
-#   #class(dinteraction) = 'vivid'
-#   class(dinteraction) <- c("vivid", class(dinteraction))
-#
-#   dinteraction
-# }
