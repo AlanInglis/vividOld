@@ -31,8 +31,8 @@
 #' library(mlr3)
 #' library(mlr3learners)
 #' library(ranger)
-#' aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
-#' aq_lrn = lrn("regr.ranger", importance = "permutation")
+#' aq_Task <- TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
+#' aq_lrn <- lrn("regr.ranger", importance = "permutation")
 #' aq_Mod <- aq_lrn$train(aq_Task)
 #'
 #' # Create matrix
@@ -50,7 +50,7 @@ vividMatrix <- function(task, model, filter = NULL, gridSize = 10, normalize = F
 
   # if classif
   if(model$task_type == "classif"){
-    # stop("Currently only models with numeric or binary response are supported.")
+
 
     fl <- flashClassif(task, model, main)
 

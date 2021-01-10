@@ -187,18 +187,40 @@ ggpdpPairs <- function(task, model, method = "pdp",
 
 
   # Plot prep for diag pdps
+  # ovars <- task$feature_names
+  # ggpdpDiag <- function(data, mapping, ...) {
+  #   vars <- c(quo_name(mapping$x), quo_name(mapping$y))
+  #   pdp <- pdplist1[[paste(vars[1])]]
+  #   aggr <- pdp$results[pdp$results$.type != "ice", ]
+  #   p <- plot(pdp, rug=T)
+  #   p$layers[[2]] <- NULL # Dont draw yellow agg line
+  #   p + geom_line(aes(y = .value, group = .id, color = .value)) +
+  #     do.call(scale_color_continuous_sequential, list(palette = "BluYl", limits = limits)) +
+  #       geom_line(data = aggr, size = 1, color = "black", lineend = "round")
+  #
+  # }
+
+  # Plot prep for diag pdps
   ovars <- task$feature_names
+  nice <- min(30, nrow(xdata)) # ch, make this an argument for the function
+  sice <- c(NA, sample(nrow(xdata), nice)) # ch
   ggpdpDiag <- function(data, mapping, ...) {
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
     pdp <- pdplist1[[paste(vars[1])]]
+    pdp$results <- subset(pdp$results, .id %in% sice) # ch
     aggr <- pdp$results[pdp$results$.type != "ice", ]
-    p <- plot(pdp, rug=T)
+    p <- plot(pdp, rug=FALSE)
     p$layers[[2]] <- NULL # Dont draw yellow agg line
     p + geom_line(aes(y = .value, group = .id, color = .value)) +
       do.call(scale_color_continuous_sequential, list(palette = "BluYl", limits = limits)) +
-        geom_line(data = aggr, size = 1, color = "black", lineend = "round")
+      geom_line(data = aggr, size = 1, color = "black", lineend = "round")
 
   }
+
+
+
+
+
 
   # plot prep for class.
   ggpdpc <- function(data, mapping, ...) {
