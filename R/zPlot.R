@@ -151,17 +151,8 @@ pdpZenplot <- function(task, model, zpath=NULL, method = "pdp",
 
     pdp <- pdplist[[z2index]]$pdp
     if (!is.null(pdp)) {
-<<<<<<< HEAD
-      p <- plot(pdp, rug=T ) +
-        do.call(scale_fill_continuous_sequential, list(palette = "BluYl", limits = limits)) +
-        # scale_fill_gradient2(name="\u0177",low = "#D7191C",
-        #                      mid = "#FFFFBF",
-        #                      high = "#2B83BA",
-        #                      midpoint = midLimit, limits=limits)+
-=======
       p <- plot(pdp, rug=FALSE ) +
         scale_fill_gradientn(name = "\u0177",colors = pal, limits = limits)+
->>>>>>> b52f83fd12420f83c9b2c8030d68487f44667158
         guides(fill=FALSE, color=FALSE) +
         theme_bw() +
         theme(axis.line = element_blank(),
@@ -173,11 +164,11 @@ pdpZenplot <- function(task, model, zpath=NULL, method = "pdp",
               panel.border = element_rect(colour = "gray", fill=NA, size = 1.5))}
     else p <- ggplot() +theme(panel.background = element_blank())
 
-   ggplot_gtable(ggplot_build(p))
+    ggplot_gtable(ggplot_build(p))
   }
   suppressMessages({
-  zenplot(zdata, pkg="grid", labs=list(group=NULL),
-          plot2d = function(zargs) ggplot2d(zargs), ...)
+    zenplot(zdata, pkg="grid", labs=list(group=NULL),
+            plot2d = function(zargs) ggplot2d(zargs), ...)
   })
 
 }
