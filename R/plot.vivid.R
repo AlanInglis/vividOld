@@ -6,10 +6,12 @@
 #' @param x An object of class \code{vivid} created via vividMatrix.
 #' @param type Type of plot required.
 #' @param plotly If TRUE then an interactive plotly heatMap plot is displayed.
-#' @param intLow Colour, set by the user, to display low interaction strengths.
-#' @param intHigh Colour, set by the user, to display high interaction strengths.
-#' @param impLow Colour, set by the user, to display low importance values.
-#' @param impHigh Colour, set by the user, to display high importance values.
+#' @param intLow Colour, set by the user, to display low interaction strengths for plotly.
+#' @param intHigh Colour, set by the user, to display high interaction strengths for plotly.
+#' @param impLow Colour, set by the user, to display low importance values for plotly.
+#' @param impHigh Colour, set by the user, to display high importance values for plotly.
+#' @param intPal A colorspace colour palette to display the interaction values.
+#' @param impPal A colorspace colour palette to display the importance values.
 #' @param angle The angle to display the x-axis labels.
 #' @param top Returns the first part of the interaction matrix and resulting plot. Similar to head() function.
 #' For use with \code{"heatMap"} and \code{"allInteractions"}.
@@ -26,6 +28,7 @@
 #' @param layout Determines the shape, or layout, of the plotted network graph.
 #' @param cluster If cluster = TRUE, then the data is clustered in groups.
 #' @param clusterType = Network-based clustering. Any of the appropriate cluster types from the igraph package are allowed.
+#' @param clusterLayout = Determines the shape, or layout, of the clustered plotted graph.
 #' @param plotType The type of interaction/importance plot to display, either "lollipop", "barplot", or "circleBar".
 #' For use with \code{"allInteractions"}, and \code{"importance"}
 #' @param ... Not currently implemented.
@@ -45,8 +48,8 @@
 #' library(mlr3)
 #' library(mlr3learners)
 #' library(ranger)
-#' aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
-#' aq_lrn = lrn("regr.ranger", importance = "permutation")
+#' aq_Task <- TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
+#' aq_lrn <- lrn("regr.ranger", importance = "permutation")
 #' aq_Mod <- aq_lrn$train(aq_Task)
 #'
 #'#' # Create matrix
@@ -61,6 +64,8 @@ plot.vivid <- function(x,
                        # for heatmap
                        plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
                        impLow = "floralwhite", impHigh = "firebrick1", top = NULL, reorder=TRUE,
+                       intPal = rev(sequential_hcl(palette = "Blues 3", n = 11)),
+                       impPal = rev(sequential_hcl(palette = "Reds 3", n = 11)),
                        minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL, angle = NULL,
                        #for network
                        thresholdValue = 0,
@@ -68,6 +73,7 @@ plot.vivid <- function(x,
                        labelNudge = 0.05, layout = "circle",
                        cluster = F,
                        clusterType = cluster_optimal,
+                       clusterLayout = layout_with_fr,
                        # for all interactions
                        plotType = "lollipop",
                        type = c("heatMap",
@@ -132,8 +138,9 @@ plot.vivid <- function(x,
   if(plotly){
     plotlyPlot(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh,...)
 
-  }else{plotHeat(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh,
-                 minImp=minImp, maxImp=maxImp, minInt=minInt, maxInt=maxInt,angle = angle,...)
+  }else{plotHeat(dint, intPal, impPal,
+                 minImp=minImp, maxImp=maxImp, minInt=minInt, maxInt=maxInt,
+                 angle = angle,...)
   }
 
 }else if ('network'%in%type) {
