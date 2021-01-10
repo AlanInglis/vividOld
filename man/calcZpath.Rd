@@ -39,7 +39,7 @@ library(mlr3)
 library(mlr3learners)
 library(ranger)
 ozonet  <- TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
-ozonel <- lrn("regr.ranger", importance = "permutation")
+ozonel  <- lrn("regr.ranger", importance = "permutation")
 ozonef  <- ozonel$train(ozonet)
 
 # Create matrix
