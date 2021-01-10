@@ -13,6 +13,8 @@
   impHigh = "firebrick1",
   top = NULL,
   reorder = TRUE,
+  intPal = rev(sequential_hcl(palette = "Blues 3", n = 11)),
+  impPal = rev(sequential_hcl(palette = "Reds 3", n = 11)),
   minImp = NULL,
   maxImp = NULL,
   minInt = 0,
@@ -24,6 +26,7 @@
   layout = "circle",
   cluster = F,
   clusterType = cluster_optimal,
+  clusterLayout = layout_with_fr,
   plotType = "lollipop",
   type = c("heatMap", "network", "allInteractions", "importance"),
   ...
@@ -34,16 +37,20 @@
 
 \item{plotly}{If TRUE then an interactive plotly heatMap plot is displayed.}
 
-\item{intLow}{Colour, set by the user, to display low interaction strengths.}
+\item{intLow}{Colour, set by the user, to display low interaction strengths for plotly.}
 
-\item{intHigh}{Colour, set by the user, to display high interaction strengths.}
+\item{intHigh}{Colour, set by the user, to display high interaction strengths for plotly.}
 
-\item{impLow}{Colour, set by the user, to display low importance values.}
+\item{impLow}{Colour, set by the user, to display low importance values for plotly.}
 
-\item{impHigh}{Colour, set by the user, to display high importance values.}
+\item{impHigh}{Colour, set by the user, to display high importance values for plotly.}
 
 \item{top}{Returns the first part of the interaction matrix and resulting plot. Similar to head() function.
 For use with \code{"heatMap"} and \code{"allInteractions"}.}
+
+\item{intPal}{A colorspace colour palette to display the interaction values.}
+
+\item{impPal}{A colorspace colour palette to display the importance values.}
 
 \item{minImp}{Minimum importance value to be displayed on the legend.}
 
@@ -70,6 +77,8 @@ A higher value will postion the label farther above the nodes. For use with \cod
 
 \item{clusterType}{= Network-based clustering. Any of the appropriate cluster types from the igraph package are allowed.}
 
+\item{clusterLayout}{= Determines the shape, or layout, of the clustered plotted graph.}
+
 \item{plotType}{The type of interaction/importance plot to display, either "lollipop", "barplot", or "circleBar".
 For use with \code{"allInteractions"}, and \code{"importance"}}
 
@@ -92,8 +101,8 @@ aq <- na.omit(aq)
 library(mlr3)
 library(mlr3learners)
 library(ranger)
-aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
-aq_lrn = lrn("regr.ranger", importance = "permutation")
+aq_Task <- TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
+aq_lrn <- lrn("regr.ranger", importance = "permutation")
 aq_Mod <- aq_lrn$train(aq_Task)
 
 #' # Create matrix
