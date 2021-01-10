@@ -128,19 +128,24 @@ pdpZenplot <- function(task, model, zpath=NULL, method = "pdp",
     pb1$tick()
   }
 
+
+
+  # get predictions
+  Pred <- pred.data$predict(data)
+  colnames(Pred) <- "prd"
+  Pred <- Pred$prd
+
+
   # Set limits for pairs
   if (is.null(fitlims)){
     pdplist0 <- lapply(pdplist, function(x) x$pdp)
     pdplist0 <-pdplist0[!sapply(pdplist0, is.null)]
     r <- sapply(pdplist0, function(x) range(x$results[,3]))
-    r <- range(r)
+    r <- range(c(r,Pred))
     limits <- range(labeling::rpretty(r[1],r[2]))
   } else
     limits <- fitlims
 
-  Pred <- pred.data$predict(data)
-  colnames(Pred) <- "prd"
-  Pred <- Pred$prd
 
 
   # Zenplot graphing function
