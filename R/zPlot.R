@@ -14,9 +14,7 @@
 #' "double.zigzag": zigzag plot in the form of a flipped “S”. Along this path, the plots are placed in the form of an “S” which is rotated counterclockwise by 90 degrees.
 #' "single.zigzag": zigzag plot in the form of a flipped “S”.
 #' "rectangular": plots that fill the page from left to right and top to bottom. This is useful (and most compact) for plots that do not share an axis.
-#' @param colLow Colour to be used for low values.
-#' @param colMid Colour to be used for mid values.
-#' @param colHigh Colour to be used for low values.
+#' @param pal A vector of colors to show predictions, for use with scale_fill_gradientn
 #' @param fitlims If supplied, should be a numeric vector of length 2, specifying the fit range.
 #' @param gridsize for the pdp/ale plots, defaults to 10.
 #' @param class For a classification model, show the probability of this class. Defaults to 1.
@@ -58,7 +56,7 @@
 pdpZenplot <- function(task, model, zpath=NULL, method = "pdp",
                        noCols = c("letter", "square", "A4", "golden", "legal"),
                        zenMethod = c("tidy", "double.zigzag", "single.zigzag", "rectangular"),
-                       colLow = "#D7191C", colMid = "#FFFFBF", colHigh = "#2B83BA",
+                       pal=rev(RColorBrewer::brewer.pal(11,"RdYlBu")),
                        fitlims = NULL, gridsize = 10, class = 1,...){
 
   prob <- model$task_type == "classif"
@@ -143,7 +141,6 @@ pdpZenplot <- function(task, model, zpath=NULL, method = "pdp",
   Pred <- pred.data$predict(data)
   colnames(Pred) <- "prd"
   Pred <- Pred$prd
-  midLimit <- floor(median(Pred))
 
 
   # Zenplot graphing function
@@ -154,12 +151,17 @@ pdpZenplot <- function(task, model, zpath=NULL, method = "pdp",
 
     pdp <- pdplist[[z2index]]$pdp
     if (!is.null(pdp)) {
+<<<<<<< HEAD
       p <- plot(pdp, rug=T ) +
         do.call(scale_fill_continuous_sequential, list(palette = "BluYl", limits = limits)) +
         # scale_fill_gradient2(name="\u0177",low = "#D7191C",
         #                      mid = "#FFFFBF",
         #                      high = "#2B83BA",
         #                      midpoint = midLimit, limits=limits)+
+=======
+      p <- plot(pdp, rug=FALSE ) +
+        scale_fill_gradientn(name = "\u0177",colors = pal, limits = limits)+
+>>>>>>> b52f83fd12420f83c9b2c8030d68487f44667158
         guides(fill=FALSE, color=FALSE) +
         theme_bw() +
         theme(axis.line = element_blank(),

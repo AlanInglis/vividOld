@@ -5,7 +5,7 @@
 #' @description Used to reorder a square matrix so that values of high importance and
 #' interaction strength are pushed to the top left of the matrix.
 #'
-#' @param matrix A matrix to be reordered.
+#' @param d A matrix to be reordered.
 #'
 #' @return A matrix of reordered values
 #'
@@ -22,8 +22,8 @@
 #' library(mlr3learners)
 #' library(ranger)
 #'
-#' Task = TaskRegr$new(id = "Fried", backend = myData, target = "y")
-#' lrn = lrn("regr.ranger", importance = "permutation")
+#' Task <- TaskRegr$new(id = "Fried", backend = myData, target = "y")
+#' lrn <- lrn("regr.ranger", importance = "permutation")
 #' Mod <- lrn$train(Task)
 #'
 #' # Create matrix
@@ -35,17 +35,18 @@
 #'
 #' @export
 
-reorderMatrix <- function(matrix){
-  vimp <- diag(matrix)
-  vimp <- as.dist(sqrt(outer(vimp, vimp)))
-  svimp <- diff(range(vimp))
-
-  vint <- as.dist(matrix)
-  svint <- diff(range(vint))
-  o <- dser( -(vimp/svimp + vint/svint ), cost=costLPL)
-  matrix <- matrix[o,o]
-  class(matrix) <- c("vivid", class(matrix))
-  matrix
+reorderMatrix <- function(d){
+  vimp <- diag(d)
+  rvimp <- range(vimp)
+  vimp <- (vimp - rvimp[1])/(rvimp[2] - rvimp[1])
+  vint <- as.dist(d)
+  rvint <- range(vint)
+  vint <-  (vint - rvint[1])/(rvint[2] - rvint[1])
+  score <- apply(as.matrix(vint), 1,max) + vimp
+  o <- dser( -vint , -score, cost=costLS)
+  res<- d[o,o]
+  class(res)<- c("vivid", "matrix", "array")
+  res
 }
 
 
