@@ -3,13 +3,10 @@
 #' @description Plots a Heatmap-tyle display showingVariable Importance and Variable Interaction
 #'
 #' @param mat A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.
+#' @param intPal A colorspace colour palette to display the interaction values.
+#' @param impPal A colorspace colour palette to display the importance values.
 #' @param plotly If TRUE then an interactive plot is displayed.
-#' @param intLow Colour, set by the user, to display low interaction strengths.
-#' @param intHigh Colour, set by the user, to display high interaction strengths.
-#' @param impLow Colour, set by the user, to display low importance values.
-#' @param impHigh Colour, set by the user, to display high importance values.
 #' @param top Returns the first part of the interaction matrix and resulting plot. Similar to head() function.
-#' @param reorder If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances
 #' @param minInt Minimum interaction strength to be displayed on the legend.
 #' @param maxInt Maximum interaction strength to be displayed on the legend.
 #' @param minImp Minimum importance value to be displayed on the legend.
@@ -28,10 +25,9 @@
 #' @importFrom stats "reorder"
 #' @importFrom stats "as.dist"
 #' @importFrom utils "globalVariables"
-#' @import DendSer
 #' @importFrom cowplot "get_legend"
 #' @importFrom cowplot "plot_grid"
-#' @importFrom colorspace "scale_fill_continuous_sequential"
+#' @importFrom colorspace "sequential_hcl"
 #'
 #'
 #' @examples
@@ -43,8 +39,8 @@
 #' library(mlr3)
 #' library(mlr3learners)
 #' library(ranger)
-#' aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
-#' aq_lrn = lrn("regr.ranger", importance = "permutation")
+#' aq_Task <- TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
+#' aq_lrn <- lrn("regr.ranger", importance = "permutation")
 #' aq_Mod <- aq_lrn$train(aq_Task)
 #'
 #' # Create matrix
@@ -59,9 +55,11 @@
 
 
 plotHeat <- function(dinteraction,
-                     plotly = FALSE, intLow = "floralwhite", intHigh = "dodgerblue4",
-                     impLow = "floralwhite", impHigh = "firebrick1", top = NULL ,
+                     plotly = FALSE,
+                     top = NULL ,
                      title="",
+                     intPal = rev(sequential_hcl(palette = "Blues 3", n = 11)),
+                     impPal = rev(sequential_hcl(palette = "Reds 3", n = 11)),
                      minImp = NULL, maxImp = NULL, minInt = NULL, maxInt = NULL,
                      angle = NULL,
                       ...){
@@ -103,14 +101,12 @@ plotHeat <- function(dinteraction,
               mapping = aes(x = var_num1, y = var_num2)) +
     scale_x_continuous(breaks = index, labels = labelNames, position = "top") +
     scale_y_reverse(breaks = index, labels = labelNames) +
-    geom_tile(aes(fill = `Interaction\nStrength`),
-              alpha = var_int$alpha_int) +
-    do.call(scale_fill_continuous_sequential,list(palette = "Blues 3",limits=c(minInt, maxInt))) +
+    geom_tile(aes(fill = `Interaction\nStrength`), alpha = var_int$alpha_int) +
+    scale_fill_gradientn(colors = intPal, limits=c(minInt, maxInt)) +
     labs(title = title) +
     new_scale_fill() +
-    geom_tile(aes(fill = `Variable\nImportance`),
-              alpha = var_int$alpha_imp) +
-    do.call(scale_fill_continuous_sequential,list(palette = "Reds 3", limits=c(minImp, maxImp))) +
+    geom_tile(aes(fill = `Variable\nImportance`), alpha = var_int$alpha_imp) +
+    scale_fill_gradientn(colors = impPal, limits=c(minImp, maxImp)) +
     xlab('') +
     ylab('') +
     theme_light() +
@@ -127,7 +123,7 @@ plotHeat <- function(dinteraction,
     scale_y_reverse(breaks = index, labels = labelNames) +
     geom_tile(aes(fill = `Interaction\nStrength`),
                 alpha = var_int$alpha_int) +
-    do.call(scale_fill_continuous_sequential,list(palette = "Blues 3",limits=c(minInt, maxInt))) +
+    scale_fill_gradientn(colors = intPal, limits=c(minInt, maxInt)) +
     labs(title = title)
 
 
@@ -136,7 +132,7 @@ plotHeat <- function(dinteraction,
     guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5)) +
      geom_tile(aes(fill = `Variable\nImportance`),
                  alpha = var_int$alpha_imp) +
-    do.call(scale_fill_continuous_sequential,list(palette = "Reds 3", limits=c(minImp, maxImp))) +
+    scale_fill_gradientn(colors = impPal, limits=c(minImp, maxImp)) +
   xlab('') +
   ylab('') +
   theme_light() +

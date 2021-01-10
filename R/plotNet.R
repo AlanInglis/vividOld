@@ -10,10 +10,13 @@
 #' @param maxInt Maximum interaction strength to be displayed on the legend.
 #' @param minImp Minimum importance value to be displayed on the legend.
 #' @param maxImp Maximum importance value to be displayed on the legend.
+#' @param intPal A colorspace colour palette to display the interaction values.
+#' @param impPal A colorspace colour palette to display the importance values.
 #' @param labelNudge A value, set by the user, to determine the y_postioning of the variables names. A higher value will postion the label farther above the nodes.
 #' @param layout Determines the shape, or layout, of the plotted graph.
 #' @param cluster If cluster = TRUE, then the data is clustered in groups.
 #' @param clusterType = Network-based clustering. Any of the appropriate cluster types from the igraph package are allowed.
+#' @param clusterLayout = Determines the shape, or layout, of the clustered plotted graph.
 #' @param ... Not currently implemented.
 #'
 #' @return A newtwork style plot displaying interaction strength between variables on the edges and variable importance on the nodes.
@@ -32,7 +35,7 @@
 #' @importFrom ggalt "geom_encircle"
 #' @importFrom cowplot "get_legend"
 #' @importFrom cowplot "plot_grid"
-#' @importFrom colorspace "scale_fill_continuous_sequential"
+#' @importFrom colorspace "sequential_hcl"
 #'
 #' @examples
 #' # Load in the data:
@@ -43,8 +46,8 @@
 #' library(mlr3)
 #' library(mlr3learners)
 #' library(ranger)
-#' aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
-#' aq_lrn = lrn("regr.ranger", importance = "permutation")
+#' aq_Task <- TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
+#' aq_lrn <- lrn("regr.ranger", importance = "permutation")
 #' aq_Mod <- aq_lrn$train(aq_Task)
 #'
 #' # Create matrix
@@ -59,9 +62,16 @@
 plotNet <- function(dinteraction,
                     model,
                     thresholdValue = 0,
-                    label, minInt = 0, maxInt = NULL, minImp = NULL, maxImp = NULL,
-                    labelNudge = 0.05, layout = "circle",
-                    cluster = F, clusterType = cluster_optimal, ...){
+                    label,
+                    minInt = 0, maxInt = NULL, minImp = NULL, maxImp = NULL,
+                    intPal = rev(sequential_hcl(palette = "Blues 3", n = 11)),
+                    impPal = rev(sequential_hcl(palette = "Reds 3", n = 11)),
+                    labelNudge = 0.05,
+                    layout = "circle",
+                    cluster = F,
+                    clusterType = cluster_optimal,
+                    clusterLayout = layout_with_fr,
+                    ...){
 
 
   # Get importance values
@@ -80,8 +90,7 @@ plotNet <- function(dinteraction,
   sorted_Int <- sort(sortInt, index.return=TRUE)                     # Sort values whilst preserving the index
   Int <- sorted_Int$x
   maximumInt <- max(Int)
-  #maximumInt <- max(Int)+0.01
-  nam <- colnames(dinteraction)                     # Get feature names
+  nam <- colnames(dinteraction)                                      # Get feature names
 
   # Set path direction of graph:
   to <- NULL
@@ -95,21 +104,17 @@ plotNet <- function(dinteraction,
   net.bg <- make_graph(matched_gDFL, length(nam))
 
   # Scale and round values:
-  #Int <- round(Int,5)
-  #Int[Int<=1e-5] <-0.01
   E(net.bg)$weight <- Int
   Imp <- (5-1)*((Imp-min(Imp))/(max(Imp)-min(Imp)))+1 # scale between 1-5
   Imp  <- round(Imp,2)
 
   # Set the edge colours
-  colfunction <- sequential_hcl(palette = "Blues 3", n = 10, rev = T) #colorRampPalette(c("floralwhite", "dodgerblue4"))
+  colfunction <- intPal
   edgeColour <- (E(net.bg)$weight)
   cut_int <- cut(edgeColour, 10)
   if(is.null(maxInt)){
-    #npal <- colfunction(9)
   npal <- colfunction[1:length(edgeColour)]
   }else{
-    #colVal <- 10 * (maxInt/0.1)
     npal <- colfunction[1:length(edgeColour)]}
   edgeCols <- npal[cut_int]
 
@@ -119,7 +124,6 @@ plotNet <- function(dinteraction,
 
   # Get edge weights
   weightDF <- get.data.frame(net.bg) # get df of graph attributes
-  #weightDF[weightDF<=1e-5] <- 0.01
   edgeWidth1 <- weightDF$weight  # select edge weight
   edgeWidthScaled <- (5-1)*((edgeWidth1-min(edgeWidth1))/(max(edgeWidth1)-min(edgeWidth1)))+1 # scale between 1-5
 
@@ -169,7 +173,6 @@ plotNet <- function(dinteraction,
 
   }else{net.sp <- net.bg
   weightDF <- get.data.frame(net.sp) # get df of graph attributes
-  #weightDF[weightDF<=1e-5] <- 0.01
   edgeL <- weightDF$weight  # select edge weight
   edgeW <- (5-1)*((edgeWidth1-min(edgeWidth1))/(max(edgeWidth1)-min(edgeWidth1)))+1 # scale between 1-5
   }
@@ -207,8 +210,7 @@ plotNet <- function(dinteraction,
 
   if(cluster){
 
-   # l_1 <- layout_in_circle(net.sp)
-    l_1 <- layout_with_fr(net.sp)
+    l_1 <- clusterLayout(net.sp)
     com <- clusterType(net.sp)
     V(net.sp)$color <- com$membership
     group <- V(net.sp)$color
@@ -220,7 +222,7 @@ plotNet <- function(dinteraction,
                             "orange", "pink", "green", "red" , "blue", "yellow"))
     colorC <- colrs[group]
 
-    pcl <- ggnet2(g,
+    pcl <- ggnet2(net.sp,
                  mode = l_1,
                  size = 0,
                  edge.size = edgeW,
@@ -229,11 +231,11 @@ plotNet <- function(dinteraction,
       theme(legend.text = element_text(size = 10)) +
       geom_label(aes(label = nam),nudge_y = labelNudge) +
       geom_point(aes(fill = Imp1), size = Imp*2, col = "transparent", shape = 21) +
-      do.call(scale_fill_continuous_sequential, list(name = "Variable\nImportance", palette = "Reds 3",  limits = c(minImp,maxImp)))+
+      scale_fill_gradientn(name = "Variable\nImportance", colors = impPal, limits=c(minImp, maxImp)) +
       theme(legend.position = "none")
 
 
-    ppcl <- ggnet2(g,
+    ppcl <- ggnet2(net.sp,
                   mode = l_1,
                   size = 0,
                   edge.size = edgeW,
@@ -242,13 +244,13 @@ plotNet <- function(dinteraction,
       theme(legend.text = element_text(size = 10)) +
       geom_label(aes(label = nam),nudge_y = labelNudge) +
       geom_point(aes(fill = Imp1), size = Imp*2, col = "transparent", shape = 21) +
-      do.call(scale_fill_continuous_sequential, list(name = "Variable\nImportance", palette = "Reds 3",  limits = c(minImp,maxImp)))+
+      scale_fill_gradientn(name = "Variable\nImportance", colors = impPal, limits=c(minImp, maxImp)) +
       guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5))
 
 
       intDFcl <- as.data.frame(Int)
       pppcl <- ggplot(intDFcl) + geom_tile(aes(x = 0, y = 0, fill = Int), size = -1) +
-             do.call(scale_fill_continuous_sequential, list(name = "Interaction\nStrength", palette = "Blues 3",  limits = c(minInt,maxInt))) +
+             scale_fill_gradientn(name = "Interaction\nStrength", colors = intPal, limits=c(minInt, maxInt)) +
              guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5))
 
 
@@ -287,7 +289,7 @@ plotNet <- function(dinteraction,
       theme(legend.text = element_text(size = 10)) +
       geom_label(aes(label = nam),nudge_y = labelNudge) +
       geom_point(aes(fill = Imp1), size = Imp*2, colour = "transparent", shape = 21) +
-      do.call(scale_fill_continuous_sequential, list(name = "Variable\nImportance", palette = "Reds 3",  limits = c(minImp,maxImp)))+
+      scale_fill_gradientn(name = "Variable\nImportance", colors = impPal, limits=c(minImp, maxImp)) +
       theme(legend.position = "none")
 
 
@@ -301,12 +303,12 @@ plotNet <- function(dinteraction,
       theme(legend.text = element_text(size = 10)) +
       geom_label(aes(label = nam),nudge_y = labelNudge) +
       geom_point(aes(fill = Imp1), size = Imp*2, colour = "transparent", shape = 21) +
-      do.call(scale_fill_continuous_sequential, list(name = "Variable\nImportance", palette = "Reds 3",  limits = c(minImp,maxImp)))+
+      scale_fill_gradientn(name = "Variable\nImportance", colors = impPal, limits=c(minImp, maxImp)) +
       guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5))
 
      intDF <- as.data.frame(Int)
      ppp <- ggplot(intDF) + geom_tile(aes(x = 0, y = 0, fill = Int), size = -1) +
-       do.call(scale_fill_continuous_sequential, list(name = "Interaction\nStrength", palette = "Blues 3", limits = c(minInt, maxInt))) +
+       scale_fill_gradientn(name = "Interaction\nStrength", colors = intPal, limits=c(minInt, maxInt)) +
        guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5))
 
 
