@@ -8,18 +8,13 @@ ggpdpPairs(
   task,
   model,
   method = "pdp",
-  corrVal = FALSE,
-  corrMethod = "p",
   parallel = FALSE,
   vars = NULL,
-  colLow = "#D7191C",
-  colMid = "#FFFFBF",
-  colHigh = "#2B83BA",
+  pal = rev(RColorBrewer::brewer.pal(11, "RdYlBu")),
   fitlims = NULL,
   gridsize = 10,
   class = 1,
-  cardinality = 20,
-  mat = NULL,
+  nIce = 30,
   ...
 )
 }
@@ -30,20 +25,11 @@ ggpdpPairs(
 
 \item{method}{"pdp" (default) or "ale"}
 
-\item{corrVal}{If TRUE, then display the correlation coefficient on top of scatterplot.}
-
-\item{corrMethod}{a character string indicating which correlation coefficient (or covariance) is to be computed.
-One of "pearson" (default), "kendall", or "spearman".}
-
 \item{parallel}{If TRUE then the method is executed in parallel.}
 
-\item{vars}{Variables to plot. Defaults to all predictors.}
+\item{vars}{Specify which variables and their order to plot. Defaults to all predictors.}
 
-\item{colLow}{Colour to be used for low values.}
-
-\item{colMid}{Colour to be used for mid values.}
-
-\item{colHigh}{Colour to be used for low values.}
+\item{pal}{A vector of colors to show predictions, for use with scale_fill_gradientn}
 
 \item{fitlims}{If supplied, should be a numeric vector of length 2, specifying the fit range.}
 
@@ -51,9 +37,7 @@ One of "pearson" (default), "kendall", or "spearman".}
 
 \item{class}{For a classification model, show the probability of this class. Defaults to 1.}
 
-\item{cardinality}{Manually set the cardinality for ggpairs.}
-
-\item{mat}{If passed a matrix then the ggPDPpairs plot will be reordered to match the order of the matrix.}
+\item{nIce}{Number of ice curves to be plotted, defaults to 30}
 
 \item{...}{Not currently implemented.}
 }
@@ -72,15 +56,15 @@ library(MASS)
 Boston1 <- Boston[,c(4:6,8,13:14)]
 Boston1$chas <- factor(Boston1$chas)
 task <- TaskRegr$new(id = "Boston1", backend = Boston1, target = "medv")
-learner = lrn("regr.ranger", importance = "permutation")
+learner <- lrn("regr.ranger", importance = "permutation")
 fit <- learner$train(task)
 ggpdpPairs(task , fit)
 
 Boston2 <- Boston1
 Boston2$medv <- ggplot2::cut_interval(Boston2$medv, 3)
 levels(Boston2$medv) <- c("lo","mid", "hi")
-task = TaskClassif$new(id = "Boston2", backend = Boston2, target = "medv")
-learner = lrn("classif.ranger", importance = "impurity")
+task <- TaskClassif$new(id = "Boston2", backend = Boston2, target = "medv")
+learner <- lrn("classif.ranger", importance = "impurity")
 fit <- learner$train(task)
 ggpdpPairs(task , fit, class="hi")
 
