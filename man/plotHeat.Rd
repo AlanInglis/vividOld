@@ -7,12 +7,10 @@
 plotHeat(
   dinteraction,
   plotly = FALSE,
-  intLow = "floralwhite",
-  intHigh = "dodgerblue4",
-  impLow = "floralwhite",
-  impHigh = "firebrick1",
   top = NULL,
   title = "",
+  intPal = rev(sequential_hcl(palette = "Blues 3", n = 11)),
+  impPal = rev(sequential_hcl(palette = "Reds 3", n = 11)),
   minImp = NULL,
   maxImp = NULL,
   minInt = NULL,
@@ -24,17 +22,13 @@ plotHeat(
 \arguments{
 \item{plotly}{If TRUE then an interactive plot is displayed.}
 
-\item{intLow}{Colour, set by the user, to display low interaction strengths.}
-
-\item{intHigh}{Colour, set by the user, to display high interaction strengths.}
-
-\item{impLow}{Colour, set by the user, to display low importance values.}
-
-\item{impHigh}{Colour, set by the user, to display high importance values.}
-
 \item{top}{Returns the first part of the interaction matrix and resulting plot. Similar to head() function.}
 
 \item{title}{Adds title to the plot.}
+
+\item{intPal}{A colorspace colour palette to display the interaction values.}
+
+\item{impPal}{A colorspace colour palette to display the importance values.}
 
 \item{minImp}{Minimum importance value to be displayed on the legend.}
 
@@ -49,8 +43,6 @@ plotHeat(
 \item{...}{Not currently implemented.}
 
 \item{mat}{A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.}
-
-\item{reorder}{If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances}
 }
 \description{
 Plots a Heatmap-tyle display showingVariable Importance and Variable Interaction
@@ -64,8 +56,8 @@ aq <- na.omit(aq)
 library(mlr3)
 library(mlr3learners)
 library(ranger)
-aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
-aq_lrn = lrn("regr.ranger", importance = "permutation")
+aq_Task <- TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
+aq_lrn <- lrn("regr.ranger", importance = "permutation")
 aq_Mod <- aq_lrn$train(aq_Task)
 
 # Create matrix

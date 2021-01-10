@@ -4,10 +4,10 @@
 \alias{reorderMatrix}
 \title{reorderMatrix}
 \usage{
-reorderMatrix(matrix)
+reorderMatrix(d)
 }
 \arguments{
-\item{matrix}{A matrix to be reordered.}
+\item{d}{A matrix to be reordered.}
 }
 \value{
 A matrix of reordered values
@@ -27,8 +27,8 @@ library(mlr3)
 library(mlr3learners)
 library(ranger)
 
-Task = TaskRegr$new(id = "Fried", backend = myData, target = "y")
-lrn = lrn("regr.ranger", importance = "permutation")
+Task <- TaskRegr$new(id = "Fried", backend = myData, target = "y")
+lrn <- lrn("regr.ranger", importance = "permutation")
 Mod <- lrn$train(Task)
 
 # Create matrix

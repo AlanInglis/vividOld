@@ -11,9 +11,7 @@ pdpZenplot(
   method = "pdp",
   noCols = c("letter", "square", "A4", "golden", "legal"),
   zenMethod = c("tidy", "double.zigzag", "single.zigzag", "rectangular"),
-  colLow = "#D7191C",
-  colMid = "#FFFFBF",
-  colHigh = "#2B83BA",
+  pal = rev(RColorBrewer::brewer.pal(11, "RdYlBu")),
   fitlims = NULL,
   gridsize = 10,
   class = 1,
@@ -39,11 +37,7 @@ in which case a similar layout is constructed. See ?zenplot}
 "single.zigzag": zigzag plot in the form of a flipped “S”.
 "rectangular": plots that fill the page from left to right and top to bottom. This is useful (and most compact) for plots that do not share an axis.}
 
-\item{colLow}{Colour to be used for low values.}
-
-\item{colMid}{Colour to be used for mid values.}
-
-\item{colHigh}{Colour to be used for low values.}
+\item{pal}{A vector of colors to show predictions, for use with scale_fill_gradientn}
 
 \item{fitlims}{If supplied, should be a numeric vector of length 2, specifying the fit range.}
 
@@ -66,7 +60,7 @@ library(mlr3)
 library(mlr3learners)
 library(ranger)
 ozonet  <- TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
-ozonel <- lrn("regr.ranger", importance = "permutation")
+ozonel  <- lrn("regr.ranger", importance = "permutation")
 ozonef  <- ozonel$train(ozonet)
 
 # Create matrix

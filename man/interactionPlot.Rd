@@ -51,8 +51,8 @@ aq <- na.omit(aq)
 library(mlr3)
 library(mlr3learners)
 library(ranger)
-aq_Task = TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
-aq_lrn = lrn("regr.ranger", importance = "permutation")
+aq_Task <- TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
+aq_lrn <- lrn("regr.ranger", importance = "permutation")
 aq_Mod <- aq_lrn$train(aq_Task)
 
 # Create plot:
