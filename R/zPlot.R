@@ -36,7 +36,7 @@
 #' library(mlr3learners)
 #' library(ranger)
 #' ozonet  <- TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
-#' ozonel <- lrn("regr.ranger", importance = "permutation")
+#' ozonel  <- lrn("regr.ranger", importance = "permutation")
 #' ozonef  <- ozonel$train(ozonet)
 #'
 #' # Create matrix
@@ -147,7 +147,6 @@ pdpZenplot <- function(task, model, zpath=NULL, method = "pdp",
     limits <- fitlims
 
 
-
   # Zenplot graphing function
   z2index <- 0
   ggplot2d <- function(zargs) {
@@ -166,8 +165,10 @@ pdpZenplot <- function(task, model, zpath=NULL, method = "pdp",
               axis.text.y = element_blank(),
               axis.title.x = element_blank(),
               axis.title.y = element_blank(),
-              panel.border = element_rect(colour = "gray", fill=NA, size = 1.5))}
-    else p <- ggplot() +theme(panel.background = element_blank())
+              panel.border = element_rect(colour = "gray", fill=NA, size = 1.5))
+
+      }
+    else p <- ggplot() + theme(panel.background = element_blank())
 
     ggplot_gtable(ggplot_build(p))
   }
