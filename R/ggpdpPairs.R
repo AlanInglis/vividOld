@@ -21,14 +21,6 @@
 #' @importFrom GGally "wrap"
 #' @importFrom GGally "eval_data_col"
 #' @importFrom future "plan"
-<<<<<<< HEAD
-#' @importFrom stats "median"
-#' @importFrom stats "cor"
-#' @importFrom stats "loess"
-#' @importFrom colorspace "scale_fill_continuous_sequential"
-#' @importFrom colorspace "scale_color_continuous_sequential"
-=======
->>>>>>> b52f83fd12420f83c9b2c8030d68487f44667158
 #'
 #' @import progress
 #'
@@ -56,7 +48,7 @@
 #' @export
 
 ggpdpPairs <- function(task, model, method = "pdp",
-                      parallel = FALSE, vars = NULL, pal=rev(RColorBrewer::brewer.pal(11,"RdYlBu")),
+                       parallel = FALSE, vars = NULL, pal=rev(RColorBrewer::brewer.pal(11,"RdYlBu")),
                        fitlims = NULL, gridsize = 10, class = 1,
                        nIce=30,...){
 
@@ -112,7 +104,7 @@ ggpdpPairs <- function(task, model, method = "pdp",
   xyvar <- as.matrix(xyvar[xyvar[,1]<xyvar[,2],])
   xyvarn <- cbind(names(xdata)[xyvar[,1]], names(xdata)[xyvar[,2]])
 
-    # Create progress bar
+  # Create progress bar
   pb1 <- progress_bar$new(
     format = "  Calculating partial dependence...[:bar]:percent. Est::eta ",
     total = nrow(xyvarn),
@@ -140,61 +132,16 @@ ggpdpPairs <- function(task, model, method = "pdp",
   } else
     limits <- fitlims
 
-<<<<<<< HEAD
-  # get predictions
-  Pred <- pred.data$predict(data)
-  colnames(Pred) <- "prd"
-  Pred <- Pred$prd
-  midLimit <- floor(median(Pred))
-
-=======
->>>>>>> b52f83fd12420f83c9b2c8030d68487f44667158
 
   ggpdp <- function(data, mapping, ...) {
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
-<<<<<<< HEAD
-    pdp <- pdplist[[paste(vars[2], vars[1], sep="pp")]]
-    plot(pdp, rug=F) +
-      do.call(scale_fill_continuous_sequential, list(name = "\u0177",
-                                       palette = "BluYl", limits = limits))
-=======
     pdp <- pdplist[[paste(vars[1], vars[2], sep="pp")]]  # switch 1 and 2, ch
     plot(pdp, rug=F) +scale_fill_gradientn(name = "\u0177",colors = pal, limits = limits)
->>>>>>> b52f83fd12420f83c9b2c8030d68487f44667158
 
   }
 
 
   # Plot prep for diag pdps
-<<<<<<< HEAD
-  # ovars <- task$feature_names
-  # ggpdpDiag <- function(data, mapping, ...) {
-  #   vars <- c(quo_name(mapping$x), quo_name(mapping$y))
-  #   pdp <- pdplist1[[paste(vars[1])]]
-  #   aggr <- pdp$results[pdp$results$.type != "ice", ]
-  #   p <- plot(pdp, rug=T)
-  #   p$layers[[2]] <- NULL # Dont draw yellow agg line
-  #   p + geom_line(aes(y = .value, group = .id, color = .value)) +
-  #     do.call(scale_color_continuous_sequential, list(palette = "BluYl", limits = limits)) +
-  #       geom_line(data = aggr, size = 1, color = "black", lineend = "round")
-  #
-  # }
-
-  # Plot prep for diag pdps
-  ovars <- task$feature_names
-  nice <- min(30, nrow(xdata)) # ch, make this an argument for the function
-  sice <- c(NA, sample(nrow(xdata), nice)) # ch
-  ggpdpDiag <- function(data, mapping, ...) {
-    vars <- c(quo_name(mapping$x), quo_name(mapping$y))
-    pdp <- pdplist1[[paste(vars[1])]]
-    pdp$results <- subset(pdp$results, .id %in% sice) # ch
-    aggr <- pdp$results[pdp$results$.type != "ice", ]
-    p <- plot(pdp, rug=FALSE)
-    p$layers[[2]] <- NULL # Dont draw yellow agg line
-    p + geom_line(aes(y = .value, group = .id, color = .value)) +
-      do.call(scale_color_continuous_sequential, list(palette = "BluYl", limits = limits)) +
-      geom_line(data = aggr, size = 1, color = "black", lineend = "round")
-=======
 
   ggpdpDiag <- function(data, mapping, ...) {
     var<- quo_name(mapping$x) # ch
@@ -203,29 +150,18 @@ ggpdpPairs <- function(task, model, method = "pdp",
     pdpr <- subset(pdpr, .id %in% sice) # ch
     aggr <- pdpr[pdpr$.type != "ice", ] # ch
 
->>>>>>> b52f83fd12420f83c9b2c8030d68487f44667158
 
-     ggplot(data=pdpr, aes(x=.data[[var]], y=.value, color = .value))+
+    ggplot(data=pdpr, aes(x=.data[[var]], y=.value, color = .value))+
       geom_line(aes(group=.id, color=.value)) +
       scale_color_gradientn(name = "\u0177",colors = pal, limits = limits)+
-     geom_line(data = aggr, size = 1, color = "black", lineend = "round", group=1)
+      geom_line(data = aggr, size = 1, color = "black", lineend = "round", group=1)
   }
-
-
-
-
-
 
   # plot prep for class.
   ggpdpc <- function(data, mapping, ...) {
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
-<<<<<<< HEAD
-    pdp <- pdplist[[paste(vars[2], vars[1], sep="pp")]]
-    plot(pdp, rug=T) + ylim(limits)
-=======
     pdp <- pdplist[[paste(vars[1], vars[2], sep="pp")]] # switch 1 and 2, ch
     plot(pdp, rug=FALSE) + ylim(limits)
->>>>>>> b52f83fd12420f83c9b2c8030d68487f44667158
   }
 
 
@@ -251,93 +187,6 @@ ggpdpPairs <- function(task, model, method = "pdp",
     df <- data.frame(x = x, y = y)
 
 
-<<<<<<< HEAD
-  if(corrVal == TRUE){
-    GGscatterPlot <- function(data, mapping,method = corrMethod)
-    {
-      #Get correlation coefficient
-      x <- eval_data_col(data, mapping$x)
-      y <- eval_data_col(data, mapping$y)
-
-      corr <- cor(x, y, method = method)
-
-      # Assemble data frame
-      df <- data.frame(x = x, y = y)
-
-
-
-      # Set colour for label
-      colFn <- colorRampPalette(c("blue", "white", "red"), interpolate ='spline')
-      fill <- colFn(100)[findInterval(corr, seq(-1, 1, length=100))]
-
-      # Prepare plot
-      ggplot(df, aes(x = x, y = y, color = Pred)) +
-        geom_point(shape = 16, size = 1, show.legend = FALSE) +
-        geom_smooth(method=loess, fill="red", color="red", ...) +
-        geom_label(
-          data = data.frame(
-            xlabel = min(x, na.rm = TRUE),
-            ylabel = max(y, na.rm = TRUE),
-            lab = round(corr, digits = 3)),
-          mapping = ggplot2::aes(x = xlabel,
-                                 y = ylabel,
-                                 label = lab,
-                                 alpha = 0.5),
-          fill = fill,
-          hjust = 0, vjust = 1,
-          size = 3, fontface = "bold",
-          inherit.aes = FALSE) +
-        theme_minimal()
-    }
-
-    p <- ggpairs(xdata, title = ggTitle,
-                 upper = list(continuous = ggpdp, combo = ggpdpc, discrete = ggpdp),
-                 diag  = list(continuous = ggpdpDiag),
-                 lower = list(continuous = GGscatterPlot),
-                 legend=w,
-                 cardinality_threshold = cardinality) +
-      theme_bw() +
-      theme(panel.border = element_rect(colour = "black", fill=NA, size=1),
-            axis.line=element_line(),
-            axis.ticks = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = 1, size = 0),
-            axis.text.y = element_text(size = 0),
-            strip.text = element_text(face ="bold", colour ="red", size = 5))
-    p
-  }else{
-    default_fn <-  function(data, mapping)
-      {
-
-        x <- eval_data_col(data, mapping$x)
-        y <- eval_data_col(data, mapping$y)
-
-        # Assemble data frame
-        df <- data.frame(x = x, y = y)
-
-
-        # Prepare plot
-        ggplot(df, aes(x = x, y = y, color = Pred)) +
-          geom_point(aes(fill = Pred), shape = 16, size = 1, show.legend = FALSE) +
-          do.call(scale_color_continuous_sequential, list(palette = "BluYl", limits = limits))
-    }
-
-    p <- ggpairs(xdata, title = ggTitle,
-                 mapping=ggplot2::aes(colour = Pred),
-                 upper=list(continuous = ggpdp, combo = ggpdpc, discrete = ggpdp),
-                 diag = list(continuous = ggpdpDiag),
-                 lower = list(continuous = default_fn),
-                 legend=w,
-                 cardinality_threshold = cardinality) +
-      theme_bw() + theme(panel.border = element_rect(colour = "black", fill=NA, size=1),
-                         axis.line=element_line(),
-                         axis.ticks = element_blank(),
-                         axis.text.x = element_text(angle = 45, hjust = 1, size = 0),
-                         axis.text.y = element_text(size = 0),
-                         strip.text = element_text(face ="bold", colour ="red", size = 5))
-
-
-    p
-=======
     # Prepare plot
     ggplot(df, aes(x = x, y = y, color = Pred)) +
       geom_point(shape = 16, size = 1, show.legend = FALSE) +
@@ -348,7 +197,6 @@ ggpdpPairs <- function(task, model, method = "pdp",
 
     x <- eval_data_col(data, mapping$x)
     y <- eval_data_col(data, mapping$y)
->>>>>>> b52f83fd12420f83c9b2c8030d68487f44667158
 
     # Assemble data frame
     df <- data.frame(x = x, y = y)
@@ -389,4 +237,3 @@ ggpdpPairs <- function(task, model, method = "pdp",
   invisible(p)
 
 }
-
