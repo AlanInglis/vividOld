@@ -8,7 +8,9 @@
 #' @param parallel If TRUE then the method is executed in parallel.
 #' @param vars Specify which variables and their order to plot. Defaults to all predictors.
 #' @param pal A vector of colors to show predictions, for use with scale_fill_gradientn
-#' @param fitlims If supplied, should be a numeric vector of length 2, specifying the fit range.
+#' @param fitlims Specifies the fit range for the color map. Options are a numeric vector of length 2,
+#'  "pdp" (default), in which cases limits are calculated from the pdp, or "all", when limits are calculated from the points, pdp and ice.
+#'  Predictions outside fitlims are squished on the color scale.
 #' @param gridsize for the pdp/ale plots, defaults to 10.
 #' @param class For a classification model, show the probability of this class. Defaults to 1.
 #' @param nIce Number of ice curves to be plotted, defaults to 30
@@ -49,7 +51,7 @@
 
 ggpdpPairs <- function(task, model, method = "pdp",
                        parallel = FALSE, vars = NULL, pal=rev(RColorBrewer::brewer.pal(11,"RdYlBu")),
-                       fitlims = NULL, gridsize = 10, class = 1,
+                       fitlims = "pdp", gridsize = 10, class = 1,
                        nIce=30,...){
 
   # Set up registered cluster for parallel
@@ -124,19 +126,22 @@ ggpdpPairs <- function(task, model, method = "pdp",
   Pred <- Pred$prd
 
   # Set limits for pairs
-  if (is.null(fitlims)){
+  if (fitlims=="all"){
     r <- sapply(pdplist, function(x) range(x$results[[".value"]]))
     r1 <- sapply(pdplist1, function(x)  range(subset(x$results, .id %in% sice)[[".value"]]))
     r <- range(c(r,r1,Pred))
     limits <- range(labeling::rpretty(r[1],r[2]))
-  } else
-    limits <- fitlims
-
+  }
+  else if (fitlims == "pdp"){
+    r <- sapply(pdplist, function(x) range(x$results[[".value"]]))
+    r <- range(r)
+    limits <- range(labeling::rpretty(r[1],r[2]))
+  } else limits <- fitlims
 
   ggpdp <- function(data, mapping, ...) {
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
     pdp <- pdplist[[paste(vars[1], vars[2], sep="pp")]]  # switch 1 and 2, ch
-    plot(pdp, rug=F) +scale_fill_gradientn(name = "\u0177",colors = pal, limits = limits)
+    plot(pdp, rug=F) +scale_fill_gradientn(name = "\u0177",colors = pal, limits = limits, oob=scales::squish)
 
   }
 
@@ -153,7 +158,7 @@ ggpdpPairs <- function(task, model, method = "pdp",
 
     ggplot(data=pdpr, aes(x=.data[[var]], y=.value, color = .value))+
       geom_line(aes(group=.id, color=.value)) +
-      scale_color_gradientn(name = "\u0177",colors = pal, limits = limits)+
+      scale_color_gradientn(name = "\u0177",colors = pal, limits = limits,oob=scales::squish)+
       geom_line(data = aggr, size = 1, color = "black", lineend = "round", group=1)
   }
 
@@ -161,7 +166,7 @@ ggpdpPairs <- function(task, model, method = "pdp",
   ggpdpc <- function(data, mapping, ...) {
     vars <- c(quo_name(mapping$x), quo_name(mapping$y))
     pdp <- pdplist[[paste(vars[1], vars[2], sep="pp")]] # switch 1 and 2, ch
-    plot(pdp, rug=FALSE) + ylim(limits)
+    plot(pdp, rug=FALSE)
   }
 
 
@@ -190,7 +195,7 @@ ggpdpPairs <- function(task, model, method = "pdp",
     # Prepare plot
     ggplot(df, aes(x = x, y = y, color = Pred)) +
       geom_point(shape = 16, size = 1, show.legend = FALSE) +
-      scale_colour_gradientn(name = "\u0177",colors = pal, limits = limits)
+      scale_colour_gradientn(name = "\u0177",colors = pal, limits = limits,oob=scales::squish)
   }
 
   lowerPlotm <-  function(data, mapping) {
@@ -205,7 +210,7 @@ ggpdpPairs <- function(task, model, method = "pdp",
 
     ggplot(df, aes(x = x, y = y, color = Pred)) +
       geom_jitter(shape = 16, size = 1, show.legend = FALSE, width=jitterx, height=jittery) +
-      scale_colour_gradientn(name = "\u0177",colors = pal, limits = limits)
+      scale_colour_gradientn(name = "\u0177",colors = pal, limits = limits,oob=scales::squish)
   }
 
   p <- ggpairs(xdata, title = ggTitle,

@@ -15,7 +15,9 @@
 #' "single.zigzag": zigzag plot in the form of a flipped “S”.
 #' "rectangular": plots that fill the page from left to right and top to bottom. This is useful (and most compact) for plots that do not share an axis.
 #' @param pal A vector of colors to show predictions, for use with scale_fill_gradientn
-#' @param fitlims If supplied, should be a numeric vector of length 2, specifying the fit range.
+#' @param fitlims Specifies the fit range for the color map. Options are a numeric vector of length 2,
+#'  "pdp" (default), in which cases limits are calculated from the pdp.
+#'  Predictions outside fitlims are squished on the color scale.
 #' @param gridsize for the pdp/ale plots, defaults to 10.
 #' @param class For a classification model, show the probability of this class. Defaults to 1.
 #'
@@ -57,7 +59,7 @@ pdpZenplot <- function(task, model, zpath=NULL, method = "pdp",
                        noCols = c("letter", "square", "A4", "golden", "legal"),
                        zenMethod = c("tidy", "double.zigzag", "single.zigzag", "rectangular"),
                        pal=rev(RColorBrewer::brewer.pal(11,"RdYlBu")),
-                       fitlims = NULL, gridsize = 10, class = 1,...){
+                       fitlims = "pdp", gridsize = 10, class = 1,...){
 
   prob <- model$task_type == "classif"
   data <-  task$data()
@@ -130,18 +132,12 @@ pdpZenplot <- function(task, model, zpath=NULL, method = "pdp",
 
 
 
-  # get predictions
-  Pred <- pred.data$predict(data)
-  colnames(Pred) <- "prd"
-  Pred <- Pred$prd
-
-
   # Set limits for pairs
-  if (is.null(fitlims)){
+  if (fitlims=="pdp"){
     pdplist0 <- lapply(pdplist, function(x) x$pdp)
     pdplist0 <-pdplist0[!sapply(pdplist0, is.null)]
     r <- sapply(pdplist0, function(x) range(x$results[,3]))
-    r <- range(c(r,Pred))
+    r <- range(r)
     limits <- range(labeling::rpretty(r[1],r[2]))
   } else
     limits <- fitlims
@@ -156,7 +152,7 @@ pdpZenplot <- function(task, model, zpath=NULL, method = "pdp",
     pdp <- pdplist[[z2index]]$pdp
     if (!is.null(pdp)) {
       p <- plot(pdp, rug=FALSE ) +
-        scale_fill_gradientn(name = "\u0177",colors = pal, limits = limits)+
+        scale_fill_gradientn(name = "\u0177",colors = pal, limits = limits,oob=scales::squish)+
         guides(fill=FALSE, color=FALSE) +
         theme_bw() +
         theme(axis.line = element_blank(),
