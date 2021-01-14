@@ -12,8 +12,8 @@ pdpZenplot(
   noCols = c("letter", "square", "A4", "golden", "legal"),
   zenMethod = c("tidy", "double.zigzag", "single.zigzag", "rectangular"),
   pal = rev(RColorBrewer::brewer.pal(11, "RdYlBu")),
-  fitlims = NULL,
-  gridsize = 10,
+  fitlims = "pdp",
+  gridSize = 10,
   class = 1,
   ...
 )
@@ -39,9 +39,11 @@ in which case a similar layout is constructed. See ?zenplot}
 
 \item{pal}{A vector of colors to show predictions, for use with scale_fill_gradientn}
 
-\item{fitlims}{If supplied, should be a numeric vector of length 2, specifying the fit range.}
+\item{fitlims}{Specifies the fit range for the color map. Options are a numeric vector of length 2,
+"pdp" (default), in which cases limits are calculated from the pdp.
+Predictions outside fitlims are squished on the color scale.}
 
-\item{gridsize}{for the pdp/ale plots, defaults to 10.}
+\item{gridSize}{for the pdp/ale plots, defaults to 10.}
 
 \item{class}{For a classification model, show the probability of this class. Defaults to 1.}
 }

@@ -11,7 +11,6 @@
 #' @param gridSize The size of the grid for evaluating the predictions.
 #' @param normalize Should the variances explained be normalized? Default is FALSE.
 #' @param n_max Maximum number of data rows to consider.
-#' @param seed An integer random seed used for subsampling.
 #' @param sqrt In order to reproduce Friedman's H statistic, resulting values are root transformed. Set to FALSE if squared values should be returned.
 #' @param reorder If TRUE (default) uses DendSer to reorder the matrix of interactions and variable importances.
 #' @param main Define main category for classification.
@@ -46,7 +45,7 @@
 
 
 vividMatrix <- function(task, model, filter = NULL, gridSize = 10, normalize = FALSE, n_max = 1000,
-                        seed = NULL, sqrt = TRUE, reorder = TRUE, main = NULL, ...){
+                         sqrt = TRUE, reorder = TRUE, main = NULL, ...){
 
   # if classif
   if(model$task_type == "classif"){
@@ -58,7 +57,7 @@ vividMatrix <- function(task, model, filter = NULL, gridSize = 10, normalize = F
     vImp <- varImportanceFL(fl, task, model, filter)
 
     flInt <- FLfuncClassif(fl, task, model, gridSize = gridSize,  normalize = normalize, n_max = n_max,
-                           seed = seed, sqrt = sqrt)
+                            sqrt = sqrt)
     message("NOTE: The measured variable importance for
                prediciting ", task$target_names, " is using all variables. Not
                just ", main)
@@ -68,7 +67,7 @@ vividMatrix <- function(task, model, filter = NULL, gridSize = 10, normalize = F
     vImp <- varImportanceFL(fl, task, model, filter)
 
     flInt <- FLfunc(fl, task, model, gridSize = gridSize,  normalize = normalize, n_max = n_max,
-                    seed = seed, sqrt = sqrt)
+                     sqrt = sqrt)
 
   }
 
@@ -173,14 +172,9 @@ varImportanceFL <- function(fl, task, model, filter){
 # Flashlight Interactions
 
 FLfunc <- function(fl, task, model, gridSize = gridSize, normalize = normalize, n_max = n_max,
-                   seed = seed, sqrt = sqrt){
+                    sqrt = sqrt){
 
   message("Calculating interactions...")
-
-  if (!is.null(seed)) {
-    set.seed(seed)
-  }else{seed = NULL}
-
   # Interaction Matrix:
   res  <- NULL
   ovars <- model$state$train_task$feature_names
@@ -189,7 +183,7 @@ FLfunc <- function(fl, task, model, gridSize = gridSize, normalize = normalize, 
 
   res <- light_interaction(fl, pairwise = TRUE, type = "H", grid_size = gridSize,
                            normalize = normalize, n_max = n_max,
-                           seed = seed, sqrt = sqrt)$data
+                            sqrt = sqrt)$data
 
 
 
@@ -210,13 +204,9 @@ FLfunc <- function(fl, task, model, gridSize = gridSize, normalize = normalize, 
 # For classification
 
 FLfuncClassif <- function(fl, task, model, gridSize = gridSize, normalize = normalize, n_max = n_max,
-                          seed = seed, sqrt = sqrt){
+                           sqrt = sqrt){
 
   message("Calculating interactions...")
-
-  if (!is.null(seed)) {
-    set.seed(seed)
-  }else{seed = NULL}
 
   # Interaction Matrix:
   res  <- NULL
@@ -225,7 +215,7 @@ FLfuncClassif <- function(fl, task, model, gridSize = gridSize, normalize = norm
 
   res <- light_interaction(fl, pairwise = TRUE, type = "H", grid_size = gridSize,
                            normalize = normalize, n_max = n_max,
-                           seed = seed, sqrt = sqrt)$data
+                            sqrt = sqrt)$data
 
   ## Removing rows containing target and adding df back to FL object
 

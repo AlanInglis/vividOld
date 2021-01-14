@@ -11,7 +11,6 @@ vividMatrix(
   gridSize = 10,
   normalize = FALSE,
   n_max = 1000,
-  seed = NULL,
   sqrt = TRUE,
   reorder = TRUE,
   main = NULL,
@@ -28,8 +27,6 @@ vividMatrix(
 \item{normalize}{Should the variances explained be normalized? Default is FALSE.}
 
 \item{n_max}{Maximum number of data rows to consider.}
-
-\item{seed}{An integer random seed used for subsampling.}
 
 \item{sqrt}{In order to reproduce Friedman's H statistic, resulting values are root transformed. Set to FALSE if squared values should be returned.}
 
