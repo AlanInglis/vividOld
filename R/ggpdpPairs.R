@@ -108,7 +108,7 @@ ggpdpPairs <- function(task, model, method = "pdp",
 
   # Create progress bar
   pb1 <- progress_bar$new(
-    format = "  Calculating partial dependence...[:bar]:percent. Est::eta ",
+    format = "  Calculating bivariate partial dependence...[:bar]:percent. Est::eta ",
     total = nrow(xyvarn),
     clear = FALSE)
 
