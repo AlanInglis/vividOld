@@ -18,7 +18,7 @@
 #' @param fitlims Specifies the fit range for the color map. Options are a numeric vector of length 2,
 #'  "pdp" (default), in which cases limits are calculated from the pdp.
 #'  Predictions outside fitlims are squished on the color scale.
-#' @param gridsize for the pdp/ale plots, defaults to 10.
+#' @param gridSize for the pdp/ale plots, defaults to 10.
 #' @param class For a classification model, show the probability of this class. Defaults to 1.
 #'
 #' @return A zenplot of partial dependence values.
@@ -59,7 +59,7 @@ pdpZenplot <- function(task, model, zpath=NULL, method = "pdp",
                        noCols = c("letter", "square", "A4", "golden", "legal"),
                        zenMethod = c("tidy", "double.zigzag", "single.zigzag", "rectangular"),
                        pal=rev(RColorBrewer::brewer.pal(11,"RdYlBu")),
-                       fitlims = "pdp", gridsize = 10, class = 1,...){
+                       fitlims = "pdp", gridSize = 10, class = 1,...){
 
   prob <- model$task_type == "classif"
   data <-  task$data()
@@ -124,7 +124,7 @@ pdpZenplot <- function(task, model, zpath=NULL, method = "pdp",
     ind <- zpairs[i,]
 
     if (!is.na(ind[1]))
-      p <-FeatureEffect$new(pred.data, ind, method = "pdp", grid.size=gridsize)
+      p <-FeatureEffect$new(pred.data, ind, method = "pdp", grid.size=gridSize)
     else p <- NULL
     pdplist[[i]] <- list(index=ind, pdp=p)
     pb1$tick()

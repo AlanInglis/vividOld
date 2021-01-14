@@ -11,7 +11,7 @@
 #' @param fitlims Specifies the fit range for the color map. Options are a numeric vector of length 2,
 #'  "pdp" (default), in which cases limits are calculated from the pdp, or "all", when limits are calculated from the points, pdp and ice.
 #'  Predictions outside fitlims are squished on the color scale.
-#' @param gridsize for the pdp/ale plots, defaults to 10.
+#' @param gridSize for the pdp/ale plots, defaults to 10.
 #' @param class For a classification model, show the probability of this class. Defaults to 1.
 #' @param nIce Number of ice curves to be plotted, defaults to 30
 #' @param ... Not currently implemented.
@@ -51,7 +51,7 @@
 
 ggpdpPairs <- function(task, model, method = "pdp",
                        parallel = FALSE, vars = NULL, pal=rev(RColorBrewer::brewer.pal(11,"RdYlBu")),
-                       fitlims = "pdp", gridsize = 10, class = 1,
+                       fitlims = "pdp", gridSize = 10, class = 1,
                        nIce=30,...){
 
   # Set up registered cluster for parallel
@@ -93,7 +93,7 @@ ggpdpPairs <- function(task, model, method = "pdp",
   # loop through vars and create a list of pdps
   pdplist1 <- vector("list", length=length(xvarn))
   for (i in 1:length(xvarn)){
-    pdplist1[[i]] <-FeatureEffect$new(pred.data, xvarn[i], method = "pdp+ice", grid.size=gridsize)
+    pdplist1[[i]] <-FeatureEffect$new(pred.data, xvarn[i], method = "pdp+ice", grid.size=gridSize)
     pb$tick()
     names(pdplist1)  <- xvarn
   }
@@ -115,7 +115,7 @@ ggpdpPairs <- function(task, model, method = "pdp",
   # loop through vars and create a list of pdps for each pair
   pdplist <- vector("list", length=nrow(xyvarn))
   for (i in 1:nrow(xyvarn)){
-    pdplist[[i]] <-FeatureEffect$new(pred.data, rev(xyvarn[i,]), method = method, grid.size=gridsize) # added rev, ch
+    pdplist[[i]] <-FeatureEffect$new(pred.data, rev(xyvarn[i,]), method = method, grid.size=gridSize) # added rev, ch
     pb1$tick()
     names(pdplist)  <- paste(xyvarn[,2], xyvarn[,1], sep="pp") # switch 1 and 2, ch
   }
