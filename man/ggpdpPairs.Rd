@@ -7,12 +7,12 @@
 ggpdpPairs(
   task,
   model,
-  method = "pdp",
   parallel = FALSE,
   vars = NULL,
   pal = rev(RColorBrewer::brewer.pal(11, "RdYlBu")),
   fitlims = "pdp",
   gridSize = 10,
+  nmax = 500,
   class = 1,
   nIce = 30,
   ...
@@ -22,8 +22,6 @@ ggpdpPairs(
 \item{task}{Task created from the mlr package, either regression or classification.}
 
 \item{model}{Any machine learning model.}
-
-\item{method}{"pdp" (default) or "ale"}
 
 \item{parallel}{If TRUE then the method is executed in parallel.}
 
@@ -36,6 +34,8 @@ ggpdpPairs(
 Predictions outside fitlims are squished on the color scale.}
 
 \item{gridSize}{for the pdp/ale plots, defaults to 10.}
+
+\item{nmax}{Maximum number of data rows to consider, for lower diagonal plots, and for calculating pdp/ice}
 
 \item{class}{For a classification model, show the probability of this class. Defaults to 1.}
 

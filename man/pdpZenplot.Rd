@@ -14,6 +14,7 @@ pdpZenplot(
   pal = rev(RColorBrewer::brewer.pal(11, "RdYlBu")),
   fitlims = "pdp",
   gridSize = 10,
+  nmax = 500,
   class = 1,
   ...
 )
@@ -44,6 +45,8 @@ in which case a similar layout is constructed. See ?zenplot}
 Predictions outside fitlims are squished on the color scale.}
 
 \item{gridSize}{for the pdp/ale plots, defaults to 10.}
+
+\item{nmax}{Maximum number of data rows to consider,  for calculating pdp.}
 
 \item{class}{For a classification model, show the probability of this class. Defaults to 1.}
 }

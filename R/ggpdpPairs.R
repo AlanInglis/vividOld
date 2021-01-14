@@ -4,7 +4,6 @@
 #'
 #' @param task Task created from the mlr package, either regression or classification.
 #' @param model Any machine learning model.
-#' @param method "pdp" (default) or "ale"
 #' @param parallel If TRUE then the method is executed in parallel.
 #' @param vars Specify which variables and their order to plot. Defaults to all predictors.
 #' @param pal A vector of colors to show predictions, for use with scale_fill_gradientn
@@ -12,6 +11,7 @@
 #'  "pdp" (default), in which cases limits are calculated from the pdp, or "all", when limits are calculated from the points, pdp and ice.
 #'  Predictions outside fitlims are squished on the color scale.
 #' @param gridSize for the pdp/ale plots, defaults to 10.
+#' @param nmax Maximum number of data rows to consider, for lower diagonal plots, and for calculating pdp/ice
 #' @param class For a classification model, show the probability of this class. Defaults to 1.
 #' @param nIce Number of ice curves to be plotted, defaults to 30
 #' @param ... Not currently implemented.
@@ -49,21 +49,25 @@
 #'
 #' @export
 
-ggpdpPairs <- function(task, model, method = "pdp",
+ggpdpPairs <- function(task, model,
                        parallel = FALSE, vars = NULL, pal=rev(RColorBrewer::brewer.pal(11,"RdYlBu")),
-                       fitlims = "pdp", gridSize = 10, class = 1,
+                       fitlims = "pdp", gridSize = 10, nmax=500,class = 1,
                        nIce=30,...){
 
   # Set up registered cluster for parallel
   if(parallel){
     plan(future::cluster)
   }
-
+  method <- "pdp"
   prob <- model$task_type == "classif"
   data <-  task$data()
   data <- as.data.frame(data)
-  target <- task$target_names
 
+  if (nmax < nrow(data)){
+    data <- data[sample(nrow(data), nmax), , drop = FALSE]
+  }
+
+  target <- task$target_names
 
   # make iml model
   if (prob){
@@ -80,6 +84,9 @@ ggpdpPairs <- function(task, model, method = "pdp",
 
 
   xvarn <- names(xdata)
+
+
+
 
   nIce <- min(nIce, nrow(xdata)) # ch, make this an argument for the function
   sice <- c(NA, sample(nrow(xdata), nIce)) # ch
@@ -190,7 +197,6 @@ ggpdpPairs <- function(task, model, method = "pdp",
 
     # Assemble data frame
     df <- data.frame(x = x, y = y)
-
 
     # Prepare plot
     ggplot(df, aes(x = x, y = y, color = Pred)) +
