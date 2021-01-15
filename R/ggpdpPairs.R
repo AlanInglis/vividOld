@@ -80,7 +80,7 @@ ggpdpPairs <- function(task, model,
   # Get data for individual variables
   xdata <- pred.data$data$get.x()
   if (!is.null(vars) & all(vars %in% names(xdata)))
-    xdata <- xdata[,vars]
+    xdata <- xdata[,vars, drop = FALSE]
 
 
   xvarn <- names(xdata)
