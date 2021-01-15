@@ -128,9 +128,7 @@ ggpdpPairs <- function(task, model,
   }
 
   # get predictions
-  Pred <- pred.data$predict(data)
-  colnames(Pred) <- "prd"
-  Pred <- Pred$prd
+  Pred <- pred.data$predict(data)[,1]
 
   # Set limits for pairs
   if (fitlims=="all"){
