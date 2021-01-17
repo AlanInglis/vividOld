@@ -7,12 +7,12 @@
 ggpdpPairs(
   task,
   model,
-  method = "pdp",
   parallel = FALSE,
   vars = NULL,
   pal = rev(RColorBrewer::brewer.pal(11, "RdYlBu")),
-  fitlims = NULL,
-  gridsize = 10,
+  fitlims = "pdp",
+  gridSize = 10,
+  nmax = 500,
   class = 1,
   nIce = 30,
   ...
@@ -23,17 +23,19 @@ ggpdpPairs(
 
 \item{model}{Any machine learning model.}
 
-\item{method}{"pdp" (default) or "ale"}
-
 \item{parallel}{If TRUE then the method is executed in parallel.}
 
 \item{vars}{Specify which variables and their order to plot. Defaults to all predictors.}
 
 \item{pal}{A vector of colors to show predictions, for use with scale_fill_gradientn}
 
-\item{fitlims}{If supplied, should be a numeric vector of length 2, specifying the fit range.}
+\item{fitlims}{Specifies the fit range for the color map. Options are a numeric vector of length 2,
+"pdp" (default), in which cases limits are calculated from the pdp, or "all", when limits are calculated from the points, pdp and ice.
+Predictions outside fitlims are squished on the color scale.}
 
-\item{gridsize}{for the pdp/ale plots, defaults to 10.}
+\item{gridSize}{for the pdp/ale plots, defaults to 10.}
+
+\item{nmax}{Maximum number of data rows to consider, for lower diagonal plots, and for calculating pdp/ice}
 
 \item{class}{For a classification model, show the probability of this class. Defaults to 1.}
 
