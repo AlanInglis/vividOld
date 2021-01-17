@@ -213,7 +213,6 @@ ggpdpPairs <- function(task, model, method = "pdp",
                upper=list(continuous = ggpdp, combo = ggpdpc, discrete = ggpdp),
                diag = list(continuous = ggpdpDiag, discrete=ggpdpDiag), # added discrete, ch
                lower = list(continuous = lowerPlotc, combo=lowerPlotm, discrete=lowerPlotm),
-               # lower=list(continuous=wrap("points", size = 0.5)),
                legend=w,
                cardinality_threshold = NULL) +
     theme_bw() + theme(panel.border = element_rect(colour = "black", fill=NA, size=1),

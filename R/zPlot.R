@@ -141,7 +141,8 @@ pdpZenplot <- function(task, model, zpath=NULL, method = "pdp",
     pdplist0 <- lapply(pdplist, function(x) x$pdp)
     pdplist0 <-pdplist0[!sapply(pdplist0, is.null)]
     r <- sapply(pdplist0, function(x) range(x$results[,3]))
-    r <- range(c(r,Pred))
+    r <- range(c(r))
+    #r <- range(c(r,Pred))
     limits <- range(labeling::rpretty(r[1],r[2]))
   } else
     limits <- fitlims
@@ -155,7 +156,7 @@ pdpZenplot <- function(task, model, zpath=NULL, method = "pdp",
 
     pdp <- pdplist[[z2index]]$pdp
     if (!is.null(pdp)) {
-      p <- plot(pdp, rug=FALSE ) +
+      p <- plot(pdp, rug = TRUE) +
         scale_fill_gradientn(name = "\u0177",colors = pal, limits = limits)+
         guides(fill=FALSE, color=FALSE) +
         theme_bw() +
@@ -165,9 +166,10 @@ pdpZenplot <- function(task, model, zpath=NULL, method = "pdp",
               axis.text.y = element_blank(),
               axis.title.x = element_blank(),
               axis.title.y = element_blank(),
-              panel.border = element_rect(colour = "gray", fill=NA, size = 1.5))
+              panel.border = element_rect(colour = "gray", fill=NA, size = 1.5)) #+
+      #guides(fill = "colorbar")
 
-      }
+    }
     else p <- ggplot() + theme(panel.background = element_blank())
 
     ggplot_gtable(ggplot_build(p))
