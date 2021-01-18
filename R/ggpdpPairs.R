@@ -102,8 +102,8 @@ ggpdpPairs <- function(task, model,
   for (i in 1:length(xvarn)){
     pdplist1[[i]] <-FeatureEffect$new(pred.data, xvarn[i], method = "pdp+ice", grid.size=gridSize)
     pb$tick()
-    names(pdplist1)  <- xvarn
-  }
+   }
+  names(pdplist1)  <- xvarn
 
   # Get data for pairs of variables
 
@@ -124,8 +124,8 @@ ggpdpPairs <- function(task, model,
   for (i in 1:nrow(xyvarn)){
     pdplist[[i]] <-FeatureEffect$new(pred.data, rev(xyvarn[i,]), method = method, grid.size=gridSize) # added rev, ch
     pb1$tick()
-    names(pdplist)  <- paste(xyvarn[,2], xyvarn[,1], sep="pp") # switch 1 and 2, ch
-  }
+   }
+  names(pdplist)  <- paste(xyvarn[,2], xyvarn[,1], sep="pp") # switch 1 and 2, ch
 
   # get predictions
   Pred <- pred.data$predict(data)[,1]
