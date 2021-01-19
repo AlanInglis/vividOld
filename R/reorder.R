@@ -38,10 +38,12 @@
 reorderMatrix <- function(d){
   vimp <- diag(d)
   rvimp <- range(vimp)
-  vimp <- (vimp - rvimp[1])/(rvimp[2] - rvimp[1])
+  if (rvimp[2] != rvimp[1])
+    vimp <- (vimp - rvimp[1])/(rvimp[2] - rvimp[1])
   vint <- as.dist(d)
   rvint <- range(vint)
-  vint <-  (vint - rvint[1])/(rvint[2] - rvint[1])
+  if (rvint[2] != rvint[1])
+    vint <-  (vint - rvint[1])/(rvint[2] - rvint[1])
   score <- apply(as.matrix(vint), 1,max) + vimp
   o <- dser( -vint , -score, cost=costLS)
   res<- d[o,o]
