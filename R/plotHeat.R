@@ -60,7 +60,8 @@ plotHeat <- function(dinteraction,
                      title="",
                      intPal = rev(sequential_hcl(palette = "Blues 3", n = 11)),
                      impPal = rev(sequential_hcl(palette = "Reds 3", n = 11)),
-                     minImp = NULL, maxImp = NULL, minInt = NULL, maxInt = NULL,
+                     fitlimsInt = NULL,
+                     fitlimsImp = NULL,
                      angle = NULL,
                       ...){
 
@@ -80,6 +81,45 @@ plotHeat <- function(dinteraction,
   if(is.null(angle)){
     angle <- 0
   }else{angle = angle}
+
+
+
+# Limits ------------------------------------------------------------------
+
+  # max min Int vals
+  intValues <- lower.tri(dinteraction)
+  minInteraction <- min(as.dist(dinteraction))
+  maximumInt <- max(as.dist(dinteraction))+0.01
+  maximumInt <- ceiling(maximumInt*100)/100
+  # max min Imp vals
+  vImportance <- diag(dinteraction)
+  maxImportance <- max(vImportance)
+  minImportance <-  min(vImportance)
+
+if(is.null(fitlimsInt)){
+  limitsInt <- c(minInteraction, maximumInt)
+}else {
+  limitsInt <- fitlimsInt
+  }
+
+if(is.null(fitlimsImp)){
+  limitsImp <- c(minImportance, maxImportance)
+}else {
+  limitsImp <- fitlimsImp
+  }
+
+  ## Warning messages:
+  # if(minInt > minInteraction){
+  #   message(" Warning: Minimum chosen interaction value is larger than
+  #           some of the interaction values. These values may not be displayed correctly.
+  #           Adjust minInt to rectify.")
+  # }
+  # if(minImp > minImportance){
+  #   message(" Warning: Minimum chosen importance value is larger than
+  #           some of the importance values. These values may not be displayed correctly.
+  #           Adjust minImp to rectify.")
+  # }
+
 
   # Set up plot -------------------------------------------------------
 
@@ -102,11 +142,11 @@ plotHeat <- function(dinteraction,
     scale_x_continuous(breaks = index, labels = labelNames, position = "top") +
     scale_y_reverse(breaks = index, labels = labelNames) +
     geom_tile(aes(fill = `Interaction\nStrength`), alpha = var_int$alpha_int) +
-    scale_fill_gradientn(colors = intPal, limits=c(minInt, maxInt)) +
+    scale_fill_gradientn(colors = intPal, limits = limitsInt) +
     labs(title = title) +
     new_scale_fill() +
     geom_tile(aes(fill = `Variable\nImportance`), alpha = var_int$alpha_imp) +
-    scale_fill_gradientn(colors = impPal, limits=c(minImp, maxImp)) +
+    scale_fill_gradientn(colors = impPal, limits = limitsImp) +
     xlab('') +
     ylab('') +
     theme_light() +
@@ -123,7 +163,7 @@ plotHeat <- function(dinteraction,
     scale_y_reverse(breaks = index, labels = labelNames) +
     geom_tile(aes(fill = `Interaction\nStrength`),
                 alpha = var_int$alpha_int) +
-    scale_fill_gradientn(colors = intPal, limits=c(minInt, maxInt)) +
+    scale_fill_gradientn(colors = intPal, limits = limitsInt) +
     labs(title = title)
 
 
@@ -132,7 +172,7 @@ plotHeat <- function(dinteraction,
     guides(fill = guide_colorbar(frame.colour = "gray", frame.linewidth = 1.5)) +
      geom_tile(aes(fill = `Variable\nImportance`),
                  alpha = var_int$alpha_imp) +
-    scale_fill_gradientn(colors = impPal, limits=c(minImp, maxImp)) +
+    scale_fill_gradientn(colors = impPal, limits = limitsImp) +
   xlab('') +
   ylab('') +
   theme_light() +
