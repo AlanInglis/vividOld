@@ -5,6 +5,8 @@
 #' @param mat A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.
 #' @param intPal A colorspace colour palette to display the interaction values.
 #' @param impPal A colorspace colour palette to display the importance values.
+#' @param fitlimsInt Specifies the fit range for the color map for interaction strength.
+#' @param fitlimsImp Specifies the fit range for the color map for importance.
 #' @param plotly If TRUE then an interactive plot is displayed.
 #' @param top Returns the first part of the interaction matrix and resulting plot. Similar to head() function.
 #' @param minInt Minimum interaction strength to be displayed on the legend.
