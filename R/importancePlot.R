@@ -4,8 +4,8 @@
 #'
 #' @param mat A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.
 #' @param type The type of plot to display, either "lollipop" (default), or "barplot".
-#' @param minImp Minimum importance value to be displayed on the legend.
-#' @param maxImp Maximum importance value to be displayed on the legend.
+#' @param pal A vector of colors to show predictions, for use with scale_fill_gradientn
+#' @param fitlims Specifies the fit range for the color map for importance.
 #' @param top A value set by the user to only display the top x amount variables.
 #' @param label Only compatible with plotType = "barplot". If TRUE then the importance value is displayed at the end of each bar.
 #' @param ... Not currently implemented
@@ -36,17 +36,32 @@
 
 # Function ----------------------------------------------------------------
 
-importancePlot <- function(mat, plotType = "lollipop", minImp = NULL, maxImp = NULL, top = NULL, label, ...){
+importancePlot <- function(mat,
+                           plotType = "lollipop",
+                           pal = rev(sequential_hcl(palette = "Reds 3", n = 11)),
+                           fitlims = NULL,
+                           top = NULL,
+                           label, ...){
 
 
-  plotImportance(mat, plotType = plotType, minImp = minImp, maxImp = maxImp, top = top, label,...)
+  plotImportance(mat,
+                 plotType = plotType,
+                 pal = rev(sequential_hcl(palette = "Reds 3", n = 11)),
+                 fitlims = fitlims,
+                 top = top,
+                 label,...)
 }
 
 
 
 
 
-plotImportance <- function(mat, plotType = "lollipop", minImp = NULL, maxImp = NULL, top = NULL,  label,...){
+plotImportance <- function(mat,
+                           plotType = "lollipop",
+                           pal = rev(sequential_hcl(palette = "Reds 3", n = 11)),
+                           fitlims = NULL,
+                           top = NULL,
+                           label,...){
 
   # # Get Importance Measures -------------------------------------------------
   mat <- mat
@@ -65,13 +80,6 @@ plotImportance <- function(mat, plotType = "lollipop", minImp = NULL, maxImp = N
   yDF <- reorder(nam, yImp)
   yDF <- data.frame(yDF)
 
-  if(is.null(maxImp)){
-    maxImp <- maximumImp
-  }else{maxImp <- maxImp}
-
-  if(is.null(minImp)){
-    minImp <- minimumImp
-  }else{minImp <- minImp}
 
   if (is.null(top)) {
     top <- 0
@@ -89,26 +97,31 @@ plotImportance <- function(mat, plotType = "lollipop", minImp = NULL, maxImp = N
     }else{yImpRound <- " "}
   }
 
+
+
+  # set limits
+  if(is.null(fitlims)){
+    limitsImp <- c(minimumImp, maximumImp)
+  }else {
+    limitsImp <- fitlims
+  }
+
   # Barplot
   if(plotType == "barplot"){
 
     # Warning message:
-    if(maxImp < maximumImp){
-      message("Warning: Maximum chosen importance value is less than
-            some of the importance values. Some values may not be displayed correctly")
-    }
-    if(minImp > minimumImp){
-      message("Warning: Minimum chosen importance value is greater than
-            some of the importance values. Some values may not be displayed correctly")
-    }
+    # if(maxImp < maximumImp){
+    #   message("Warning: Maximum chosen importance value is less than
+    #         some of the importance values. Some values may not be displayed correctly")
+    # }
+    # if(minImp > minimumImp){
+    #   message("Warning: Minimum chosen importance value is greater than
+    #         some of the importance values. Some values may not be displayed correctly")
+    # }
 
     p <- ggplot(yDF, aes(x = yDF, y = yImp)) +
       geom_col(aes(fill = yImp)) +
-      scale_fill_gradient2(low = "dodgerblue4",
-                           mid = "white",
-                           high = "firebrick1",
-                           midpoint = 0,
-                           limits = c(minImp, maxImp)) +
+      scale_fill_gradientn(colors = pal, limits = limitsImp) +
       ggtitle(label = "Variable Importance") +
       geom_text(aes(label = yImpRound), vjust = 1.6, color = "black", size = 3.5)+
       theme_minimal() +
