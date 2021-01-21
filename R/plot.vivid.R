@@ -66,6 +66,8 @@ plot.vivid <- function(x,
                        impLow = "floralwhite", impHigh = "firebrick1", top = NULL, reorder=TRUE,
                        intPal = rev(sequential_hcl(palette = "Blues 3", n = 11)),
                        impPal = rev(sequential_hcl(palette = "Reds 3", n = 11)),
+                       fitlimsInt = NULL,
+                       fitlimsImp = NULL,
                        minImp = NULL, maxImp = NULL, minInt = 0, maxInt = NULL, angle = NULL,
                        #for network
                        thresholdValue = 0,
@@ -75,6 +77,7 @@ plot.vivid <- function(x,
                        clusterType = cluster_optimal,
                        clusterLayout = layout_with_fr,
                        # for all interactions
+                       fitlims = NULL,
                        plotType = "lollipop",
                        type = c("heatMap",
                                 "network",
@@ -95,70 +98,69 @@ plot.vivid <- function(x,
     top <- max(top)
   }
 
-
-  intValues <- lower.tri(dint)
-  minInteraction <- min(as.dist(dint))# min(intValues)
-  vImportance <- diag(dint)
-  maxImportance <- max(vImportance)
-  minImportance <-  min(vImportance)
-
-  maximumInt <- max(as.dist(dint))+0.01
-  maximumInt <- ceiling(maximumInt*100)/100
-
-  if(is.null(minImp)){
-    minImp <- minImportance
-  }else{minImp <- minImp}
-
-  if(is.null(maxImp)){
-    maxImp <- maxImportance
-  }else{maxImp <- maxImp}
-
-  if(is.null(maxInt)){
-    maxInt <- maximumInt
-  }else{maxInt <- maxInt}
-
-  if(is.null(minInt)){
-    minInt <- minInteraction
-  }else{minInt <- minInt}
-
   dint <- dint[1:top,1:top]
-
-  ## Warning messages:
-  if(minInt > minInteraction){
-    message(" Warning: Minimum chosen interaction value is larger than
-            some of the interaction values. These values may not be displayed correctly.
-            Adjust minInt to rectify.")
-  }
-  if(minImp > minImportance){
-    message(" Warning: Minimum chosen importance value is larger than
-            some of the importance values. These values may not be displayed correctly.
-            Adjust minImp to rectify.")
-  }
 
   if(plotly){
     plotlyPlot(dint, intLow=intLow, intHigh=intHigh, impLow=impLow, impHigh=impHigh,...)
 
-  }else{plotHeat(dint, intPal, impPal,
-                 minImp=minImp, maxImp=maxImp, minInt=minInt, maxInt=maxInt,
+  }else{plotHeat(dint,
+                 intPal,
+                 impPal,
+                 fitlimsInt = fitlimsInt,
+                 fitlimsImp = fitlimsImp,
                  angle = angle,...)
   }
 
 }else if ('network'%in%type) {
+  # netPrep <- x
+  # plotNet(netPrep, model, reorder = T, thresholdValue, label, layout = layout,
+  #         minInt = minInt, maxInt = maxInt, minImp = minImp , maxImp = maxImp, labelNudge = labelNudge, cluster = cluster, clusterType = clusterType,...)
 
-    netPrep <- x
-    plotNet(netPrep, model, reorder = T, thresholdValue, label, layout = layout,
-            minInt = minInt, maxInt = maxInt, minImp = minImp , maxImp = maxImp, labelNudge = labelNudge, cluster = cluster, clusterType = clusterType,...)
+     netPrep <- x
+
+     plotNet(netPrep,
+             model,
+             thresholdValue,
+             label,
+             layout = layout,
+             fitlimsInt = fitlimsInt,
+             fitlimsImp = fitlimsImp,
+             intPal = rev(sequential_hcl(palette = "Blues 3", n = 11)),
+             impPal = rev(sequential_hcl(palette = "Reds 3", n = 11)),
+             labelNudge = labelNudge,
+             cluster = cluster,
+             clusterType = clusterType,
+             clusterLayout = clusterLayout,...)
+
+
+
 }else if('allInteractions'%in%type){
 
   dinteraction <- x
   if (is.null(plotType)) {
     plotType = "lollipop"
   }else{plotType = plotType}
-    plotAllInteractions(dinteraction, plotType = plotType, top = top,...)
+    plotAllInteractions(dinteraction,
+                        pal = rev(sequential_hcl(palette = "Blues 3", n = 11)),
+                        fitlims = fitlims,
+                        plotType = plotType,
+                        top = top,...)
 
 }else if('importance'%in%type){
 
     mat <- x
-    plotImportance(mat, plotType = plotType, minImp = minImp, maxImp = maxImp, top = top, label, ...)
+    plotImportance(mat,
+                   plotType = plotType,
+                   pal = rev(sequential_hcl(palette = "Reds 3", n = 11)),
+                   fitlims = fitlims,
+                   minImp = minImp, maxImp = maxImp,
+                   top = top,
+                   label, ...)
   }
 }
+
+
+
+
+
+

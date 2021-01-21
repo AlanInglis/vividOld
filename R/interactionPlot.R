@@ -5,6 +5,8 @@
 #' @param model A machine learning model created from mlr3 task and learner.
 #' @param type The type of plot to display, either "lollipop" (default) or "barplot".
 #' @param interactionType Are measures based on Friedman's H statistic ("H") or on "ice" curves?
+#' @param pal A vector of colors to show values, for use with scale_fill_gradientn
+#' @param fitlims Specifies the fit range for the color map for interaction strength.
 #' @param gridSize The size of the grid for evaluating the predictions.
 #' @param normalize Should the variances explained be normalized? Default is FALSE.
 #' @param n_max Maximum number of data rows to consider.
@@ -39,8 +41,19 @@
 
 
 # Function ----------------------------------------------------------------
-interactionPlot <- function(model, data, interactionType = 'ice', gridSize = 10, normalize = FALSE, n_max = 1000,
-                            seed = NULL, sqrt = FALSE, type = "lollipop", title = NULL, label = FALSE){
+interactionPlot <- function(model,
+                            data,
+                            interactionType = 'ice',
+                            pal = rev(sequential_hcl(palette = "Blues 3", n = 11)),
+                            fitlims = NULL,
+                            gridSize = 10,
+                            normalize = FALSE,
+                            n_max = 1000,
+                            seed = NULL,
+                            sqrt = FALSE,
+                            type = "lollipop",
+                            title = NULL,
+                            label = FALSE){
 
   # Get data
   # get data:
@@ -71,6 +84,9 @@ interactionPlot <- function(model, data, interactionType = 'ice', gridSize = 10,
   intDF <- reorder(intName, intVal)
   intDF <- data.frame(intDF)
 
+  minimumInt <- min(intDF)
+  maximumInt <- max(intDF)
+
   if(is.null(title)){
     title = "Overall Interaction Strength"
   }else{title = title}
@@ -79,14 +95,21 @@ interactionPlot <- function(model, data, interactionType = 'ice', gridSize = 10,
     intRound <- intRound
   }else{intRound <- " "}
 
+  if(is.null(fitlims)){
+    limitsInt <- c(minimumInt, maximumInt)
+  }else {
+    limitsInt <- fitlims
+  }
+
 
   # Barplot
   if (type == "barplot"){
   p <-  ggplot(intDF, aes(x = intDF, y = intDF)) +
     geom_col(aes(fill = intVal)) +
-    scale_fill_gradient2(low = "floralwhite",
-                         high = "dodgerblue4") +
-    ggtitle(label = title) +
+      scale_fill_gradientn(colors = pal, limits = limitsInt) +
+    # scale_fill_gradient2(low = "floralwhite",
+    #                      high = "dodgerblue4") +
+    # ggtitle(label = title) +
     geom_text(aes(label = intRound), vjust = 1.6, color = "black", size = 3.5) +
     theme_minimal() +
     xlab('Feature') +

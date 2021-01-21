@@ -5,6 +5,8 @@
 #'
 #' @param mat A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.
 #' @param type The type of plot to display, either "lollipop", "barplot", or "circleBar".
+#' @param pal A vector of colors to show values, for use with scale_fill_gradientn
+#' @param fitlims Specifies the fit range for the color map for interaction strength.
 #' @param top A value set by the user to only display the top x amount variables.
 #' @param ... Not currently implemented
 #'
@@ -36,7 +38,11 @@
 
 # Function ----------------------------------------------------------------
 
-allInteractionsPlot <- function(mat, plotType = NULL, top = NULL, ...){
+allInteractionsPlot <- function(mat,
+                                pal = rev(sequential_hcl(palette = "Blues 3", n = 11)),
+                                fitlims = NULL,
+                                plotType = NULL,
+                                top = NULL, ...){
 
   # if(type != "lollipop" || type != "barplot" || type != "circleBar"){
   #   stop("Invalid plotting type. See ?allInt for available plotting types")
@@ -47,12 +53,23 @@ allInteractionsPlot <- function(mat, plotType = NULL, top = NULL, ...){
     plotType = "lollipop"
   }else{plotType = plotType}
 
-  plotAllInteractions(dinteraction, plotType = plotType, top = top)
+  plotAllInteractions(dinteraction,
+                      plotType = plotType,
+                      pal = rev(sequential_hcl(palette = "Blues 3", n = 11)),
+                      fitlims = fitlims,
+                      top = top)
 }
 
-plotAllInteractions <- function(mat, plotType = NULL, top = NULL, ...){
+plotAllInteractions <- function(mat,
+                                pal = rev(sequential_hcl(palette = "Blues 3", n = 11)),
+                                fitlims = NULL,
+                                plotType = NULL,
+                                top = NULL, ...){
   dinteraction <- mat
   diag(dinteraction) <- 0
+
+  maxInt <- max(dinteraction)
+  minInt <- min(dinteraction)
 
   df <- transform(data.frame(dinteraction), y=row.names(dinteraction))
 
@@ -87,6 +104,12 @@ plotAllInteractions <- function(mat, plotType = NULL, top = NULL, ...){
     df <- tail(df,top)
   }
 
+  # set limits
+  if(is.null(fitlims)){
+    limitsInt <- c(minInt, maxInt)
+  }else {
+    limitsInt <- fitlims
+  }
 
   # -------------------------------------------------------------------------
 
@@ -101,9 +124,10 @@ if(plotType != "barplot" && plotType != "lollipop"){
     # barplot
     pp <-  ggplot(df, aes(x = reorder(xy, value), y = value)) +
       geom_col(aes(fill = value)) +
-      scale_fill_gradient(name = "Interaction\nStrength",
-                          low = "floralwhite",
-                          high = "dodgerblue4") +
+      scale_fill_gradientn(colors = pal, limits = limitsInt) +
+      # scale_fill_gradient(name = "Interaction\nStrength",
+      #                     low = "floralwhite",
+      #                     high = "dodgerblue4") +
       theme_minimal() +
       xlab('Features ') +
       ylab("Interaction Strength") +
