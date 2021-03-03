@@ -8,6 +8,8 @@ interactionPlot(
   model,
   data,
   interactionType = "ice",
+  pal = rev(sequential_hcl(palette = "Blues 3", n = 11)),
+  fitlims = NULL,
   gridSize = 10,
   normalize = FALSE,
   n_max = 1000,
@@ -22,6 +24,10 @@ interactionPlot(
 \item{model}{A machine learning model created from mlr3 task and learner.}
 
 \item{interactionType}{Are measures based on Friedman's H statistic ("H") or on "ice" curves?}
+
+\item{pal}{A vector of colors to show values, for use with scale_fill_gradientn}
+
+\item{fitlims}{Specifies the fit range for the color map for interaction strength.}
 
 \item{gridSize}{The size of the grid for evaluating the predictions.}
 

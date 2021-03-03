@@ -4,10 +4,21 @@
 \alias{allInteractionsPlot}
 \title{allInteractionsPlot}
 \usage{
-allInteractionsPlot(mat, plotType = NULL, top = NULL, ...)
+allInteractionsPlot(
+  mat,
+  pal = rev(sequential_hcl(palette = "Blues 3", n = 11)),
+  fitlims = NULL,
+  plotType = NULL,
+  top = NULL,
+  ...
+)
 }
 \arguments{
 \item{mat}{A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.}
+
+\item{pal}{A vector of colors to show values, for use with scale_fill_gradientn}
+
+\item{fitlims}{Specifies the fit range for the color map for interaction strength.}
 
 \item{top}{A value set by the user to only display the top x amount variables.}
 

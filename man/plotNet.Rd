@@ -9,10 +9,8 @@ plotNet(
   model,
   thresholdValue = 0,
   label,
-  minInt = 0,
-  maxInt = NULL,
-  minImp = NULL,
-  maxImp = NULL,
+  fitlimsInt = NULL,
+  fitlimsImp = NULL,
   intPal = rev(sequential_hcl(palette = "Blues 3", n = 11)),
   impPal = rev(sequential_hcl(palette = "Reds 3", n = 11)),
   labelNudge = 0.05,
@@ -27,14 +25,6 @@ plotNet(
 \item{thresholdValue}{A value chosen by the user which will show all the edges with weights (i.e., the interacions) above that value. For example, if thresholdValue = 0.2, then only the the interacions greater than 0.2 will be displayed.}
 
 \item{label}{If label = TRUE the numerical value for the interaction strength will be displayed.}
-
-\item{minInt}{Minimum interaction strength to be displayed on the legend.}
-
-\item{maxInt}{Maximum interaction strength to be displayed on the legend.}
-
-\item{minImp}{Minimum importance value to be displayed on the legend.}
-
-\item{maxImp}{Maximum importance value to be displayed on the legend.}
 
 \item{intPal}{A colorspace colour palette to display the interaction values.}
 
@@ -53,6 +43,14 @@ plotNet(
 \item{...}{Not currently implemented.}
 
 \item{mat}{A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.}
+
+\item{minInt}{Minimum interaction strength to be displayed on the legend.}
+
+\item{maxInt}{Maximum interaction strength to be displayed on the legend.}
+
+\item{minImp}{Minimum importance value to be displayed on the legend.}
+
+\item{maxImp}{Maximum importance value to be displayed on the legend.}
 }
 \value{
 A newtwork style plot displaying interaction strength between variables on the edges and variable importance on the nodes.

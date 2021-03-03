@@ -11,10 +11,8 @@ plotHeat(
   title = "",
   intPal = rev(sequential_hcl(palette = "Blues 3", n = 11)),
   impPal = rev(sequential_hcl(palette = "Reds 3", n = 11)),
-  minImp = NULL,
-  maxImp = NULL,
-  minInt = NULL,
-  maxInt = NULL,
+  fitlimsInt = NULL,
+  fitlimsImp = NULL,
   angle = NULL,
   ...
 )
@@ -30,19 +28,23 @@ plotHeat(
 
 \item{impPal}{A colorspace colour palette to display the importance values.}
 
-\item{minImp}{Minimum importance value to be displayed on the legend.}
+\item{fitlimsInt}{Specifies the fit range for the color map for interaction strength.}
 
-\item{maxImp}{Maximum importance value to be displayed on the legend.}
-
-\item{minInt}{Minimum interaction strength to be displayed on the legend.}
-
-\item{maxInt}{Maximum interaction strength to be displayed on the legend.}
+\item{fitlimsImp}{Specifies the fit range for the color map for importance.}
 
 \item{angle}{The angle to display the x-axis labels.}
 
 \item{...}{Not currently implemented.}
 
 \item{mat}{A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.}
+
+\item{minInt}{Minimum interaction strength to be displayed on the legend.}
+
+\item{maxInt}{Maximum interaction strength to be displayed on the legend.}
+
+\item{minImp}{Minimum importance value to be displayed on the legend.}
+
+\item{maxImp}{Maximum importance value to be displayed on the legend.}
 }
 \description{
 Plots a Heatmap-tyle display showingVariable Importance and Variable Interaction
@@ -56,6 +58,7 @@ aq <- na.omit(aq)
 library(mlr3)
 library(mlr3learners)
 library(ranger)
+aq <- na.omit(airquality)
 aq_Task <- TaskRegr$new(id = "airQ", backend = aq, target = "Ozone")
 aq_lrn <- lrn("regr.ranger", importance = "permutation")
 aq_Mod <- aq_lrn$train(aq_Task)

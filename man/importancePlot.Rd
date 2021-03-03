@@ -7,8 +7,8 @@
 importancePlot(
   mat,
   plotType = "lollipop",
-  minImp = NULL,
-  maxImp = NULL,
+  pal = rev(sequential_hcl(palette = "Reds 3", n = 11)),
+  fitlims = NULL,
   top = NULL,
   label,
   ...
@@ -17,9 +17,9 @@ importancePlot(
 \arguments{
 \item{mat}{A matrix of values to be plotted. Either added by the user or created using the prepFunc() function.}
 
-\item{minImp}{Minimum importance value to be displayed on the legend.}
+\item{pal}{A vector of colors to show predictions, for use with scale_fill_gradientn}
 
-\item{maxImp}{Maximum importance value to be displayed on the legend.}
+\item{fitlims}{Specifies the fit range for the color map for importance.}
 
 \item{top}{A value set by the user to only display the top x amount variables.}
 

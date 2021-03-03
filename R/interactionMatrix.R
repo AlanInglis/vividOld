@@ -136,7 +136,7 @@ varImportanceFL <- function(fl, task, model, filter){
 
   if(is.null(filter)){
     # If (embedded learner) - else(agnostic varimp calc)
-    if(any(logID) == TRUE){
+    if(any(logID) == TRUE && model$model$importance.mode != "none"){
       ovars <- model$state$train_task$feature_names
       Importance <- model$importance()
       impReorder <- Importance[order(factor(names(Importance), levels = ovars))]

@@ -15,6 +15,8 @@
   reorder = TRUE,
   intPal = rev(sequential_hcl(palette = "Blues 3", n = 11)),
   impPal = rev(sequential_hcl(palette = "Reds 3", n = 11)),
+  fitlimsInt = NULL,
+  fitlimsImp = NULL,
   minImp = NULL,
   maxImp = NULL,
   minInt = 0,
@@ -27,6 +29,7 @@
   cluster = F,
   clusterType = cluster_optimal,
   clusterLayout = layout_with_fr,
+  fitlims = NULL,
   plotType = "lollipop",
   type = c("heatMap", "network", "allInteractions", "importance"),
   ...
