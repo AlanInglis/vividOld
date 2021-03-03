@@ -1,4 +1,4 @@
-Package: vivid
+Package: vividOld
 Type: Package
 Title: Variable Importance and Variable Interaction Displays
 Version: 0.1.0
